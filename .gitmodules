@@ -1,0 +1,6 @@
+[submodule "wOLIB"]
+	path = wOLIB
+	url = git@github.com:tarosuke/wOLIB.git
+[submodule "toolbox"]
+	path = toolbox
+	url = git@github.com:tarosuke/toolbox.git
