@@ -1,5 +1,5 @@
-﻿/** OpenGL番Core
- * Copyright (C) 2024 tarosuke<webmaster@tarosuke.net>
+/******************************************************************
+ * Copyright (C) 2017,2024 tarosuke<webmaster@tarosuke.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,43 +15,41 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ * GLXコンテキストのラッパ
+ *
  */
-#include "core.h"
-#include "gl/gl.h"
-#include "widget.h"
-#include <assert.h>
-#include <tb/time.h>
+
+#include "gl/glx.h"
 
 
 
-tb::Timestamp Core::timestamp;
-bool Core::keep(false);
-template <> tb::Factory<Core>* tb::Factory<Core>::start(0);
-
-
-void Core::Run() {
-	for (keep = true; keep;) {
-		timestamp.Update();
-
-		const auto& pose(Pose());
-
-		// 各種Update
-		// Stickies::UpdateAll();
-		Widget::UpdateAll(pose);
-		// World::UpdateAll();
-		// Scenary::UpdateAll();
-
-
-		while (NextEye()) {
-			// Stickies::DrawAll();
-			Widget::DrawAll();
-			// World::DrawAll();
-			// Scenary::Draw();
-			// World::TrawAll();
-			Widget::TrawAll();
-			// Stickies::TrawAll();
-		}
-
-		Finish();
-	}
-}
+/** デフォルトのビジュアルフォーマット
+ */
+int GLX::defaultAttributes[] = {
+	GLX_USE_GL,
+	GLX_LEVEL,
+	0,
+	GLX_RGBA,
+	GLX_DOUBLEBUFFER,
+	GLX_RED_SIZE,
+	8,
+	GLX_GREEN_SIZE,
+	8,
+	GLX_BLUE_SIZE,
+	8,
+	GLX_ALPHA_SIZE,
+	8,
+	GLX_DEPTH_SIZE,
+	24,
+	GLX_STENCIL_SIZE,
+	8,
+	GLX_ACCUM_RED_SIZE,
+	0,
+	GLX_ACCUM_GREEN_SIZE,
+	0,
+	GLX_ACCUM_BLUE_SIZE,
+	0,
+	GLX_ACCUM_ALPHA_SIZE,
+	0,
+	None};

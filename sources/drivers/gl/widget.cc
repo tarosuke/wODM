@@ -1,4 +1,4 @@
-﻿/** OpenGL番Core
+﻿/*****************************************************************************
  * Copyright (C) 2024 tarosuke<webmaster@tarosuke.net>
  *
  * This program is free software; you can redistribute it and/or
@@ -16,42 +16,42 @@
  * Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+#include "widget.h"
 #include "core.h"
 #include "gl/gl.h"
-#include "widget.h"
-#include <assert.h>
+#include <tb/list.h>
+#include <tb/matrix.h>
+#include <tb/prefs.h>
 #include <tb/time.h>
 
 
 
-tb::Timestamp Core::timestamp;
-bool Core::keep(false);
-template <> tb::Factory<Core>* tb::Factory<Core>::start(0);
+namespace {
+	tb::Prefs<float> vDistance("widget/virtualDistance", 1.0f);
+}
 
 
-void Core::Run() {
-	for (keep = true; keep;) {
-		timestamp.Update();
+tb::List<Widget> Widget::root;
+tb::Vector<2, float> Widget::lookingPoint;
 
-		const auto& pose(Pose());
+void Widget::UpdateAll(const tb::Matrix<4, 4, float>& pose) {
+	// lookingPoint算出
+	const tb::Vector<3, float> fv((const float[3]){0.0f, 0.0f, 1.0f});
+	const tb::Vector<3, float> lv(pose * fv);
+	const tb::Vector<3, float> lp(lv * vDistance / lv[2]);
+	lookingPoint[0] = lp[0];
+	lookingPoint[1] = lp[1];
 
-		// 各種Update
-		// Stickies::UpdateAll();
-		Widget::UpdateAll(pose);
-		// World::UpdateAll();
-		// Scenary::UpdateAll();
+	// WidgetのUpdate
+	root.Foreach(&Widget::Update);
+}
 
 
-		while (NextEye()) {
-			// Stickies::DrawAll();
-			Widget::DrawAll();
-			// World::DrawAll();
-			// Scenary::Draw();
-			// World::TrawAll();
-			Widget::TrawAll();
-			// Stickies::TrawAll();
-		}
-
-		Finish();
-	}
+void Widget::DrawAll() {
+	// TODO:View行列設定
+	root.Foreach(&Widget::Draw);
+}
+void Widget::TrawAll() {
+	// TODO:View行列設定
+	root.Reveach(&Widget::Traw);
 }
