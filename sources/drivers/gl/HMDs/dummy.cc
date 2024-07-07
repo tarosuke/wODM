@@ -42,8 +42,12 @@ class DummyHMD : Core {
 	tb::Matrix<4, 4, float> view;
 
 	struct F : tb::Factory<Core> {
-		uint Score() final { return useDummyHMD ? ~0 : 0; };
-		Core* New() final { return new DummyHMD; };
+		uint Score(const tb::Factory<Core>::Param*) final {
+			return useDummyHMD ? ~0 : 0;
+		};
+		Core* New(const tb::Factory<Core>::Param*) final {
+			return new DummyHMD;
+		};
 	};
 
 	DummyHMD()
@@ -99,8 +103,10 @@ class DummyHMD : Core {
 
 	static tb::Prefs<bool> useDummyHMD;
 	static class Factory : tb::Factory<Core> {
-		uint Score() { return DummyHMD::useDummyHMD ? 1 : 0; };
-		Core* New() { return new DummyHMD; };
+		uint Score(const tb::Factory<Core>::Param*) {
+			return DummyHMD::useDummyHMD ? 1 : 0;
+		};
+		Core* New(const tb::Factory<Core>::Param*) { return new DummyHMD; };
 	} factory;
 };
 

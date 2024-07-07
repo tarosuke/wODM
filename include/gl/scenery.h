@@ -1,5 +1,5 @@
-/** modules
- * Copyright (C) 2019,2024 tarosuke<webmaster@tarosuke.net>
+/** Scenery
+ * Copyright (C) 2017,2019,2024 tarosuke<webmaster@tarosuke.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,41 +15,40 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ * スカイスフィアやスカイボックスなどの抽象
  */
 #pragma once
 
-#include <X11/Xlib.h>
+#include <filesystem>
 
-#include <tb/list.h>
+#include <tb/factory.h>
+#include <tb/image.h>
+#include <tb/prefs.h>
+#include <tb/string.h>
+
+#include "model.h"
 
 
 
-//
-// Xモジュールの原型
-//
-class XModule : public tb::List<XModule>::Node {
-	XModule(const XModule&);
-	void operator=(const XModule&);
+class Scenery : public Model_C {
+	Scenery() = delete;
+	Scenery(const Scenery&) = delete;
+	void operator=(const Scenery&) = delete;
 
 public:
-	virtual bool OnXButtonEvent(const XButtonEvent&) { return false; };
-	virtual bool OnXKeyEvent(const XKeyEvent&) { return false; };
-	virtual bool OnXEvent(const XEvent&) { return false; };
+	Scenery* New(const std::filesystem::path& path);
+
+	struct Param : tb::Factory<Scenery>::Param {
+		Param(tb::Image<tb::Pixel<tb::u8>>& image) : image(image){};
+		tb::Image<tb::Pixel<tb::u8>>& image;
+	};
 
 protected:
-	XModule(){};
-	virtual ~XModule(){};
-
-	// 自身をリストへ登録
-	void RegisterStickies();
-	void RegisterExternals();
-	void RegisterIndependents();
-	void RegisterAfterDraw();
-	void RegisterX();
-
-	// vr_core全体を終了
-	static void Quit();
+	Scenery(const Params&, const tb::Image<tb::Pixel<tb::u8>>&);
 
 private:
-	// NOTE: static Module* New()は0を返すこと
+	static tb::Factory<Scenery> factory;
+	static tb::Prefs<tb::String> path;
+	static Scenery* instance;
 };

@@ -4,3 +4,6 @@
 [submodule "toolbox"]
 	path = subsystems/toolbox
 	url = git@github.com:tarosuke/toolbox.git
+[submodule "subsystems/canvas"]
+	path = subsystems/canvas
+	url = git@github.com:tarosuke/tb-canvas.git

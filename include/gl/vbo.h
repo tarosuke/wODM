@@ -1,5 +1,5 @@
 /** 頂点バッファオブジェクトとインデクスバッファオブジェクト
- * Copyright (C) 2017,2019 tarosuke<webmaster@tarosuke.net>
+ * Copyright (C) 2017,2019,2024 tarosuke<webmaster@tarosuke.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,49 +22,46 @@
 
 
 
-namespace TB{
+namespace GL {
 
-	class VBO{
+	class VBO {
 		VBO();
 		VBO(const VBO&);
 		void operator=(const VBO&);
-	public:
-		enum DrawType{
-			triangles,
-			quads,
-			points,
-			triangleStrip,
-			triangleFan
-		};
 
-		struct V2{
+	public:
+		enum DrawType { triangles, quads, points, triangleStrip, triangleFan };
+
+		struct V2 {
 			float u;
 			float v;
-		}__attribute__((packed));
-		struct V3{
+		} __attribute__((packed));
+		struct V3 {
 			float x;
 			float y;
 			float z;
-		}__attribute__((packed));
+		} __attribute__((packed));
 
-		struct V_UV{
+		struct V_UV {
 			V3 vertex;
 			V2 texture;
-		}__attribute__((packed));
-		struct V_UV_NORMAL{
+		} __attribute__((packed));
+		struct V_UV_NORMAL {
 			V3 vertex;
 			V2 texture;
 			V3 normal;
-		}__attribute__((packed));
+		} __attribute__((packed));
 
-		template<typename T> static VBO* New(
-			unsigned noi,
+		template <typename T> static VBO*
+		New(unsigned noi,
 			const unsigned* index,
 			unsigned nov,
-			const T* vertex, //NOTE:vertex に多次元配列を与えないこと
-			DrawType type = triangles){
+			const T* vertex, // NOTE:vertex に多次元配列を与えないこと
+			DrawType type = triangles) {
 			Init i;
-			return SetupBuffer(i, noi, index, nov, vertex, sizeof(T), type) ? new VBO(i) : 0;
+			return SetupBuffer(i, noi, index, nov, vertex, sizeof(T), type)
+					 ? new VBO(i)
+					 : 0;
 		}
 
 		virtual void Draw();
@@ -77,7 +74,7 @@ namespace TB{
 		const unsigned numOfVertex;
 		const int drawType;
 
-		struct Init{
+		struct Init {
 			unsigned indexBuffer;
 			unsigned vertexBuffer;
 			unsigned numOfVertex;

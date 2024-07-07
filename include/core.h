@@ -19,6 +19,7 @@
 #pragma once
 
 #include <tb/factory.h>
+#include <tb/list.h>
 #include <tb/matrix.h>
 #include <tb/spread.h>
 #include <tb/time.h>
@@ -26,6 +27,11 @@
 
 
 struct Core {
+	struct Object : tb::List<Object> {
+		virtual void Draw() {};
+		virtual void Traw() {};
+	};
+
 	static Core* New() { return tb::Factory<Core>::Create(); };
 	virtual ~Core(){};
 

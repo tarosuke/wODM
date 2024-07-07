@@ -1,5 +1,5 @@
-﻿/*****************************************************************************
- * Copyright (C) 2024 tarosuke<webmaster@tarosuke.net>
+/** Model
+ * Copyright (C) 2019 tarosuke<webmaster@tarosuke.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,23 +16,37 @@
  * Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include <openvr/openvr.h>
-#include <syslog.h>
-#include <tb/app.h>
+#include <tb/image.h>
 
-#include <core.h>
-
+#include "gl/texture.h"
+#include "model.h"
 
 
-struct wODM : tb::App {
-	int Main(uint, const char**) {
-		Core* const core(Core::New());
-		if (core) {
-			core->Run();
-			delete core;
-		} else {
-			syslog(LOG_CRIT, "no VRHMD found.");
-		}
-		return 0;
-	};
-} waodm;
+
+Model::~Model() {
+	if (vbo) {
+		delete vbo;
+	}
+}
+
+
+Model_C::Model_C(const Params& p, const tb::Image<tb::Pixel<tb::u8>>& image)
+	: Model(p), rawImage(image),
+	  texture(
+		  rawImage.Data(),
+		  rawImage.Width(),
+		  rawImage.Height(),
+		  rawImage.Transparent() ? GL::Texture::RGBA : GL::Texture::RGB) {}
+
+
+void Model_C::Draw() {
+	if (!vbo) {
+		return;
+	}
+
+	// カラーバッファのセットアップ
+	GL::Texture::Binder b(texture);
+
+	// 描画
+	(*vbo).Draw();
+}
