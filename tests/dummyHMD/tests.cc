@@ -1,8 +1,7 @@
 ﻿#include <unistd.h>
 
 
-
 int main() {
-	execl("../wODM", "wODM");
+	execl("DEBUG/wODM", "wODM", "--GLDummyHMD=true");
 	return 0;
 }
