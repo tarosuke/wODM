@@ -3,5 +3,5 @@
 
 int main() {
 	execl("DEBUG/wODM", "wODM", "--GLDummyHMD=true");
-	return 0;
+	return -1;
 }
