@@ -18,6 +18,7 @@
  */
 #pragma once
 
+#include "core.h"
 #include "gl/gl.h"
 #include <X11/Xlib.h>
 
@@ -26,34 +27,35 @@
 /** GLXコンテキストのラッパ
  * 構築したらMakeCurrentでカレントに設定できる
  */
-struct GLX {
-	GLX() = delete;
+struct GLX : Core {
 	void operator=(const GLX&) = delete;
 
-	GLX(Display* display,
-		Drawable drawable = 0,
-		int attributes[] = defaultAttributes)
-		: display(display),
+	GLX(Drawable drawable = 0, int attributes[] = defaultAttributes)
+		: display(XOpenDisplay(0)), screen(DefaultScreen(display)),
 		  drawable(drawable ? drawable : DefaultRootWindow(display)) {
 		visual = glXChooseVisual(display, DefaultScreen(display), attributes);
-		context = glXCreateContext(display, visual, NULL, True);
+		context = glXCreateContext(display, visual, 0, True);
 	};
 
 	~GLX() {
 		XFree(visual);
-		glXMakeCurrent(display, None, NULL); // コンテキスト解除
+		glXMakeCurrent(display, None, 0); // コンテキスト解除
 		glXDestroyContext(display, context); // コンテキスト破棄
+		XSetCloseDownMode(display, DestroyAll);
+		XCloseDisplay(display);
 	};
 
-	// コンテキストをカレントにする
-	void MakeCurrent() { glXMakeCurrent(display, drawable, context); };
-
-	Display* GetDisplay() { return display; };
+protected:
+	::Display* const display;
+	int screen;
+	void SetDrawable(Drawable d) {
+		drawable = d;
+		glXMakeCurrent(display, drawable, context);
+	};
 
 private:
 	static int defaultAttributes[];
 
-	Display* display;
 	Drawable drawable;
 	XVisualInfo* visual;
 	GLXContext context;

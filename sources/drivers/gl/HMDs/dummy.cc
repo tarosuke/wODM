@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <X11/Xlib.h>
+
 #include <tb/factory.h>
 #include <tb/input.h>
 #include <tb/prefs.h>
@@ -31,13 +32,10 @@
  * 単眼、小さめの窓を作ってそこへ出力
  * 開発が進むと使わなくなるんだろうが、VRHMDの脱着を繰り返す面倒を回避する。
  */
-class DummyHMD : Core {
+class DummyHMD : GLX {
 	static const tb::Spread<2, unsigned> size;
-	::Display* display;
-	int screen;
 	::Window window;
 	unsigned eIndex;
-	GLX glx;
 	tb::Matrix<4, 4, float> projection;
 	tb::Matrix<4, 4, float> view;
 
@@ -51,29 +49,32 @@ class DummyHMD : Core {
 	};
 
 	DummyHMD()
-		: display(XOpenDisplay(NULL)), screen(DefaultScreen(display)),
-		  window(XCreateSimpleWindow(
-			  display,
-			  RootWindow(display, screen),
-			  0,
-			  0,
-			  size[0],
-			  size[1],
-			  1,
-			  BlackPixel(display, screen),
-			  BlackPixel(display, screen))),
-		  eIndex(0), glx(display, window) {
+		: GLX(), window(XCreateSimpleWindow(
+					 display,
+					 RootWindow(display, screen),
+					 0,
+					 0,
+					 size[0],
+					 size[1],
+					 1,
+					 BlackPixel(display, screen),
+					 BlackPixel(display, screen))),
+		  eIndex(0) {
+		XSelectInput(
+			display,
+			window,
+			StructureNotifyMask | SubstructureNotifyMask);
 		XSetStandardProperties(
 			display,
 			window,
 			"Sample",
 			"Sample",
 			None,
-			NULL,
 			0,
-			NULL);
+			0,
+			0);
 		XMapWindow(display, window);
-		glx.MakeCurrent();
+		SetDrawable(window);
 
 		static constexpr double near = 0.05;
 		static constexpr double far = 10000.0;
@@ -96,6 +97,21 @@ class DummyHMD : Core {
 	};
 	void Finish() final {
 		eIndex = 0;
+
+		// Xのイベントを処理
+		while (XPending(display)) {
+			XEvent e;
+			XNextEvent(display, &e);
+			switch (e.type) {
+			case DestroyNotify:
+			case UnmapNotify:
+				// 窓が閉じられたので終了
+				Quit();
+				break;
+			default:
+				break;
+			}
+		}
 
 		// 窓へ出力
 		glFinish();
