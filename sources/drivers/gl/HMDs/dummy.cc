@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 #include <tb/factory.h>
 #include <tb/input.h>
@@ -38,6 +39,7 @@ class DummyHMD : GLX {
 	unsigned eIndex;
 	tb::Matrix<4, 4, float> projection;
 	tb::Matrix<4, 4, float> view;
+	Atom wmDeleteNotify;
 
 	struct F : tb::Factory<Core> {
 		uint Score(const tb::Factory<Core>::Param*) final {
@@ -59,7 +61,8 @@ class DummyHMD : GLX {
 					 1,
 					 BlackPixel(display, screen),
 					 BlackPixel(display, screen))),
-		  eIndex(0) {
+		  eIndex(0),
+		  wmDeleteNotify(XInternAtom(display, "WM_DELETE_WINDOW", False)) {
 		XSelectInput(
 			display,
 			window,
@@ -73,6 +76,9 @@ class DummyHMD : GLX {
 			0,
 			0,
 			0);
+		// WondowManagerが勝手に窓を閉じる前に通知させる
+		XSetWMProtocols(display, window, &wmDeleteNotify, 1);
+
 		XMapWindow(display, window);
 		SetDrawable(window);
 
@@ -104,9 +110,14 @@ class DummyHMD : GLX {
 			XNextEvent(display, &e);
 			switch (e.type) {
 			case DestroyNotify:
-			case UnmapNotify:
 				// 窓が閉じられたので終了
 				Quit();
+				break;
+			case ClientMessage:
+				// WMが窓を閉じようとしている
+				if ((Atom)e.xclient.data.l[0] == wmDeleteNotify) {
+					Quit();
+				}
 				break;
 			default:
 				break;
