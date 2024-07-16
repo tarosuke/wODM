@@ -1,7 +1,8 @@
-﻿#include <unistd.h>
+﻿#include <tb/test.h>
+#include <unistd.h>
 
 
 int main() {
-	execl("DEBUG/wODM", "wODM", "--GLDummyHMD=true");
+	assert(0 <= execl("DEBUG/wODM", "wODM", "--GLDummyHMD=true"));
 	return -1;
 }
