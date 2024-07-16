@@ -23,13 +23,8 @@
 
 
 
-// コマンドラインオプション--scenery
-tb::Prefs<tb::String>
-	Scenery::path("--scenery", "背景画像のパス(画像の銃横比で種類を推定)");
-
-tb::Factory<Scenery> Scenery::factory;
-Scenery* Scenery::instance;
 template <> tb::Factory<Scenery>* tb::Factory<Scenery>::start(0);
+Scenery* Scenery::instance;
 
 
 Scenery::Scenery(
@@ -37,14 +32,17 @@ Scenery::Scenery(
 	: Model_C(params, image) {}
 
 Scenery* Scenery::New(const std::filesystem::path& path) {
+	if (path.empty()) {
+		return 0;
+	}
 	try {
 		// Imageを読む
 		tb::Canvas canvas(path);
 		tb::Canvas::Image image(canvas);
 		Param param(image);
 
-		// Imageに対応するSceteryをnewする
-		Scenery* const s(factory.Create(&param));
+		// Imageに対応するSceneryをnewする
+		Scenery* const s(Factory::Create(&param));
 
 		// 取得てきたら入れ替える
 		if (s) {

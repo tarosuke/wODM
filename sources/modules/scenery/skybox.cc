@@ -28,36 +28,32 @@
 #define elementsOf(a) (sizeof(a) / sizeof(a[0]))
 
 
+
 class Skybox : public Scenery {
 
 	Skybox(const Params& params, const tb::Image<tb::Pixel<tb::u8>>& image)
-		: Scenery(params, image){};
+		: Scenery(params, image) {};
 
 	static constexpr int scale = 5000;
-	struct Factory : tb::Factory<Scenery> {
-		Scenery* New(const Param*) final;
-		unsigned Score(const Param* param) final {
-			const Scenery::Param* const p(
-				dynamic_cast<const Scenery::Param*>(param));
-			assert(p);
-
-			const unsigned w(p->image.Width());
-			const unsigned h(p->image.Height());
-			if (!w || !h) {
-				return 0;
-			}
-			const float r((3.0 * w) / (4.0 * h));
-			const float d(1.0 - r);
-			return 65536 / (d * d + 1);
-		};
+	struct F : Scenery::Factory {
+		Scenery* New() final;
+		uint Score() final;
 	};
-	static Factory factory;
+	static F factory;
 	static unsigned indexes[];
 	static GL::VBO::V_UV vertexes[];
+	static tb::Prefs<tb::String> path;
+	static const tb::Pixel<tb::u8> defaultTexture[8][8];
+	static constexpr tb::u32 bc = 0x00101020;
+	static constexpr tb::u32 fc = 0x00404060;
 };
 
+// コマンドラインオプション--skybox
+tb::Prefs<tb::String> Skybox::path("--skybox", "背景にスカイボックスを使う");
 
-Skybox::Factory Skybox::factory;
+
+
+Skybox::F Skybox::factory;
 
 unsigned Skybox::indexes[] = {
 	0,	2,	1, 2,  3,  1, // left
@@ -92,16 +88,44 @@ GL::VBO::V_UV Skybox::vertexes[] = {
 	{{scale, -scale, -scale}, {3.0 / 4, 3.0 / 3}},
 };
 
-Scenery* Skybox::Factory::New(const tb::Factory<Scenery>::Param* param) {
-	const Scenery::Param* const p(dynamic_cast<const Scenery::Param*>(param));
-	assert(p);
+uint Skybox::F::Score() {
+	if (!((std::string)path).size()) {
+		// 他に何も指定されていなければこれが選択される
+		return (uint)Certitude::passiveMatch;
+	}
+	return 0U;
+};
 
-	const Params params = {
-		numOfIndex : elementsOf(Skybox::indexes),
-		index : Skybox::indexes,
-		numOfVertex : elementsOf(Skybox::vertexes),
-		vertex : Skybox::vertexes
-	};
+Scenery* Skybox::F::New() {
+	if (!((std::string)path).size()) {
+		/** 背景が何も選択されなかったので最小限の背景になる
+		 * 即ち、中央に十字の線が入った小さいテクスチャの繰り返しを使う
+		 * 一マスに入る線をn本とするとU/V座標を横4n倍、縦3n倍にする
+		 */
+		const Params params = {
+			numOfIndex : elementsOf(Skybox::indexes),
+			index : Skybox::indexes,
+			numOfVertex : elementsOf(Skybox::vertexes),
+			vertex : Skybox::vertexes
+		};
+		const tb::Image<tb::Pixel<tb::u8>> image((void*)defaultTexture, 8, 8);
+		return new Skybox(params, image);
+	}
 
-	return new Skybox(params, p->image);
+	return 0;
+};
+
+
+
+/***** デフォルトのテクスチャ
+ */
+const tb::Pixel<tb::u8> Skybox::defaultTexture[8][8] = {
+	{bc, bc, bc, fc, fc, bc, bc, bc},
+	{bc, bc, bc, fc, fc, bc, bc, bc},
+	{bc, bc, bc, fc, fc, bc, bc, bc},
+	{fc, fc, fc, fc, fc, fc, fc, fc},
+	{fc, fc, fc, fc, fc, fc, fc, fc},
+	{bc, bc, bc, fc, fc, bc, bc, bc},
+	{bc, bc, bc, fc, fc, bc, bc, bc},
+	{bc, bc, bc, fc, fc, bc, bc, bc},
 };

@@ -130,10 +130,8 @@ class DummyHMD : GLX {
 
 	static tb::Prefs<bool> useDummyHMD;
 	static class Factory : tb::Factory<Core> {
-		uint Score(const tb::Factory<Core>::Param*) {
-			return DummyHMD::useDummyHMD ? 1 : 0;
-		};
-		Core* New(const tb::Factory<Core>::Param*) { return new DummyHMD; };
+		uint Score() { return DummyHMD::useDummyHMD ? 1 : 0; };
+		Core* New() { return new DummyHMD; };
 	} factory;
 };
 

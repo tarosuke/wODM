@@ -37,10 +37,11 @@ class Scenery : public Model_C {
 	void operator=(const Scenery&) = delete;
 
 public:
+	using Factory = tb::Factory<Scenery>;
 	Scenery* New(const std::filesystem::path& path);
 
-	struct Param : tb::Factory<Scenery>::Param {
-		Param(tb::Image<tb::Pixel<tb::u8>>& image) : image(image){};
+	struct Param : Factory::Param {
+		Param(tb::Image<tb::Pixel<tb::u8>>& image) : image(image) {};
 		tb::Image<tb::Pixel<tb::u8>>& image;
 	};
 
@@ -48,7 +49,5 @@ protected:
 	Scenery(const Params&, const tb::Image<tb::Pixel<tb::u8>>&);
 
 private:
-	static tb::Factory<Scenery> factory;
-	static tb::Prefs<tb::String> path;
 	static Scenery* instance;
 };
