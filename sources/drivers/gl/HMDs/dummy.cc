@@ -18,6 +18,7 @@
  */
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <syslog.h>
 
 #include <tb/factory.h>
 #include <tb/input.h>
@@ -86,7 +87,7 @@ class DummyHMD : GLX {
 
 		glMatrixMode(GL_PROJECTION);
 		glFrustum(-w, w, -h, h, near, far);
-		glGetFloatv(GL_PROJECTION, projection);
+		glGetFloatv(GL_PROJECTION_MATRIX, projection);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
