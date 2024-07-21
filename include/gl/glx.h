@@ -51,6 +51,11 @@ protected:
 	void SetDrawable(Drawable d) {
 		drawable = d;
 		glXMakeCurrent(display, drawable, context);
+
+		// glew初期化
+		if (GLEW_OK != glewInit()) {
+			throw "GLEWが使えません";
+		}
 	};
 
 private:
