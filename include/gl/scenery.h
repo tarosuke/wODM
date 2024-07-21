@@ -38,7 +38,17 @@ class Scenery : public Model_C {
 
 public:
 	using Factory = tb::Factory<Scenery>;
-	Scenery* New(const std::filesystem::path& path);
+	static Scenery* New(const std::filesystem::path* path = 0);
+	static void DrawAll() {
+		if (instance) {
+			instance->Draw();
+		}
+	};
+	static void UpdateAll() {
+		if (instance) {
+			instance->Update();
+		}
+	};
 
 	struct Param : Factory::Param {
 		Param(tb::Image<tb::Pixel<tb::u8>>& image) : image(image) {};
@@ -47,7 +57,9 @@ public:
 
 protected:
 	Scenery(const Params&, const tb::Image<tb::Pixel<tb::u8>>&);
+	virtual void Update() {};
 
 private:
 	static Scenery* instance;
+	static void UpdateInstance(Scenery*) noexcept(false);
 };

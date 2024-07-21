@@ -38,6 +38,8 @@ class Skybox : public Scenery {
 	struct F : Scenery::Factory {
 		Scenery* New() final;
 		uint Score() final;
+		Scenery* New(const Param*) final { return 0; };
+		uint Score(const Param*) final { return 0; };
 	};
 	static F factory;
 	static unsigned indexes[];
@@ -91,7 +93,7 @@ GL::VBO::V_UV Skybox::vertexes[] = {
 uint Skybox::F::Score() {
 	if (!((std::string)path).size()) {
 		// 他に何も指定されていなければこれが選択される
-		return (uint)Certitude::passiveMatch;
+		return Certitude::passiveMatch;
 	}
 	return 0U;
 };

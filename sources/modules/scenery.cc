@@ -31,29 +31,32 @@ Scenery::Scenery(
 	const Params& params, const tb::Image<tb::Pixel<tb::u8>>& image)
 	: Model_C(params, image) {}
 
-Scenery* Scenery::New(const std::filesystem::path& path) {
-	if (path.empty()) {
-		return 0;
-	}
+Scenery* Scenery::New(const std::filesystem::path* path) {
 	try {
-		// Imageを読む
-		tb::Canvas canvas(path);
-		tb::Canvas::Image image(canvas);
-		Param param(image);
+		if (!path) {
+			UpdateInstance(Factory::Create());
+		} else {
+			// Imageを読む
+			tb::Canvas canvas(*path);
+			tb::Canvas::Image image(canvas);
+			Param param(image);
 
-		// Imageに対応するSceneryをnewする
-		Scenery* const s(Factory::Create(&param));
-
-		// 取得てきたら入れ替える
-		if (s) {
-			if (instance) {
-				delete instance;
-			}
-			instance = s;
-			syslog(LOG_INFO, "new scenery was activated:");
+			// Imageに対応するSceneryをnewする
+			UpdateInstance(Factory::Create(&param));
 		}
 	} catch (const char* m) { syslog(LOG_ERR, "%s", m); } catch (...) {
 		syslog(LOG_ERR, "Unknown exception:" __FILE__ "(%d)", __LINE__);
 	}
 	return 0;
+}
+
+void Scenery::UpdateInstance(Scenery* s) {
+	if (!s) {
+		throw "empty scenery";
+	}
+	if (instance) {
+		delete instance;
+	}
+	instance = s;
+	syslog(LOG_INFO, "new scenery was activated:");
 }

@@ -145,7 +145,7 @@ namespace GL {
 	// UV付きVBO
 	class VBO_NORMAL : public VBO {
 	public:
-		VBO_NORMAL(const Init& i) : VBO(i){};
+		VBO_NORMAL(const Init& i) : VBO(i) {};
 		void Draw() override {
 			// インデックスバッファを有効化
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);

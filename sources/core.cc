@@ -18,6 +18,7 @@
  */
 #include "core.h"
 #include "gl/gl.h"
+#include "gl/scenery.h"
 #include "widget.h"
 #include <assert.h>
 #include <tb/time.h>
@@ -46,7 +47,7 @@ void Core::Run() {
 			// Stickies::DrawAll();
 			Widget::DrawAll();
 			// World::DrawAll();
-			// Scenary::Draw();
+			Scenery::DrawAll();
 			// World::TrawAll();
 			Widget::TrawAll();
 			// Stickies::TrawAll();
