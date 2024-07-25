@@ -27,7 +27,7 @@
 
 struct wODM : tb::App {
 	int Main(uint, const char**) {
-		syslog(LOG_CRIT, "stari wODM.");
+		syslog(LOG_CRIT, "start wODM.");
 		Core* const core(Core::New());
 		if (core) {
 			Scenery::New();

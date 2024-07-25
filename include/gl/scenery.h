@@ -21,12 +21,14 @@
 #pragma once
 
 #include <filesystem>
+#include <syslog.h>
 
 #include <tb/factory.h>
 #include <tb/image.h>
 #include <tb/prefs.h>
 #include <tb/string.h>
 
+#include "gl/gl.h"
 #include "model.h"
 
 
@@ -41,7 +43,13 @@ public:
 	static Scenery* New(const std::filesystem::path* path = 0);
 	static void DrawAll() {
 		if (instance) {
+			glColor3f(1, 1, 1);
+			glDisable(GL_CULL_FACE);
 			instance->Draw();
+			glEnable(GL_CULL_FACE);
+			if (const auto e = glGetError()) {
+				syslog(LOG_ERR, "%s:%u(%x).", __FILE__, __LINE__, e);
+			}
 		}
 	};
 	static void UpdateAll() {

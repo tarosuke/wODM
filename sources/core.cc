@@ -21,6 +21,8 @@
 #include "gl/scenery.h"
 #include "widget.h"
 #include <assert.h>
+#include <stdio.h>
+#include <syslog.h>
 #include <tb/time.h>
 
 
@@ -42,14 +44,14 @@ void Core::Run() {
 		// World::UpdateAll();
 		// Scenary::UpdateAll();
 
-
 		while (NextEye()) {
 			// Stickies::DrawAll();
-			Widget::DrawAll();
+			// Widget::DrawAll();
 			// World::DrawAll();
+			// glMatrixMode(GL_MODELVIEW);
 			Scenery::DrawAll();
 			// World::TrawAll();
-			Widget::TrawAll();
+			// Widget::TrawAll();
 			// Stickies::TrawAll();
 		}
 

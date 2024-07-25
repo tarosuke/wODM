@@ -31,7 +31,7 @@ int GLX::defaultAttributes[] = {
 	GLX_LEVEL,
 	0,
 	GLX_RGBA,
-	GLX_DOUBLEBUFFER,
+	// GLX_DOUBLEBUFFER,
 	GLX_RED_SIZE,
 	8,
 	GLX_GREEN_SIZE,

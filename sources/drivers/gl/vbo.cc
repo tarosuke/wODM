@@ -163,7 +163,13 @@ namespace GL {
 			glNormalPointer(GL_FLOAT, stride, &(*(V_UV_NORMAL*)0).normal);
 
 			// 描画
+			if (const auto e = glGetError()) {
+				syslog(LOG_ERR, "%s:%u(%x).", __FILE__, __LINE__, e);
+			}
 			glDrawElements(drawType, numOfVertex, GL_UNSIGNED_INT, (void*)0);
+			if (const auto e = glGetError()) {
+				syslog(LOG_ERR, "%s:%u(%x).", __FILE__, __LINE__, e);
+			}
 
 			// 後始末
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

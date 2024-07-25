@@ -45,6 +45,8 @@ class Skybox : public Scenery {
 	static unsigned indexes[];
 	static GL::VBO::V_UV vertexes[];
 	static tb::Prefs<tb::String> path;
+	static constexpr int defaultTextureScale = 3;
+	static GL::VBO::V_UV defaultVertexes[];
 	static const tb::Pixel<tb::u8> defaultTexture[8][8];
 	static constexpr tb::u32 bc = 0x00101020;
 	static constexpr tb::u32 fc = 0x00404060;
@@ -89,6 +91,43 @@ GL::VBO::V_UV Skybox::vertexes[] = {
 	{{-scale, -scale, -scale}, {4.0 / 4, 3.0 / 3}},
 	{{scale, -scale, -scale}, {3.0 / 4, 3.0 / 3}},
 };
+GL::VBO::V_UV Skybox::defaultVertexes[] = {
+	// 0:左後方
+	{{-scale, scale, scale},
+	 {0.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
+	{{-scale, -scale, scale},
+	 {0.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
+	// 2:左前方
+	{{-scale, scale, -scale},
+	 {1.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
+	{{-scale, -scale, -scale},
+	 {1.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
+	// 4:右前方
+	{{scale, scale, -scale},
+	 {2.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
+	{{scale, -scale, -scale},
+	 {2.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
+	// 6:右後方
+	{{scale, scale, scale},
+	 {3.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
+	{{scale, -scale, scale},
+	 {3.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
+	// 8:左後方(後方テクスチャ用)
+	{{-scale, scale, scale},
+	 {4.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
+	{{-scale, -scale, scale},
+	 {4.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
+	// 10:上後方左右
+	{{-scale, scale, scale},
+	 {1.0 * defaultTextureScale, 0.0 * defaultTextureScale}},
+	{{scale, scale, scale},
+	 {2.0 * defaultTextureScale, 0.0 * defaultTextureScale}},
+	// 12:下後方左右
+	{{-scale, -scale, -scale},
+	 {4.0 * defaultTextureScale, 3.0 * defaultTextureScale}},
+	{{scale, -scale, -scale},
+	 {3.0 * defaultTextureScale, 3.0 * defaultTextureScale}},
+};
 
 uint Skybox::F::Score() {
 	if (!((std::string)path).size()) {
@@ -107,8 +146,8 @@ Scenery* Skybox::F::New() {
 		const Params params = {
 			numOfIndex : elementsOf(Skybox::indexes),
 			index : Skybox::indexes,
-			numOfVertex : elementsOf(Skybox::vertexes),
-			vertex : Skybox::vertexes
+			numOfVertex : elementsOf(Skybox::defaultVertexes),
+			vertex : Skybox::defaultVertexes
 		};
 		const tb::Image<tb::Pixel<tb::u8>> image((void*)defaultTexture, 8, 8);
 		return new Skybox(params, image);
