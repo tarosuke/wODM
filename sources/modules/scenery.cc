@@ -24,16 +24,18 @@
 
 
 template <> tb::Factory<Scenery>* tb::Factory<Scenery>::start(0);
-Scenery* Scenery::instance;
+Scenery* Scenery::stack(0);
 
 
 Scenery::Scenery(
 	const Params& params, const tb::Image<tb::Pixel<tb::u8>>& image)
-	: Model_C(params, image) {}
+	: Model_C(params, image), next(stack) {
+	stack = this;
+}
 
 Scenery* Scenery::New(const std::filesystem::path* path) {
 	try {
-		if (!path) {
+		if (!path || !path->string().size()) {
 			UpdateInstance(Factory::Create());
 		} else {
 			// Imageを読む
@@ -54,9 +56,5 @@ void Scenery::UpdateInstance(Scenery* s) {
 	if (!s) {
 		throw "empty scenery";
 	}
-	if (instance) {
-		delete instance;
-	}
-	instance = s;
 	syslog(LOG_INFO, "new scenery was activated:");
 }

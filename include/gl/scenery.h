@@ -42,10 +42,11 @@ public:
 	using Factory = tb::Factory<Scenery>;
 	static Scenery* New(const std::filesystem::path* path = 0);
 	static void DrawAll() {
-		if (instance) {
+		if (stack) {
+			// Allと言いつつstackのtopだけ描画
 			glColor3f(1, 1, 1);
 			glDisable(GL_CULL_FACE);
-			instance->Draw();
+			stack->Draw();
 			glEnable(GL_CULL_FACE);
 			if (const auto e = glGetError()) {
 				syslog(LOG_ERR, "%s:%u(%x).", __FILE__, __LINE__, e);
@@ -53,8 +54,9 @@ public:
 		}
 	};
 	static void UpdateAll() {
-		if (instance) {
-			instance->Update();
+		if (stack) {
+			// Allと言いつつスタックトップだけが対象
+			stack->Update();
 		}
 	};
 
@@ -65,9 +67,11 @@ public:
 
 protected:
 	Scenery(const Params&, const tb::Image<tb::Pixel<tb::u8>>&);
+	~Scenery() { stack = next; }
 	virtual void Update() {};
 
 private:
-	static Scenery* instance;
+	static Scenery* stack;
+	Scenery* const next;
 	static void UpdateInstance(Scenery*) noexcept(false);
 };
