@@ -20,14 +20,17 @@
 #include <syslog.h>
 #include <tb/app.h>
 
+#include "gl/scenery.h"
 #include <core.h>
 
 
 
 struct wODM : tb::App {
 	int Main(uint, const char**) {
+		syslog(LOG_CRIT, "start wODM.");
 		Core* const core(Core::New());
 		if (core) {
+			Scenery::New();
 			core->Run();
 			delete core;
 		} else {

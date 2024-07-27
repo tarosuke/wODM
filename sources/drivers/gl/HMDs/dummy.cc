@@ -18,6 +18,7 @@
  */
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <syslog.h>
 
 #include <tb/factory.h>
 #include <tb/input.h>
@@ -35,7 +36,8 @@
  */
 class DummyHMD : GLX {
 	static const tb::Spread<2, unsigned> size;
-	::Window window;
+	const int screen;
+	Window window;
 	unsigned eIndex;
 	tb::Matrix<4, 4, float> projection;
 	tb::Matrix<4, 4, float> view;
@@ -47,18 +49,21 @@ class DummyHMD : GLX {
 	};
 
 	DummyHMD()
-		: GLX(), window(XCreateSimpleWindow(
-					 display,
-					 RootWindow(display, screen),
-					 0,
-					 0,
-					 size[0],
-					 size[1],
-					 1,
-					 BlackPixel(display, screen),
-					 BlackPixel(display, screen))),
+		: GLX(), screen(DefaultScreen(display)),
+		  window(XCreateSimpleWindow(
+			  display,
+			  RootWindow(display, screen),
+			  0,
+			  0,
+			  size[0],
+			  size[1],
+			  1,
+			  BlackPixel(display, screen),
+			  BlackPixel(display, screen))),
 		  eIndex(0),
 		  wmDeleteNotify(XInternAtom(display, "WM_DELETE_WINDOW", False)) {
+		GLX::Setup(window);
+
 		XSelectInput(
 			display,
 			window,
@@ -76,17 +81,19 @@ class DummyHMD : GLX {
 		XSetWMProtocols(display, window, &wmDeleteNotify, 1);
 
 		XMapWindow(display, window);
-		SetDrawable(window);
 
 		static constexpr double near = 0.05;
 		static constexpr double far = 10000.0;
 		static constexpr double width = 1.0;
 		static constexpr double w = width * near;
-		static const double h = w * size[1] / size[1];
+		static const double h = w * size[1] / size[0];
+
+		glViewport(0, 0, size[0], size[1]);
 
 		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
 		glFrustum(-w, w, -h, h, near, far);
-		glGetFloatv(GL_PROJECTION, projection);
+		glGetFloatv(GL_PROJECTION_MATRIX, projection);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
@@ -95,7 +102,13 @@ class DummyHMD : GLX {
 
 	const tb::Matrix<4, 4, float>& Pose() { return view; };
 	const tb::Matrix<4, 4, float>* NextEye() final {
-		return (!!(eIndex = !eIndex) ? &projection : 0);
+		if (eIndex++) {
+			return 0;
+		}
+		glClearColor(0.2, 0.2, 0.2, 1);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+		return &projection;
 	};
 	void Finish() final {
 		eIndex = 0;
@@ -120,8 +133,12 @@ class DummyHMD : GLX {
 			}
 		}
 
-		// 窓へ出力
+// 窓へ出力
+#if 1
 		glFinish();
+#else
+		glXSwapBuffers(display, window);
+#endif
 	};
 
 	static tb::Prefs<bool> useDummyHMD;

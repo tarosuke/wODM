@@ -21,12 +21,14 @@
 #pragma once
 
 #include <filesystem>
+#include <syslog.h>
 
 #include <tb/factory.h>
 #include <tb/image.h>
 #include <tb/prefs.h>
 #include <tb/string.h>
 
+#include "gl/gl.h"
 #include "model.h"
 
 
@@ -38,7 +40,25 @@ class Scenery : public Model_C {
 
 public:
 	using Factory = tb::Factory<Scenery>;
-	Scenery* New(const std::filesystem::path& path);
+	static Scenery* New(const std::filesystem::path* path = 0);
+	static void DrawAll() {
+		if (stack) {
+			// Allと言いつつstackのtopだけ描画
+			glColor3f(1, 1, 1);
+			glDisable(GL_CULL_FACE);
+			stack->Draw();
+			glEnable(GL_CULL_FACE);
+			if (const auto e = glGetError()) {
+				syslog(LOG_ERR, "%s:%u(%x).", __FILE__, __LINE__, e);
+			}
+		}
+	};
+	static void UpdateAll() {
+		if (stack) {
+			// Allと言いつつスタックトップだけが対象
+			stack->Update();
+		}
+	};
 
 	struct Param : Factory::Param {
 		Param(tb::Image<tb::Pixel<tb::u8>>& image) : image(image) {};
@@ -47,7 +67,12 @@ public:
 
 protected:
 	Scenery(const Params&, const tb::Image<tb::Pixel<tb::u8>>&);
+	~Scenery() { stack = next; }
+	virtual void Update() {};
 
 private:
-	static Scenery* instance;
+	static Scenery* stack;
+	Scenery* const next;
+	static tb::Prefs<tb::String> path;
+	static void UpdateInstance(Scenery*) noexcept(false);
 };

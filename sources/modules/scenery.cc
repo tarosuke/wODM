@@ -24,36 +24,58 @@
 
 
 template <> tb::Factory<Scenery>* tb::Factory<Scenery>::start(0);
-Scenery* Scenery::instance;
+Scenery* Scenery::stack(0);
+
+// コマンドラインオプション--scenery
+tb::Prefs<tb::String> Scenery::path("--scenery", "背景指定");
 
 
 Scenery::Scenery(
 	const Params& params, const tb::Image<tb::Pixel<tb::u8>>& image)
-	: Model_C(params, image) {}
+	: Model_C(params, image), next(stack) {
+	stack = this;
+}
 
-Scenery* Scenery::New(const std::filesystem::path& path) {
-	if (path.empty()) {
-		return 0;
-	}
-	try {
-		// Imageを読む
-		tb::Canvas canvas(path);
-		tb::Canvas::Image image(canvas);
-		Param param(image);
-
-		// Imageに対応するSceneryをnewする
-		Scenery* const s(Factory::Create(&param));
-
-		// 取得てきたら入れ替える
-		if (s) {
-			if (instance) {
-				delete instance;
-			}
-			instance = s;
-			syslog(LOG_INFO, "new scenery was activated:");
+Scenery* Scenery::New(const std::filesystem::path* p) {
+	const char* pp(0);
+	if (p && p->string().size()) {
+		// パスが指定されている
+		pp = p->string().c_str();
+	} else {
+		const tb::String& ppp(path);
+		if (ppp.size()) {
+			// パスが設定されている
+			pp = ppp.c_str();
 		}
-	} catch (const char* m) { syslog(LOG_ERR, "%s", m); } catch (...) {
-		syslog(LOG_ERR, "Unknown exception:" __FILE__ "(%d)", __LINE__);
 	}
-	return 0;
+
+	if (pp) {
+		try {
+			// Imageを読んでParam型に格納
+			tb::Canvas canvas(pp);
+			tb::Canvas::Image image(canvas);
+			Param param(image);
+
+			// Imageに対応するSceneryをnewする
+			UpdateInstance(Factory::Create(&param));
+			syslog(LOG_INFO, "Scenery(%s) was activated.", pp);
+
+			return stack;
+		} catch (...) {
+			syslog(
+				LOG_WARNING,
+				"Failed to load scenery(%s). Falling back...",
+				pp);
+		}
+	}
+	// デフォルトを設定
+	UpdateInstance(Factory::Create());
+	return stack;
+}
+
+void Scenery::UpdateInstance(Scenery* s) {
+	if (!s) {
+		throw "empty scenery";
+	}
+	syslog(LOG_INFO, "new scenery was activated:");
 }

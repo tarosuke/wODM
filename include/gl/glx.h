@@ -30,33 +30,42 @@
 struct GLX : Core {
 	void operator=(const GLX&) = delete;
 
-	GLX(Drawable drawable = 0, int attributes[] = defaultAttributes)
-		: display(XOpenDisplay(0)), screen(DefaultScreen(display)),
-		  drawable(drawable ? drawable : DefaultRootWindow(display)) {
-		visual = glXChooseVisual(display, DefaultScreen(display), attributes);
-		context = glXCreateContext(display, visual, 0, True);
-	};
+	GLX() : display(XOpenDisplay(0)) {};
 
 	~GLX() {
+		glXMakeCurrent(display, None, 0);
 		XFree(visual);
-		glXMakeCurrent(display, None, 0); // コンテキスト解除
-		glXDestroyContext(display, context); // コンテキスト破棄
+		glXDestroyContext(display, context);
 		XSetCloseDownMode(display, DestroyAll);
 		XCloseDisplay(display);
 	};
 
 protected:
-	::Display* const display;
-	int screen;
-	void SetDrawable(Drawable d) {
-		drawable = d;
+	Display* const display;
+
+	void Setup(Drawable drawable, int attributes[] = defaultAttributes) {
+		visual = glXChooseVisual(display, DefaultScreen(display), attributes);
+		context = glXCreateContext(display, visual, 0, True);
 		glXMakeCurrent(display, drawable, context);
+
+		// glew初期化
+		if (GLEW_OK != glewInit()) {
+			throw "GLEWが使えません";
+		}
+
+		// 基本設定
+		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_POLYGON_SMOOTH);
+		glEnable(GL_CULL_FACE);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_TEXTURE_2D);
 	};
 
 private:
 	static int defaultAttributes[];
 
-	Drawable drawable;
 	XVisualInfo* visual;
 	GLXContext context;
 };
