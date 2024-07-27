@@ -26,6 +26,9 @@
 template <> tb::Factory<Scenery>* tb::Factory<Scenery>::start(0);
 Scenery* Scenery::stack(0);
 
+// コマンドラインオプション--scenery
+tb::Prefs<tb::String> Scenery::path("--scenery", "背景指定");
+
 
 Scenery::Scenery(
 	const Params& params, const tb::Image<tb::Pixel<tb::u8>>& image)
@@ -33,23 +36,41 @@ Scenery::Scenery(
 	stack = this;
 }
 
-Scenery* Scenery::New(const std::filesystem::path* path) {
-	try {
-		if (!path || !path->string().size()) {
-			UpdateInstance(Factory::Create());
-		} else {
-			// Imageを読む
-			tb::Canvas canvas(*path);
+Scenery* Scenery::New(const std::filesystem::path* p) {
+	const char* pp(0);
+	if (p && p->string().size()) {
+		// パスが指定されている
+		pp = p->string().c_str();
+	} else {
+		const tb::String& ppp(path);
+		if (ppp.size()) {
+			// パスが設定されている
+			pp = ppp.c_str();
+		}
+	}
+
+	if (pp) {
+		try {
+			// Imageを読んでParam型に格納
+			tb::Canvas canvas(pp);
 			tb::Canvas::Image image(canvas);
 			Param param(image);
 
 			// Imageに対応するSceneryをnewする
 			UpdateInstance(Factory::Create(&param));
+			syslog(LOG_INFO, "Scenery(%s) was activated.", pp);
+
+			return stack;
+		} catch (...) {
+			syslog(
+				LOG_WARNING,
+				"Failed to load scenery(%s). Falling back...",
+				pp);
 		}
-	} catch (const char* m) { syslog(LOG_ERR, "%s", m); } catch (...) {
-		syslog(LOG_ERR, "Unknown exception:" __FILE__ "(%d)", __LINE__);
 	}
-	return 0;
+	// デフォルトを設定
+	UpdateInstance(Factory::Create());
+	return stack;
 }
 
 void Scenery::UpdateInstance(Scenery* s) {

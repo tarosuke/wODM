@@ -73,5 +73,6 @@ protected:
 private:
 	static Scenery* stack;
 	Scenery* const next;
+	static tb::Prefs<tb::String> path;
 	static void UpdateInstance(Scenery*) noexcept(false);
 };

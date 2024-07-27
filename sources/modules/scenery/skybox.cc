@@ -18,6 +18,7 @@
  */
 
 #include <assert.h>
+#include <stdlib.h>
 #include <syslog.h>
 
 #include "gl/gl.h"
@@ -36,24 +37,22 @@ class Skybox : public Scenery {
 
 	static constexpr int scale = 5000;
 	struct F : Scenery::Factory {
+		// 画像指定なしの場合
 		Scenery* New() final;
 		uint Score() final;
-		Scenery* New(const Param*) final { return 0; };
-		uint Score(const Param*) final { return 0; };
+		// 画像が指定された場合
+		Scenery* New(const Param*) final;
+		uint Score(const Param*) final;
 	};
 	static F factory;
 	static unsigned indexes[];
 	static GL::VBO::V_UV vertexes[];
-	static tb::Prefs<tb::String> path;
 	static constexpr int defaultTextureScale = 3;
 	static GL::VBO::V_UV defaultVertexes[];
 	static const tb::Pixel<tb::u8> defaultTexture[8][8];
 	static constexpr tb::u32 bc = 0x00101020;
 	static constexpr tb::u32 fc = 0x00404060;
 };
-
-// コマンドラインオプション--skybox
-tb::Prefs<tb::String> Skybox::path("--skybox", "背景にスカイボックスを使う");
 
 
 
@@ -129,33 +128,45 @@ GL::VBO::V_UV Skybox::defaultVertexes[] = {
 	 {3.0 * defaultTextureScale, 3.0 * defaultTextureScale}},
 };
 
-uint Skybox::F::Score() {
-	if (!((std::string)path).size()) {
-		// 他に何も指定されていなければこれが選択される
-		return Certitude::passiveMatch;
-	}
-	return 0U;
-};
-
+// デフォルト背景
+uint Skybox::F::Score() { return Certitude::passiveMatch; };
 Scenery* Skybox::F::New() {
-	if (!((std::string)path).size()) {
-		/** 背景が何も選択されなかったので最小限の背景になる
-		 * 即ち、中央に十字の線が入った小さいテクスチャの繰り返しを使う
-		 * 一マスに入る線をn本とするとU/V座標を横4n倍、縦3n倍にする
-		 */
-		const Params params = {
-			numOfIndex : elementsOf(Skybox::indexes),
-			index : Skybox::indexes,
-			numOfVertex : elementsOf(Skybox::defaultVertexes),
-			vertex : Skybox::defaultVertexes
-		};
-		const tb::Image<tb::Pixel<tb::u8>> image((void*)defaultTexture, 8, 8);
-		return new Skybox(params, image);
-	}
-
-	return 0;
+	const Params params = {
+		numOfIndex : elementsOf(Skybox::indexes),
+		index : Skybox::indexes,
+		numOfVertex : elementsOf(Skybox::defaultVertexes),
+		vertex : Skybox::defaultVertexes
+	};
+	const tb::Image<tb::Pixel<tb::u8>> image((void*)defaultTexture, 8, 8);
+	return new Skybox(params, image);
 };
 
+// 指定画像を背景にする
+uint Skybox::F::Score(const Factory::Param* pp) {
+	const Scenery::Param* const p(dynamic_cast<const Scenery::Param*>(pp));
+	if (!p) {
+		return 0; // 型違いなので0を返す
+	}
+
+	// skyboxなので画像は4:3のはず
+	return abs((int)p->image.Height() * 4 - (int)p->image.Width() * 3) < 4
+			 ? Certitude::activeMatch
+			 : 0;
+}
+Scenery* Skybox::F::New(const Factory::Param* pp) {
+	const Scenery::Param* const p(dynamic_cast<const Scenery::Param*>(pp));
+	if (!p) {
+		return 0; // 型違いなので0を返す
+	}
+
+	const Params params = {
+		numOfIndex : elementsOf(Skybox::indexes),
+		index : Skybox::indexes,
+		numOfVertex : elementsOf(Skybox::vertexes),
+		vertex : Skybox::vertexes
+	};
+	return new Skybox(params, p->image);
+}
 
 
 /***** デフォルトのテクスチャ
