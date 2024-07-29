@@ -137,7 +137,7 @@ Scenery* Skybox::F::New() {
 		numOfVertex : elementsOf(Skybox::defaultVertexes),
 		vertex : Skybox::defaultVertexes
 	};
-	const tb::Image<tb::Pixel<tb::u8>> image((void*)defaultTexture, 8, 8);
+	const tb::Image<tb::Pixel<tb::u8>> image((void*)defaultTexture, 8, 8, 8);
 	return new Skybox(params, image);
 };
 
