@@ -20,8 +20,11 @@
 #include <X11/Xutil.h>
 #include <syslog.h>
 
+#undef Complex
+#include <tb/complex.h>
 #include <tb/factory.h>
 #include <tb/input.h>
+#include <tb/linux/input.h>
 #include <tb/prefs.h>
 
 #include "core.h"
@@ -34,7 +37,7 @@
  * 単眼、小さめの窓を作ってそこへ出力
  * 開発が進むと使わなくなるんだろうが、VRHMDの脱着を繰り返す面倒を回避する。
  */
-class DummyHMD : GLX {
+class DummyHMD : GLX, tb::linux::Input {
 	static const tb::Spread<2, unsigned> size;
 	const int screen;
 	Window window;
@@ -100,7 +103,10 @@ class DummyHMD : GLX {
 		view.Identity();
 	};
 
-	const tb::Matrix<4, 4, float>& Pose() { return view; };
+	const tb::Matrix<4, 4, float>& Pose() {
+		GetInput();
+		return view;
+	};
 	const tb::Matrix<4, 4, float>* NextEye() final {
 		if (eIndex++) {
 			return 0;
@@ -148,6 +154,27 @@ class DummyHMD : GLX {
 		};
 		Core* New() { return new DummyHMD; };
 	} factory;
+
+	void OnAbsMoved(const tb::Timestamp&, const AxisReport& a) final {
+		if (a.moved & 0x18) {
+			// 右スティッが動かされた
+			const float angle[3] = {(float)a.value[4], (float)a.value[3], 0};
+			tb::Complex<4, float> qon(angle, M_PI / 32769);
+			view = qon;
+
+#if 0
+			printf("%5f; %+5f %+5f %+5f\n", qon[0], qon[1], qon[2], qon[3]);
+#endif
+#if 0
+			for (unsigned r(0); r < 4; ++r) {
+				for (unsigned c(0); c < 4; ++c) {
+					printf("%s%+5f ", !c ? " " : "", view[r][c]);
+				}
+			}
+			puts("");
+#endif
+		}
+	};
 };
 
 
