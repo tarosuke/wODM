@@ -45,10 +45,12 @@ void Core::Run() {
 		// Scenary::UpdateAll();
 
 		while (NextEye()) {
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
 			// Stickies::DrawAll();
 			// Widget::DrawAll();
+			glLoadMatrixf(pose);
 			// World::DrawAll();
-			// glMatrixMode(GL_MODELVIEW);
 			Scenery::DrawAll();
 			// World::TrawAll();
 			// Widget::TrawAll();
