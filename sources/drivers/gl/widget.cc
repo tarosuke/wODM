@@ -19,9 +19,10 @@
 #include "widget.h"
 #include "core.h"
 #include "gl/gl.h"
+#include <math.h>
 
 
-#include <stdio.h>
+
 tb::Prefs<float> Widget::vDistance(
 	"widget/virtualDistance", 1.0f, "一番手前のWidgetが見える奥行き");
 tb::Prefs<float> Widget::scale("widget/scale", 0.001f, "1pxのサイズ");
@@ -33,15 +34,15 @@ tb::Matrix<4, 4, float> Widget::view;
 void Widget::UpdateAll(const tb::Matrix<4, 4, float>& pose) {
 	// lookingPoint算出
 	const tb::Vector<3, float> fv((const float[3]){0.0f, 0.0f, 1.0f});
-	const tb::Vector<3, float> lv(pose * fv);
+	const tb::Vector<3, float> lv(pose * fv + fv);
 	const tb::Vector<3, float> lp(lv * (float)vDistance / lv[2]);
-	lookingPoint[0] = lp[0];
-	lookingPoint[1] = lp[1];
+	if (isfinite(lp[0]) && isfinite(lp[1])) {
+		lookingPoint[0] = lp[0];
+		lookingPoint[1] = lp[1];
+	}
 
 	// WidgetのUpdate
 	root.Foreach(&Widget::Update);
-
-	printf("%+4f %+4f\n", lookingPoint[0], lookingPoint[1]);
 }
 
 
