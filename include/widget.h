@@ -20,6 +20,7 @@
 
 #include <tb/list.h>
 #include <tb/matrix.h>
+#include <tb/prefs.h>
 #include <tb/rect.h>
 #include <tb/time.h>
 
@@ -33,12 +34,17 @@ struct Widget {
 	static const tb::Vector<2, float>& LookingPoint() { return lookingPoint; };
 
 protected:
-	virtual void Update(){};
-	virtual void Draw(){}; // TODO:クリッピング領域を引数に渡す
-	virtual void Traw(){};
+	virtual void Update() {};
+	virtual void Draw() {};
+	virtual void Traw() {};
+	virtual void Draw(const tb::Rect<2, int>&) {};
+	virtual void Traw(const tb::Rect<2, int>&) {};
 
 private:
+	static tb::Prefs<float> vDistance;
+	static tb::Prefs<float> scale;
 	static tb::List<Widget> root;
 	static tb::Vector<2, float> lookingPoint;
+	static tb::Matrix<4, 4, float> view;
 	tb::List<Widget> children;
 };

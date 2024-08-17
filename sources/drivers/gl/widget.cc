@@ -19,39 +19,40 @@
 #include "widget.h"
 #include "core.h"
 #include "gl/gl.h"
-#include <tb/list.h>
-#include <tb/matrix.h>
-#include <tb/prefs.h>
-#include <tb/time.h>
 
 
-
-namespace {
-	tb::Prefs<float> vDistance("widget/virtualDistance", 1.0f);
-}
-
+#include <stdio.h>
+tb::Prefs<float> Widget::vDistance(
+	"widget/virtualDistance", 1.0f, "一番手前のWidgetが見える奥行き");
+tb::Prefs<float> Widget::scale("widget/scale", 0.001f, "1pxのサイズ");
 
 tb::List<Widget> Widget::root;
 tb::Vector<2, float> Widget::lookingPoint;
+tb::Matrix<4, 4, float> Widget::view;
 
 void Widget::UpdateAll(const tb::Matrix<4, 4, float>& pose) {
 	// lookingPoint算出
 	const tb::Vector<3, float> fv((const float[3]){0.0f, 0.0f, 1.0f});
 	const tb::Vector<3, float> lv(pose * fv);
-	const tb::Vector<3, float> lp(lv * vDistance / lv[2]);
+	const tb::Vector<3, float> lp(lv * (float)vDistance / lv[2]);
 	lookingPoint[0] = lp[0];
 	lookingPoint[1] = lp[1];
 
 	// WidgetのUpdate
 	root.Foreach(&Widget::Update);
+
+	printf("%+4f %+4f\n", lookingPoint[0], lookingPoint[1]);
 }
 
 
 void Widget::DrawAll() {
-	// TODO:View行列設定
+	glLoadIdentity();
+	glTranslatef(-lookingPoint[0], -lookingPoint[1], 0);
+	glScalef(scale, (float)scale, 1);
+	glGetFloatv(GL_MODELVIEW_MATRIX, view);
 	root.Foreach(&Widget::Draw);
 }
 void Widget::TrawAll() {
-	// TODO:View行列設定
+	glLoadMatrixf(view);
 	root.Reveach(&Widget::Traw);
 }
