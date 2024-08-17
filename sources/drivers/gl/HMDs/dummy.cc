@@ -163,6 +163,9 @@ class DummyHMD : GLX, tb::linux::Input {
 			view = qon;
 
 #if 0
+			printf("%+6d %+6d\n", a.value[3], a.value[4]);
+#endif
+#if 0
 			printf("%5f; %+5f %+5f %+5f\n", qon[0], qon[1], qon[2], qon[3]);
 #endif
 #if 0
