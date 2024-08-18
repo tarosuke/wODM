@@ -38,4 +38,4 @@ struct wODM : tb::App {
 		}
 		return 0;
 	};
-} waodm;
+} wodm;

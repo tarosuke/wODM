@@ -57,3 +57,54 @@ void Widget::TrawAll() {
 	glLoadMatrixf(view);
 	root.Reveach(&Widget::Traw);
 }
+
+
+void Widget::Update() {
+	OnUpdate();
+	children.Foreach(&Widget::Update);
+}
+void Widget::Draw() { children.Foreach(&Widget::Draw); }
+void Widget::Traw() { children.Reveach(&Widget::Traw); }
+void Widget::Draw(const tb::Rect<2, int>& r) {
+	children.Foreach(&Widget::Draw, r);
+}
+void Widget::Traw(const tb::Rect<2, int>& r) {
+	children.Reveach(&Widget::Traw, r);
+}
+
+
+///// RectWidget
+void RectWidget::Jump(const tb::Vector<2, int>& d) {
+	leftTop += d;
+	rect += d;
+}
+tb::Prefs<unsigned>
+	RectWidget::moveRatio("RectWidget/MoveRatio", 5, "Widget移動速度の係数");
+void RectWidget::Update() {
+	// 移動処理
+	if (const auto d = ((target - leftTop).Norm2())) {
+		// 目標店まで差があるので移動
+		if (d < (int)(moveRatio * moveRatio)) {
+			JumpTo(target);
+		} else {
+			Jump(d / moveRatio);
+		}
+	}
+
+	// 子要素にも適用
+	Widget::Update();
+}
+void RectWidget::Draw() { Widget::Draw(rect); }
+void RectWidget::Traw() { Widget::Traw(rect); }
+void RectWidget::Draw(const tb::Rect<2, int>& r) {
+	const tb::Rect<2, int> rr(r & rect);
+	if (rr) {
+		Widget::Draw(rr);
+	}
+}
+void RectWidget::Traw(const tb::Rect<2, int>& r) {
+	const tb::Rect<2, int> rr(r & rect);
+	if (rr) {
+		Widget::Traw(rr);
+	}
+}
