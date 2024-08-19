@@ -30,18 +30,22 @@
 
 
 struct Widget : tb::List<Widget>::Node {
+	static void RegisterRoot(Widget& w) { roots.Insert(w); };
 	static void UpdateAll(const tb::Matrix<4, 4, float>&);
 	static void DrawAll();
 	static void TrawAll();
-
-	static const tb::Vector<2, float>& LookingPoint() { return lookingPoint; };
 
 	// その他操作
 	void SetVisibility(bool v) { visible = v; };
 
 protected:
 	Widget() : parent(0), visible(true) {};
-	void Register(Widget& w) { children.Insert(w); };
+	virtual ~Widget() {};
+	void Register(Widget& w) {
+		if (Widget* const r = Root()) {
+			r->Insert(w);
+		}
+	};
 
 	// ユーザ向けハンドラ
 	virtual void OnUpdate() {};
@@ -56,12 +60,17 @@ protected:
 private:
 	static tb::Prefs<float> vDistance;
 	static tb::Prefs<float> scale;
-	static tb::List<Widget> root;
+	static tb::List<Widget> roots;
 	static tb::Vector<2, float> lookingPoint;
 	static tb::Matrix<4, 4, float> view;
+	static Widget* Root() { return roots.Top(); };
+
 	Widget* parent;
 	tb::List<Widget> children;
 	bool visible;
+
+	// つながってるリストがなくなったら一緒に消滅
+	void NotifyListDeleted() final { delete this; };
 };
 
 
