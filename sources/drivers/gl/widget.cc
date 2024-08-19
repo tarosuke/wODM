@@ -31,6 +31,14 @@ tb::List<Widget> Widget::roots;
 tb::Vector<2, float> Widget::lookingPoint;
 tb::Matrix<4, 4, float> Widget::view;
 
+
+void Widget::RegisterRoot(Widget& w) {
+	for (auto r : roots) {
+		r->SetVisibility(false);
+	}
+	roots.Insert(w);
+}
+
 void Widget::UpdateAll(const tb::Matrix<4, 4, float>& pose) {
 	// lookingPoint算出
 	const tb::Vector<3, float> fv((const float[3]){0.0f, 0.0f, 1.0f});
@@ -42,9 +50,7 @@ void Widget::UpdateAll(const tb::Matrix<4, 4, float>& pose) {
 	}
 
 	// WidgetのUpdate
-	if (Widget* const r = Root()) {
-		r->children.Foreach(&Widget::Update);
-	}
+	Root().children.Foreach(&Widget::Update);
 }
 
 
@@ -53,15 +59,11 @@ void Widget::DrawAll() {
 	glTranslatef(-lookingPoint[0], -lookingPoint[1], 0);
 	glScalef(scale, (float)scale, 1);
 	glGetFloatv(GL_MODELVIEW_MATRIX, view);
-	if (Widget* const r = Root()) {
-		r->children.Foreach(&Widget::Draw);
-	}
+	Root().children.Foreach(&Widget::Draw);
 }
 void Widget::TrawAll() {
 	glLoadMatrixf(view);
-	if (Widget* const r = Root()) {
-		r->children.Reveach(&Widget::Traw);
-	}
+	Root().children.Reveach(&Widget::Traw);
 }
 
 
