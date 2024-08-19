@@ -30,7 +30,7 @@
 
 
 struct Widget : tb::List<Widget>::Node {
-	static void RegisterRoot(Widget& w) { roots.Insert(w); };
+	static void RegisterRoot(Widget& w);
 	static void UpdateAll(const tb::Matrix<4, 4, float>&);
 	static void DrawAll();
 	static void TrawAll();
@@ -63,7 +63,7 @@ private:
 	static tb::List<Widget> roots;
 	static tb::Vector<2, float> lookingPoint;
 	static tb::Matrix<4, 4, float> view;
-	static Widget* Root() { return roots.Top(); };
+	static Widget& Root(); // NOTE:これの実体はwodm.ccにある
 
 	Widget* parent;
 	tb::List<Widget> children;
