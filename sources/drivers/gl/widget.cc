@@ -27,7 +27,7 @@ tb::Prefs<float> Widget::vDistance(
 	"widget/virtualDistance", 1.0f, "一番手前のWidgetが見える奥行き");
 tb::Prefs<float> Widget::scale("widget/scale", 0.001f, "1pxのサイズ");
 
-tb::List<Widget> Widget::root;
+tb::List<Widget> Widget::roots;
 tb::Vector<2, float> Widget::lookingPoint;
 tb::Matrix<4, 4, float> Widget::view;
 
@@ -42,7 +42,9 @@ void Widget::UpdateAll(const tb::Matrix<4, 4, float>& pose) {
 	}
 
 	// WidgetのUpdate
-	root.Foreach(&Widget::Update);
+	if (Widget* const r = Root()) {
+		r->children.Foreach(&Widget::Update);
+	}
 }
 
 
@@ -51,11 +53,15 @@ void Widget::DrawAll() {
 	glTranslatef(-lookingPoint[0], -lookingPoint[1], 0);
 	glScalef(scale, (float)scale, 1);
 	glGetFloatv(GL_MODELVIEW_MATRIX, view);
-	root.Foreach(&Widget::Draw);
+	if (Widget* const r = Root()) {
+		r->children.Foreach(&Widget::Draw);
+	}
 }
 void Widget::TrawAll() {
 	glLoadMatrixf(view);
-	root.Reveach(&Widget::Traw);
+	if (Widget* const r = Root()) {
+		r->children.Reveach(&Widget::Traw);
+	}
 }
 
 
