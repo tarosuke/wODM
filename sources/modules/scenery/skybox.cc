@@ -32,7 +32,7 @@
 
 class Skybox : public Scenery {
 
-	Skybox(const Params& params, const tb::Image<tb::Pixel<tb::u8>>& image)
+	Skybox(const Params& params, const tb::Image& image)
 		: Scenery(params, image) {};
 
 	static constexpr int scale = 5000;
@@ -137,7 +137,7 @@ Scenery* Skybox::F::New() {
 		numOfVertex : elementsOf(Skybox::defaultVertexes),
 		vertex : Skybox::defaultVertexes
 	};
-	const tb::Image<tb::Pixel<tb::u8>> image((void*)defaultTexture, 8, 8, 8);
+	const tb::ImageXRGB32 image((void*)defaultTexture, 8, 8);
 	return new Skybox(params, image);
 };
 

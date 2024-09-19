@@ -30,10 +30,8 @@ namespace vr_core {
 
 	class SphereMap : public Scenery {
 	public:
-		SphereMap(
-			const ::Model_C::Params& params,
-			const tb::Image<tb::Pixel<tb::u8>>& image)
-			: Scenery(params, image){};
+		SphereMap(const ::Model_C::Params& params, const tb::Image& image)
+			: Scenery(params, image) {};
 		struct Factory : tb::Factory<Scenery> {
 			Scenery* New(const Param* pp) {
 				const Scenery::Param* const p(

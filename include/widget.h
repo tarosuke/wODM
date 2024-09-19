@@ -18,6 +18,7 @@
  */
 #pragma once
 
+#include <tb/canvas.h>
 #include <tb/image.h>
 #include <tb/list.h>
 #include <tb/matrix.h>
@@ -78,6 +79,7 @@ private:
 struct RectWidget : public Widget {
 	RectWidget(const tb::Rect<2, int>&);
 	RectWidget(const tb::Vector<2, int>&, const tb::Spread<2, unsigned>&);
+	RectWidget(const tb::Spread<2, unsigned>&);
 
 protected:
 	// 移動(Jump:即時/Move:追随, 無印:差分指定/To:目的位置指定)
@@ -103,4 +105,36 @@ private:
 	bool draw; // 背景を描画する
 
 	tb::Vector<2, int> target; // leftTopと異なる時Updateで移動
+};
+
+
+#include "gl/texture.h"
+
+
+
+// 描画できるWidget
+struct CanvasWidget : public RectWidget, public tb::Canvas, GL::Texture {
+	static constexpr int maxFragmentPixels = 64 * 64;
+
+	CanvasWidget(const tb::Rect<2, int>&);
+	CanvasWidget(const tb::Spread<2, unsigned>&);
+
+
+protected:
+	struct Fragment : tb::List<Fragment>::Node,
+					  public tb::BufferedImage<tb::ImageARGB32> {
+		Fragment(
+			const tb::Image& origin,
+			const tb::Vector<2, int>& offset,
+			const tb::Spread<2, int>&);
+		const tb::Vector<2, int> offset;
+	};
+	void AddFragment(Fragment& f) { updates.Add(f); };
+
+private:
+	tb::List<Fragment> updates;
+	void Update() final;
+
+	void OnCanvasUpdated(const tb::Rect<2, double>&) final;
+	Fragment* GetFragment() { return updates.Get(); };
 };

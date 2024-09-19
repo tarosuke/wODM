@@ -61,12 +61,12 @@ public:
 	};
 
 	struct Param : Factory::Param {
-		Param(tb::Image<tb::Pixel<tb::u8>>& image) : image(image) {};
-		tb::Image<tb::Pixel<tb::u8>>& image;
+		Param(tb::Image& image) : image(image) {};
+		tb::Image& image;
 	};
 
 protected:
-	Scenery(const Params&, const tb::Image<tb::Pixel<tb::u8>>&);
+	Scenery(const Params&, const tb::Image&);
 	~Scenery() { stack = next; }
 	virtual void Update() {};
 

@@ -30,8 +30,7 @@ Scenery* Scenery::stack(0);
 tb::Prefs<tb::String> Scenery::path("--scenery", "背景指定");
 
 
-Scenery::Scenery(
-	const Params& params, const tb::Image<tb::Pixel<tb::u8>>& image)
+Scenery::Scenery(const Params& params, const tb::Image& image)
 	: Model_C(params, image), next(stack) {
 	stack = this;
 }

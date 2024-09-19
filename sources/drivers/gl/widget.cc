@@ -20,6 +20,7 @@
 #include "core.h"
 #include "gl/gl.h"
 #include <math.h>
+#include <string.h>
 
 
 
@@ -114,5 +115,45 @@ void RectWidget::Traw(const tb::Rect<2, int>& r) {
 	const tb::Rect<2, int> rr(r & rect);
 	if (rr) {
 		Widget::Traw(rr);
+	}
+}
+
+
+
+CanvasWidget::Fragment::Fragment(
+	const tb::Image& origin,
+	const tb::Vector<2, int>& offset,
+	const tb::Spread<2, int>& size)
+	: BufferedImage<tb::ImageARGB32>(size[0], size[1]), offset(offset) {
+	// 画像の転送
+}
+
+
+
+///// CanvasWidget
+void CanvasWidget::OnCanvasUpdated(const tb::Rect<2, double>& from) {
+	tb::Canvas::Image image(*this);
+	const tb::Rect<2, int> f(from);
+
+	const int step(
+		maxFragmentPixels <= f.GetSpread()[0]
+			? 1
+			: maxFragmentPixels / f.GetSpread()[0]);
+	const int bottom(f.Right()[1]);
+
+	for (int y(f.Left()[1]); y < bottom; y += step) {
+		const tb::Spread<2, int> fs(
+			f.GetSpread()[0],
+			y + step <= bottom ? step : bottom - y);
+		const tb::Vector<2, int> ff(from.Left()[0], y);
+
+		AddFragment(
+			*new Fragment(image, tb::Vector<2, int>(from.Left()[0], y), fs));
+	}
+}
+
+void CanvasWidget::Update() {
+	while (Fragment* const f = updates.Get()) {
+		Texture::Update(*f, f->offset);
 	}
 }
