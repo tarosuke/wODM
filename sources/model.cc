@@ -30,7 +30,7 @@ Model::~Model() {
 }
 
 
-Model_C::Model_C(const Params& p, const tb::Image<tb::Pixel<tb::u8>>& image)
+Model_C::Model_C(const Params& p, const tb::Image& image)
 	: Model(p), rawImage(image),
 	  texture(
 		  rawImage.Data(),

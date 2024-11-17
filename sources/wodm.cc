@@ -20,9 +20,9 @@
 #include <syslog.h>
 #include <tb/app.h>
 
+#include "core.h"
 #include "gl/scenery.h"
-#include <core.h>
-
+#include "widget.h"
 
 
 struct wODM : tb::App {
@@ -38,4 +38,11 @@ struct wODM : tb::App {
 		}
 		return 0;
 	};
-} waodm;
+} wodm;
+
+
+namespace {
+	struct Login : Widget {
+	} loginRoot;
+}
+Widget& Widget::Root() { return roots.Top() ? *roots.Top() : loginRoot; };

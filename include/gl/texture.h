@@ -19,6 +19,8 @@
 #pragma once
 
 #include <tb/image.h>
+#include <tb/rect.h>
+#include <tb/spread.h>
 
 
 
@@ -70,7 +72,7 @@ namespace GL {
 			Format = RGB,
 			const Style& = defaultStyle);
 
-		Texture(const tb::Image<tb::u32>&, const Style& = defaultStyle);
+		Texture(const tb::Image&, const Style& = defaultStyle);
 
 		~Texture();
 
@@ -81,6 +83,8 @@ namespace GL {
 			unsigned width,
 			unsigned height,
 			Format format);
+
+		void Update(const tb::Image&, const tb::Vector<2, int>&);
 
 		//
 		// フォーマットが透過ならtrue

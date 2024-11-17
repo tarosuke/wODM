@@ -18,6 +18,7 @@
  */
 #include "gl/texture.h"
 #include "gl/gl.h"
+#include <string.h>
 
 
 
@@ -65,7 +66,7 @@ namespace GL {
 		SetupAttributes(style);
 	}
 
-	Texture::Texture(const tb::Image<tb::u32>& image, const Style& style)
+	Texture::Texture(const tb::Image& image, const Style& style)
 		: tid(NewID()) {
 		Binder b(*this);
 		glTexImage2D(
@@ -104,6 +105,20 @@ namespace GL {
 			ToGLFormat(format),
 			GL_UNSIGNED_BYTE,
 			buffer);
+	}
+
+	void Texture::Update(const tb::Image& image, const tb::Vector<2, int>& to) {
+		Binder b(*this);
+		glTexSubImage2D(
+			GL_TEXTURE_2D,
+			0,
+			to[0],
+			to[1],
+			image.Width(),
+			image.Height(),
+			ToGLFormat(RGBA),
+			GL_UNSIGNED_BYTE,
+			image.Data());
 	}
 
 
@@ -169,5 +184,4 @@ namespace GL {
 	}
 
 	Texture::Binder::~Binder() { glBindTexture(GL_TEXTURE_2D, 0); }
-
 }

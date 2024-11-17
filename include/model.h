@@ -60,10 +60,10 @@ public:
 protected:
 	using Params = Params<GL::VBO::V_UV>;
 
-	Model_C(const Params&, const tb::Image<tb::Pixel<tb::u8>>&);
+	Model_C(const Params&, const tb::Image&);
 	void Draw() override;
 
 private:
-	const tb::Image<tb::Pixel<tb::u8>>& rawImage;
+	const tb::Image& rawImage;
 	GL::Texture texture;
 };

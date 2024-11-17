@@ -48,12 +48,12 @@ void Core::Run() {
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
 			// Stickies::DrawAll();
-			// Widget::DrawAll();
+			Widget::DrawAll();
 			glLoadMatrixf(pose);
 			// World::DrawAll();
 			Scenery::DrawAll();
 			// World::TrawAll();
-			// Widget::TrawAll();
+			Widget::TrawAll();
 			// Stickies::TrawAll();
 		}
 
