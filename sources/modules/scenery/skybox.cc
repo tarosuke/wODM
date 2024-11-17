@@ -24,11 +24,7 @@
 #include "gl/gl.h"
 #include "gl/scenery.h"
 
-
-
 #define elementsOf(a) (sizeof(a) / sizeof(a[0]))
-
-
 
 class Skybox : public Scenery {
 
@@ -49,22 +45,20 @@ class Skybox : public Scenery {
 	static GL::VBO::V_UV vertexes[];
 	static constexpr int defaultTextureScale = 3;
 	static GL::VBO::V_UV defaultVertexes[];
-	static const tb::Pixel<tb::u8> defaultTexture[8][8];
+	static const tb::u32 defaultTexture[8][8];
 	static constexpr tb::u32 bc = 0x00101020;
 	static constexpr tb::u32 fc = 0x00404060;
 };
 
-
-
 Skybox::F Skybox::factory;
 
 unsigned Skybox::indexes[] = {
-	0,	2,	1, 2,  3,  1, // left
-	2,	4,	3, 4,  5,  3, // front
-	4,	6,	5, 6,  7,  5, // right
-	6,	8,	7, 8,  9,  7, // rear
-	2,	10, 4, 10, 11, 4, // top
-	12, 13, 9, 13, 7,  9 // bottom
+	0, 2, 1, 2, 3, 1,	 // left
+	2, 4, 3, 4, 5, 3,	 // front
+	4, 6, 5, 6, 7, 5,	 // right
+	6, 8, 7, 8, 9, 7,	 // rear
+	2, 10, 4, 10, 11, 4, // top
+	12, 13, 9, 13, 7, 9	 // bottom
 };
 
 GL::VBO::V_UV Skybox::vertexes[] = {
@@ -93,39 +87,39 @@ GL::VBO::V_UV Skybox::vertexes[] = {
 GL::VBO::V_UV Skybox::defaultVertexes[] = {
 	// 0:左後方
 	{{-scale, scale, scale},
-	 {0.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
+		{0.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
 	{{-scale, -scale, scale},
-	 {0.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
+		{0.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
 	// 2:左前方
 	{{-scale, scale, -scale},
-	 {1.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
+		{1.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
 	{{-scale, -scale, -scale},
-	 {1.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
+		{1.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
 	// 4:右前方
 	{{scale, scale, -scale},
-	 {2.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
+		{2.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
 	{{scale, -scale, -scale},
-	 {2.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
+		{2.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
 	// 6:右後方
 	{{scale, scale, scale},
-	 {3.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
+		{3.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
 	{{scale, -scale, scale},
-	 {3.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
+		{3.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
 	// 8:左後方(後方テクスチャ用)
 	{{-scale, scale, scale},
-	 {4.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
+		{4.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
 	{{-scale, -scale, scale},
-	 {4.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
+		{4.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
 	// 10:上後方左右
 	{{-scale, scale, scale},
-	 {1.0 * defaultTextureScale, 0.0 * defaultTextureScale}},
+		{1.0 * defaultTextureScale, 0.0 * defaultTextureScale}},
 	{{scale, scale, scale},
-	 {2.0 * defaultTextureScale, 0.0 * defaultTextureScale}},
+		{2.0 * defaultTextureScale, 0.0 * defaultTextureScale}},
 	// 12:下後方左右
 	{{-scale, -scale, -scale},
-	 {4.0 * defaultTextureScale, 3.0 * defaultTextureScale}},
+		{4.0 * defaultTextureScale, 3.0 * defaultTextureScale}},
 	{{scale, -scale, -scale},
-	 {3.0 * defaultTextureScale, 3.0 * defaultTextureScale}},
+		{3.0 * defaultTextureScale, 3.0 * defaultTextureScale}},
 };
 
 // デフォルト背景
@@ -150,8 +144,8 @@ uint Skybox::F::Score(const Factory::Param* pp) {
 
 	// skyboxなので画像は4:3のはず
 	return abs((int)p->image.Height() * 4 - (int)p->image.Width() * 3) < 4
-			 ? Certitude::activeMatch
-			 : 0;
+			   ? Certitude::activeMatch
+			   : 0;
 }
 Scenery* Skybox::F::New(const Factory::Param* pp) {
 	const Scenery::Param* const p(dynamic_cast<const Scenery::Param*>(pp));
@@ -168,10 +162,9 @@ Scenery* Skybox::F::New(const Factory::Param* pp) {
 	return new Skybox(params, p->image);
 }
 
-
 /***** デフォルトのテクスチャ
  */
-const tb::Pixel<tb::u8> Skybox::defaultTexture[8][8] = {
+const tb::u32 Skybox::defaultTexture[8][8] = {
 	{bc, bc, bc, fc, fc, bc, bc, bc},
 	{bc, bc, bc, fc, fc, bc, bc, bc},
 	{bc, bc, bc, fc, fc, bc, bc, bc},

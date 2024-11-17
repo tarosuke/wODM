@@ -28,8 +28,6 @@
 #include <tb/time.h>
 #include <tb/vector.h>
 
-
-
 struct Widget : tb::List<Widget>::Node {
 	static void RegisterRoot(Widget& w);
 	static void UpdateAll(const tb::Matrix<4, 4, float>&);
@@ -74,7 +72,6 @@ private:
 	void NotifyListDeleted() final { delete this; };
 };
 
-
 // 範囲だけがあるWidget
 struct RectWidget : public Widget {
 	RectWidget(const tb::Rect<2, int>&);
@@ -101,16 +98,13 @@ private:
 	tb::Rect<2, int> rect;
 	tb::Vector<2, int> leftTop;
 	tb::Spread<2, unsigned> size;
-	tb::Pixel<tb::u8> color;
+	tb::Color color;
 	bool draw; // 背景を描画する
 
 	tb::Vector<2, int> target; // leftTopと異なる時Updateで移動
 };
 
-
 #include "gl/texture.h"
-
-
 
 // 描画できるWidget
 struct CanvasWidget : public RectWidget, public tb::Canvas, GL::Texture {
@@ -119,14 +113,11 @@ struct CanvasWidget : public RectWidget, public tb::Canvas, GL::Texture {
 	CanvasWidget(const tb::Rect<2, int>&);
 	CanvasWidget(const tb::Spread<2, unsigned>&);
 
-
 protected:
 	struct Fragment : tb::List<Fragment>::Node,
 					  public tb::BufferedImage<tb::ImageARGB32> {
-		Fragment(
-			const tb::Image& origin,
-			const tb::Vector<2, int>& offset,
-			const tb::Spread<2, int>&);
+		Fragment(const tb::Image& origin, const tb::Vector<2, int>& offset,
+				 const tb::Spread<2, int>&);
 		const tb::Vector<2, int> offset;
 	};
 	void AddFragment(Fragment& f) { updates.Add(f); };
