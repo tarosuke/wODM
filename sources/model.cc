@@ -21,23 +21,20 @@
 #include "gl/texture.h"
 #include "model.h"
 
-
-
 Model::~Model() {
 	if (vbo) {
 		delete vbo;
 	}
 }
 
-
-Model_C::Model_C(const Params& p, const tb::Image& image)
-	: Model(p), rawImage(image),
-	  texture(
-		  rawImage.Data(),
+Model_C::Model_C(
+	const Params& p, const tb::Image& image, const GL::Texture::Style& style)
+	: Model(p),
+	  rawImage(image),
+	  texture(rawImage.Data(),
 		  rawImage.Width(),
 		  rawImage.Height(),
 		  rawImage.Transparent() ? GL::Texture::RGBA : GL::Texture::RGB) {}
-
 
 void Model_C::Draw() {
 	if (!vbo) {

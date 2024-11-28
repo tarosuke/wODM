@@ -165,12 +165,12 @@ Scenery* Skybox::F::New(const Factory::Param* pp) {
 /***** デフォルトのテクスチャ
  */
 const tb::u32 Skybox::defaultTexture[8][8] = {
-	{bc, bc, bc, fc, fc, bc, bc, bc},
-	{bc, bc, bc, fc, fc, bc, bc, bc},
-	{bc, bc, bc, fc, fc, bc, bc, bc},
+	{bc, bc, bc, bc, bc, bc, bc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc},
 	{fc, fc, fc, fc, fc, fc, fc, fc},
-	{fc, fc, fc, fc, fc, fc, fc, fc},
-	{bc, bc, bc, fc, fc, bc, bc, bc},
-	{bc, bc, bc, fc, fc, bc, bc, bc},
-	{bc, bc, bc, fc, fc, bc, bc, bc},
 };

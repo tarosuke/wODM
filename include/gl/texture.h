@@ -22,8 +22,6 @@
 #include <tb/rect.h>
 #include <tb/spread.h>
 
-
-
 namespace GL {
 
 	class Texture {
@@ -40,6 +38,7 @@ namespace GL {
 			int texture_mode;
 			bool pointSprite;
 		};
+		static const Style defaultStyle;
 
 		enum Format {
 			RGB,
@@ -60,13 +59,11 @@ namespace GL {
 		private:
 		};
 
-		Texture(
-			unsigned width,
+		Texture(unsigned width,
 			unsigned height,
 			Format = RGB,
 			const Style& = defaultStyle);
-		Texture(
-			const void*,
+		Texture(const void*,
 			unsigned width,
 			unsigned height,
 			Format = RGB,
@@ -76,8 +73,7 @@ namespace GL {
 
 		~Texture();
 
-		void Update(
-			const void*,
+		void Update(const void*,
 			int x,
 			int y,
 			unsigned width,
@@ -101,8 +97,6 @@ namespace GL {
 		static unsigned NewID();
 		static int ToGLFormat(Format);
 		static void SetupAttributes(const Style&);
-
-		static const Style defaultStyle;
 
 		const unsigned tid;
 		bool transparent;
