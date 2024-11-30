@@ -23,13 +23,16 @@
 
 #include "gl/gl.h"
 #include "gl/scenery.h"
+#include "gl/texture.h"
 
 #define elementsOf(a) (sizeof(a) / sizeof(a[0]))
 
 class Skybox : public Scenery {
 
-	Skybox(const Params& params, const tb::Image& image)
-		: Scenery(params, image) {};
+	Skybox(const Params& params,
+		const tb::Image& image,
+		const GL::Texture::Style& style)
+		: Scenery(params, image, style) {};
 
 	static constexpr int scale = 5000;
 	struct F : Scenery::Factory {
@@ -43,8 +46,9 @@ class Skybox : public Scenery {
 	static F factory;
 	static unsigned indexes[];
 	static GL::VBO::V_UV vertexes[];
-	static constexpr int defaultTextureScale = 3;
+	static constexpr int defaultTextureScale = 6;
 	static GL::VBO::V_UV defaultVertexes[];
+	static const GL::Texture::Style defaultTextureStyle;
 	static const tb::u32 defaultTexture[8][8];
 	static constexpr tb::u32 bc = 0x00101020;
 	static constexpr tb::u32 fc = 0x00404060;
@@ -132,7 +136,7 @@ Scenery* Skybox::F::New() {
 		vertex : Skybox::defaultVertexes
 	};
 	const tb::ImageXRGB32 image((void*)defaultTexture, 8, 8);
-	return new Skybox(params, image);
+	return new Skybox(params, image, defaultTextureStyle);
 };
 
 // 指定画像を背景にする
@@ -159,18 +163,26 @@ Scenery* Skybox::F::New(const Factory::Param* pp) {
 		numOfVertex : elementsOf(Skybox::vertexes),
 		vertex : Skybox::vertexes
 	};
-	return new Skybox(params, p->image);
+	return new Skybox(params, p->image, GL::Texture::defaultStyle);
 }
 
 /***** デフォルトのテクスチャ
  */
+const GL::Texture::Style Skybox::defaultTextureStyle = {
+	wrap_s : GL_MIRRORED_REPEAT,
+	wrap_t : GL_MIRRORED_REPEAT,
+	filter_mag : GL_LINEAR,
+	filter_min : GL_LINEAR,
+	texture_mode : GL_REPLACE,
+	pointSprite : false,
+};
 const tb::u32 Skybox::defaultTexture[8][8] = {
-	{bc, bc, bc, fc, fc, bc, bc, bc},
-	{bc, bc, bc, fc, fc, bc, bc, bc},
-	{bc, bc, bc, fc, fc, bc, bc, bc},
+	{bc, bc, bc, bc, bc, bc, bc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc},
 	{fc, fc, fc, fc, fc, fc, fc, fc},
-	{fc, fc, fc, fc, fc, fc, fc, fc},
-	{bc, bc, bc, fc, fc, bc, bc, bc},
-	{bc, bc, bc, fc, fc, bc, bc, bc},
-	{bc, bc, bc, fc, fc, bc, bc, bc},
 };

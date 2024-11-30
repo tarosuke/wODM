@@ -21,17 +21,17 @@
 #include <syslog.h>
 #include <tb/canvas.h>
 
-
-
 template <> tb::Factory<Scenery>* tb::Factory<Scenery>::start(0);
 Scenery* Scenery::stack(0);
 
 // コマンドラインオプション--scenery
 tb::Prefs<tb::String> Scenery::path("--scenery", "背景指定");
 
-
-Scenery::Scenery(const Params& params, const tb::Image& image)
-	: Model_C(params, image), next(stack) {
+Scenery::Scenery(const Params& params,
+	const tb::Image& image,
+	const GL::Texture::Style& style)
+	: Model_C(params, image, style),
+	  next(stack) {
 	stack = this;
 }
 
@@ -62,9 +62,7 @@ Scenery* Scenery::New(const std::filesystem::path* p) {
 			return stack;
 		} catch (...) {
 			syslog(
-				LOG_WARNING,
-				"Failed to load scenery(%s). Falling back...",
-				pp);
+				LOG_WARNING, "Failed to load scenery(%s). Falling back...", pp);
 		}
 	}
 	// デフォルトを設定
