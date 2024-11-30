@@ -34,7 +34,8 @@ Model_C::Model_C(
 	  texture(rawImage.Data(),
 		  rawImage.Width(),
 		  rawImage.Height(),
-		  rawImage.Transparent() ? GL::Texture::RGBA : GL::Texture::RGB) {}
+		  rawImage.Transparent() ? GL::Texture::RGBA : GL::Texture::RGB,
+		  style) {}
 
 void Model_C::Draw() {
 	if (!vbo) {

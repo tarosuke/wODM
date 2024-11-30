@@ -29,9 +29,8 @@
 #include <tb/string.h>
 
 #include "gl/gl.h"
+#include "gl/texture.h"
 #include "model.h"
-
-
 
 class Scenery : public Model_C {
 	Scenery() = delete;
@@ -66,7 +65,9 @@ public:
 	};
 
 protected:
-	Scenery(const Params&, const tb::Image&);
+	Scenery(const Params&,
+		const tb::Image&,
+		const GL::Texture::Style& style = GL::Texture::defaultStyle);
 	~Scenery() { stack = next; }
 	virtual void Update() {};
 
