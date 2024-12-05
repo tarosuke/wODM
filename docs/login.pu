@@ -1,0 +1,18 @@
+@startsalt
+skinparam monochrome reverse
+'skinparam backgroundColor transparent
+'skinparam handwritten true
+{
+"<color:#808080><&person> username    "
+"<color:#808080><&key> password    "
+{SI
+[X] wOSH direct　|<&pencil>
+[X] <&monitor>Xephyr|<&pencil>
+[] <&monitor>XNest|<&pencil>
+[X] woce.jp|<&pencil>
+[] <&monitor>VNC|<&pencil>
+<&plus>add
+}
+[<&account-login> login]
+}
+@endsalt

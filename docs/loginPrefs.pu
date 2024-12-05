@@ -1,0 +1,10 @@
+@startsalt
+skinparam monochrome reverse
+'skinparam backgroundColor transparent
+'skinparam handwritten true
+{
+	"<color:#808080>label         "|*|[]monitor
+	"<color:#808080>commandline             "|*|*
+	<&trash>delete　|[<&x>cancel]|[  <&check>OX  ]
+}
+@endsalt
