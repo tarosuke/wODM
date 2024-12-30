@@ -1,8 +1,8 @@
 [submodule "wOLIB"]
-	path = subsystems/wOLIB
+	path = commons/wOLIB
 	url = git@github.com:tarosuke/wOLIB.git
 [submodule "toolbox"]
-	path = subsystems/toolbox
+	path = commons/toolbox
 	url = git@github.com:tarosuke/toolbox.git
 [submodule "subsystems/canvas"]
 	path = subsystems/canvas
