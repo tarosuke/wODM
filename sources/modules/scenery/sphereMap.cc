@@ -1,5 +1,5 @@
 /** ShereMap
- * Copyright (C) 2017,2019 tarosuke<webmaster@tarosuke.net>
+ * Copyright (C) 2017,2019,2025 tarosuke<webmaster@tarosuke.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -32,12 +32,8 @@ namespace vr_core {
 	public:
 		SphereMap(const ::Model_C::Params& params, const tb::Image& image)
 			: Scenery(params, image) {};
-		struct Factory : tb::Factory<Scenery> {
-			Scenery* New(const Param* pp) {
-				const Scenery::Param* const p(
-					dynamic_cast<const Scenery::Param*>(pp));
-				assert(p);
-
+		struct Factory : Scenery::Factory {
+			Scenery* New(const tb::Image& i) final {
 				const ::Model::Params params = {
 					numOfIndex : sizeof(buffers.ib) / sizeof(unsigned),
 					index : (unsigned*)buffers.ib,
@@ -45,15 +41,11 @@ namespace vr_core {
 					vertex : (GL::VBO::V_UV*)buffers.vb
 				};
 
-				return new SphereMap(params, p->image);
+				return new SphereMap(params, i);
 			};
-			unsigned Score(const Param* param) {
-				const Scenery::Param* const p(
-					dynamic_cast<const Scenery::Param*>(param));
-				assert(p);
-
-				const unsigned w(p->image.Width());
-				const unsigned h(p->image.Height());
+			uint Score(const tb::Image& i) final {
+				const unsigned w(i.Width());
+				const unsigned h(i.Height());
 				if (!w || !h) {
 					return 0;
 				}

@@ -1,5 +1,5 @@
 /** Scenery
- * Copyright (C) 2017,2019,2024 tarosuke<webmaster@tarosuke.net>
+ * Copyright (C) 2017,2019,2024,2025 tarosuke<webmaster@tarosuke.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -38,7 +38,8 @@ class Scenery : public Model_C {
 	void operator=(const Scenery&) = delete;
 
 public:
-	using Factory = tb::Factory<Scenery>;
+	using Factory = tb::Factory<Scenery, const tb::Image&>;
+	using NullFactory = tb::Factory<Scenery>;
 	static Scenery* New(const std::filesystem::path* path = 0);
 	static void DrawAll() {
 		if (stack) {
@@ -57,11 +58,6 @@ public:
 			// Allと言いつつスタックトップだけが対象
 			stack->Update();
 		}
-	};
-
-	struct Param : Factory::Param {
-		Param(tb::Image& image) : image(image) {};
-		tb::Image& image;
 	};
 
 protected:

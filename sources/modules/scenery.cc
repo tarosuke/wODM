@@ -1,5 +1,5 @@
 /** Scenery
- * Copyright (C) 2017,2019,2024 tarosuke<webmaster@tarosuke.net>
+ * Copyright (C) 2017,2019,2024,2925 tarosuke<webmaster@tarosuke.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,6 +21,9 @@
 #include <syslog.h>
 #include <tb/canvas.h>
 
+template <>
+tb::Factory<Scenery, const tb::Image&>*
+	tb::Factory<Scenery, const tb::Image&>::start(0);
 template <> tb::Factory<Scenery>* tb::Factory<Scenery>::start(0);
 Scenery* Scenery::stack(0);
 
@@ -53,10 +56,9 @@ Scenery* Scenery::New(const std::filesystem::path* p) {
 			// Imageを読んでParam型に格納
 			tb::Canvas canvas(pp);
 			tb::Canvas::Image image(canvas);
-			Param param(image);
 
 			// Imageに対応するSceneryをnewする
-			UpdateInstance(Factory::Create(&param));
+			UpdateInstance(Factory::Create(image));
 			syslog(LOG_INFO, "Scenery(%s) was activated.", pp);
 
 			return stack;
@@ -66,7 +68,7 @@ Scenery* Scenery::New(const std::filesystem::path* p) {
 		}
 	}
 	// デフォルトを設定
-	UpdateInstance(Factory::Create());
+	UpdateInstance(NullFactory::Create());
 	return stack;
 }
 

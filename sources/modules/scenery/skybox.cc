@@ -1,5 +1,5 @@
 /** Skybox
- * Copyright (C) 2017,2019 tarosuke<webmaster@tarosuke.net>
+ * Copyright (C) 2017,2019,2025 tarosuke<webmaster@tarosuke.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,14 +36,17 @@ class Skybox : public Scenery {
 
 	static constexpr int scale = 5000;
 	struct F : Scenery::Factory {
+		// 画像が指定された場合
+		Scenery* New(const tb::Image&) final;
+		uint Score(const tb::Image&) final;
+	};
+	struct NF : Scenery::NullFactory {
 		// 画像指定なしの場合
 		Scenery* New() final;
 		uint Score() final;
-		// 画像が指定された場合
-		Scenery* New(const Param*) final;
-		uint Score(const Param*) final;
 	};
 	static F factory;
+	static NF nullFactory;
 	static unsigned indexes[];
 	static GL::VBO::V_UV vertexes[];
 	static constexpr int defaultTextureScale = 6;
@@ -55,6 +58,7 @@ class Skybox : public Scenery {
 };
 
 Skybox::F Skybox::factory;
+Skybox::NF Skybox::nullFactory;
 
 unsigned Skybox::indexes[] = {
 	0, 2, 1, 2, 3, 1,	 // left
@@ -127,8 +131,8 @@ GL::VBO::V_UV Skybox::defaultVertexes[] = {
 };
 
 // デフォルト背景
-uint Skybox::F::Score() { return Certitude::passiveMatch; };
-Scenery* Skybox::F::New() {
+uint Skybox::NF::Score() { return Certitude::passiveMatch; };
+Scenery* Skybox::NF::New() {
 	const Params params = {
 		numOfIndex : elementsOf(Skybox::indexes),
 		index : Skybox::indexes,
@@ -140,30 +144,20 @@ Scenery* Skybox::F::New() {
 };
 
 // 指定画像を背景にする
-uint Skybox::F::Score(const Factory::Param* pp) {
-	const Scenery::Param* const p(dynamic_cast<const Scenery::Param*>(pp));
-	if (!p) {
-		return 0; // 型違いなので0を返す
-	}
-
-	// skyboxなので画像は4:3のはず
-	return abs((int)p->image.Height() * 4 - (int)p->image.Width() * 3) < 4
+uint Skybox::F::Score(const tb::Image& i) {
+	// skyboxなら画像は4:3のはず
+	return abs((int)i.Height() * 4 - (int)i.Width() * 3) < 4
 			   ? Certitude::activeMatch
 			   : 0;
 }
-Scenery* Skybox::F::New(const Factory::Param* pp) {
-	const Scenery::Param* const p(dynamic_cast<const Scenery::Param*>(pp));
-	if (!p) {
-		return 0; // 型違いなので0を返す
-	}
-
+Scenery* Skybox::F::New(const tb::Image& i) {
 	const Params params = {
 		numOfIndex : elementsOf(Skybox::indexes),
 		index : Skybox::indexes,
 		numOfVertex : elementsOf(Skybox::vertexes),
 		vertex : Skybox::vertexes
 	};
-	return new Skybox(params, p->image, GL::Texture::defaultStyle);
+	return new Skybox(params, i, GL::Texture::defaultStyle);
 }
 
 /***** デフォルトのテクスチャ
