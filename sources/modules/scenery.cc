@@ -28,13 +28,15 @@ template <> tb::Factory<Scenery>* tb::Factory<Scenery>::start(0);
 Scenery* Scenery::stack(0);
 
 // コマンドラインオプション--scenery
-tb::Prefs<tb::String> Scenery::path("--scenery", "背景指定");
+tb::Prefs<tb::String>
+	Scenery::path("--scenery", "背景指定", tb::CommonPrefs::nosave);
 
-Scenery::Scenery(const Params& params,
+Scenery::Scenery(
+	const Params& params,
 	const tb::Image& image,
-	const GL::Texture::Style& style)
-	: Model_C(params, image, style),
-	  next(stack) {
+	const GL::Texture::Style& style) :
+	Model_C(params, image, style),
+	next(stack) {
 	stack = this;
 }
 

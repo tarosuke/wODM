@@ -22,15 +22,14 @@
 
 /***** 正八面体背景
  * テクスチャ上では下のような並びにあるとき
- * ABC
- * DEF
- * GHI
- * 正八面体を上から見ると下のような並びになる(XはACGIと底がE)
- *  B
- * DXF
- *  H
+ * 012
+ * 345
+ * 678
+ * 正八面体を上から見ると下のような並びになる(Xは底が0268、上が4)
+ *  1
+ * 3X5
+ *  7
  * 使うときはメンバ変数を頂点バッファ、インデクスバッファにする
- * 正八面体のサイズは-1〜1なので使いたいサイズにスケールする
  */
 struct Octahedron : Scenery {
 	Octahedron(
@@ -48,29 +47,47 @@ struct Octahedron : Scenery {
 
 	struct F : public Factory {
 		Scenery* New(const tb::Image& i) final {
-			return new Octahedron(params, i, GL::Texture::defaultStyle);
+			return new Octahedron(params, i, textureStyle);
 		};
 		uint Score(const tb::Image& i) final {
 			return i.Width() == i.Height() ? Certitude::activeMatch : 0;
 		};
 	};
 	static F factory;
+
+	static constexpr float center = 0.5 * scale;
+	static const GL::Texture::Style textureStyle;
 };
 
 Octahedron::F Octahedron::factory;
 
 const GL::VBO::V_UV Octahedron::vertexBuffer[nVertex] = {
-	{{0, 0, 1}, {0, 0}},	{{0, 1, 0}, {0.5, 0}},	  {{0, 0, 1}, {1, 0}},
-	{{-1, 0, 0}, {0, 0.5}}, {{0, 0, -1}, {0.5, 0.5}}, {{1, 0, 0}, {1, 0.5}},
-	{{0, 0, 1}, {0, 1}},	{{0, -1, 0}, {0.5, 1}},	  {{0, 0, 1}, {1, 1}},
+	{{0, -scale, 0}, {0, 0}},	 // 0
+	{{0, 0, scale}, {0.5, 0}},	 // 1
+	{{0, -scale, 0}, {1, 0}},	 // 2
+	{{-scale, 0, 0}, {0, 0.5}},	 // 3
+	{{0, scale, 0}, {0.5, 0.5}}, // 4
+	{{scale, 0, 0}, {1, 0.5}},	 // 5
+	{{0, -scale, 0}, {0, 1}},	 // 6
+	{{0, 0, -scale}, {0.5, 1}},	 // 7
+	{{0, -scale, 0}, {1, 1}},	 // 8
 };
 const unsigned Octahedron::indexBuffer[nIndex][3] = {
-	{0, 1, 3}, {2, 5, 1}, {8, 5, 7}, {6, 7, 3},
-	{4, 3, 1}, {4, 1, 5}, {4, 5, 7}, {4, 7, 3}};
+	{0, 1, 3}, {1, 2, 5}, {5, 8, 7}, {7, 6, 3},
+	{4, 1, 5}, {4, 5, 7}, {4, 7, 3}, {4, 3, 1}};
 
 const Model_C::Params Octahedron::params = {
 	numOfIndex : nIndex * 3,
 	index : &indexBuffer[0][0],
 	numOfVertex : nVertex,
 	vertex : vertexBuffer
+};
+
+const GL::Texture::Style Octahedron::textureStyle = {
+	wrap_s : GL_CLAMP_TO_EDGE,
+	wrap_t : GL_CLAMP_TO_EDGE,
+	filter_mag : GL_LINEAR,
+	filter_min : GL_LINEAR,
+	texture_mode : GL_REPLACE,
+	pointSprite : false,
 };

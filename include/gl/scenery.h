@@ -61,7 +61,9 @@ public:
 	};
 
 protected:
-	Scenery(const Params&,
+	static constexpr float scale = 10000; // 10km
+	Scenery(
+		const Params&,
 		const tb::Image&,
 		const GL::Texture::Style& style = GL::Texture::defaultStyle);
 	~Scenery() { stack = next; }

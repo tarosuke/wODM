@@ -87,8 +87,8 @@ void RectWidget::Jump(const tb::Vector<2, int>& d) {
 	leftTop += d;
 	rect += d;
 }
-tb::Prefs<unsigned>
-	RectWidget::moveRatio("RectWidget/MoveRatio", 5, "Widget移動速度の係数");
+tb::Prefs<unsigned> RectWidget::moveRatio(
+	"RectWidget/MoveRatio", 5, "Widget移動速度の係数");
 void RectWidget::Update() {
 	// 移動処理
 	if (const auto d = ((target - leftTop).Norm2())) {
@@ -120,11 +120,13 @@ void RectWidget::Traw(const tb::Rect<2, int>& r) {
 
 
 
-CanvasWidget::Fragment::Fragment(
-	const tb::Image& origin,
+CanvasWidget::Fragment::Fragment(const tb::Image& origin,
 	const tb::Vector<2, int>& offset,
 	const tb::Spread<2, int>& size)
-	: BufferedImage<tb::ImageARGB32>(size[0], size[1]), offset(offset) {
+	: BufferedImage(tb::Color::Format::Select(tb::Color::Format::ARGB8888),
+		  size[0],
+		  size[1]),
+	  offset(offset) {
 	// 画像の転送
 }
 
@@ -135,16 +137,14 @@ void CanvasWidget::OnCanvasUpdated(const tb::Rect<2, double>& from) {
 	tb::Canvas::Image image(*this);
 	const tb::Rect<2, int> f(from);
 
-	const int step(
-		maxFragmentPixels <= f.GetSpread()[0]
-			? 1
-			: maxFragmentPixels / f.GetSpread()[0]);
+	const int step(maxFragmentPixels <= f.GetSpread()[0]
+					   ? 1
+					   : maxFragmentPixels / f.GetSpread()[0]);
 	const int bottom(f.Right()[1]);
 
 	for (int y(f.Left()[1]); y < bottom; y += step) {
 		const tb::Spread<2, int> fs(
-			f.GetSpread()[0],
-			y + step <= bottom ? step : bottom - y);
+			f.GetSpread()[0], y + step <= bottom ? step : bottom - y);
 		const tb::Vector<2, int> ff(from.Left()[0], y);
 
 		AddFragment(
