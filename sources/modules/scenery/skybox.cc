@@ -29,10 +29,11 @@
 
 class Skybox : public Scenery {
 
-	Skybox(const Params& params,
+	Skybox(
+		const Params& params,
 		const tb::Image& image,
-		const GL::Texture::Style& style)
-		: Scenery(params, image, style) {};
+		const GL::Texture::Style& style) :
+		Scenery(params, image, style) {};
 
 	static constexpr int scale = 5000;
 	struct F : Scenery::Factory {
@@ -61,12 +62,12 @@ Skybox::F Skybox::factory;
 Skybox::NF Skybox::nullFactory;
 
 unsigned Skybox::indexes[] = {
-	0, 2, 1, 2, 3, 1,	 // left
-	2, 4, 3, 4, 5, 3,	 // front
-	4, 6, 5, 6, 7, 5,	 // right
-	6, 8, 7, 8, 9, 7,	 // rear
-	2, 10, 4, 10, 11, 4, // top
-	12, 13, 9, 13, 7, 9	 // bottom
+	0,	2,	1, 2,  3,  1, // left
+	2,	4,	3, 4,  5,  3, // front
+	4,	6,	5, 6,  7,  5, // right
+	6,	8,	7, 8,  9,  7, // rear
+	2,	10, 4, 10, 11, 4, // top
+	12, 13, 9, 13, 7,  9  // bottom
 };
 
 GL::VBO::V_UV Skybox::vertexes[] = {
@@ -95,39 +96,39 @@ GL::VBO::V_UV Skybox::vertexes[] = {
 GL::VBO::V_UV Skybox::defaultVertexes[] = {
 	// 0:左後方
 	{{-scale, scale, scale},
-		{0.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
+	 {0.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
 	{{-scale, -scale, scale},
-		{0.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
+	 {0.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
 	// 2:左前方
 	{{-scale, scale, -scale},
-		{1.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
+	 {1.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
 	{{-scale, -scale, -scale},
-		{1.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
+	 {1.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
 	// 4:右前方
 	{{scale, scale, -scale},
-		{2.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
+	 {2.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
 	{{scale, -scale, -scale},
-		{2.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
+	 {2.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
 	// 6:右後方
 	{{scale, scale, scale},
-		{3.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
+	 {3.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
 	{{scale, -scale, scale},
-		{3.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
+	 {3.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
 	// 8:左後方(後方テクスチャ用)
 	{{-scale, scale, scale},
-		{4.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
+	 {4.0 * defaultTextureScale, 1.0 * defaultTextureScale}},
 	{{-scale, -scale, scale},
-		{4.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
+	 {4.0 * defaultTextureScale, 2.0 * defaultTextureScale}},
 	// 10:上後方左右
 	{{-scale, scale, scale},
-		{1.0 * defaultTextureScale, 0.0 * defaultTextureScale}},
+	 {1.0 * defaultTextureScale, 0.0 * defaultTextureScale}},
 	{{scale, scale, scale},
-		{2.0 * defaultTextureScale, 0.0 * defaultTextureScale}},
+	 {2.0 * defaultTextureScale, 0.0 * defaultTextureScale}},
 	// 12:下後方左右
 	{{-scale, -scale, -scale},
-		{4.0 * defaultTextureScale, 3.0 * defaultTextureScale}},
+	 {4.0 * defaultTextureScale, 3.0 * defaultTextureScale}},
 	{{scale, -scale, -scale},
-		{3.0 * defaultTextureScale, 3.0 * defaultTextureScale}},
+	 {3.0 * defaultTextureScale, 3.0 * defaultTextureScale}},
 };
 
 // デフォルト背景
@@ -139,7 +140,9 @@ Scenery* Skybox::NF::New() {
 		numOfVertex : elementsOf(Skybox::defaultVertexes),
 		vertex : Skybox::defaultVertexes
 	};
-	const tb::ImageXRGB32 image((void*)defaultTexture, 8, 8);
+	const tb::Image image(
+		(void*)defaultTexture,
+		tb::Color::Format::Select(tb::Color::Format::XRGB0888), 8, 8, 32);
 	return new Skybox(params, image, defaultTextureStyle);
 };
 
@@ -171,12 +174,8 @@ const GL::Texture::Style Skybox::defaultTextureStyle = {
 	pointSprite : false,
 };
 const tb::u32 Skybox::defaultTexture[8][8] = {
-	{bc, bc, bc, bc, bc, bc, bc, fc},
-	{bc, bc, bc, bc, bc, bc, bc, fc},
-	{bc, bc, bc, bc, bc, bc, bc, fc},
-	{bc, bc, bc, bc, bc, bc, bc, fc},
-	{bc, bc, bc, bc, bc, bc, bc, fc},
-	{bc, bc, bc, bc, bc, bc, bc, fc},
-	{bc, bc, bc, bc, bc, bc, bc, fc},
-	{fc, fc, fc, fc, fc, fc, fc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc}, {bc, bc, bc, bc, bc, bc, bc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc}, {bc, bc, bc, bc, bc, bc, bc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc}, {bc, bc, bc, bc, bc, bc, bc, fc},
+	{bc, bc, bc, bc, bc, bc, bc, fc}, {fc, fc, fc, fc, fc, fc, fc, fc},
 };
