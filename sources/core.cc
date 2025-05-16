@@ -42,16 +42,21 @@ void Core::Run() {
 		// Stickies::UpdateAll();
 		Widget::UpdateAll(pose);
 		// World::UpdateAll();
-		// Scenary::UpdateAll();
+		GL::Scenery::UpdateAll();
 
-		while (NextEye()) {
+		for (unsigned n(0); n < eyes.nEye; ++n) {
+			Eye& e(eyes.eyes[n]);
+
+			GL::Framebuffer::Key fb(e.framebuffer);
+			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
 			// Stickies::DrawAll();
 			Widget::DrawAll();
 			glLoadMatrixf(pose);
 			// World::DrawAll();
-			Scenery::DrawAll();
+			GL::Scenery::DrawAll();
 			// World::TrawAll();
 			Widget::TrawAll();
 			// Stickies::TrawAll();

@@ -18,11 +18,13 @@
  */
 #pragma once
 
+#include <gl/framebuffer.h>
 #include <tb/factory.h>
 #include <tb/list.h>
 #include <tb/matrix.h>
 #include <tb/spread.h>
 #include <tb/time.h>
+#include <vector>
 
 
 
@@ -33,24 +35,34 @@ struct Core {
 	};
 
 	static Core* New() { return tb::Factory<Core>::Create(); };
-	virtual ~Core(){};
+	virtual ~Core() {};
 
 	void Run();
 	static const tb::Timestamp& Timestamp() { return timestamp; };
 
 protected:
-	Core(const Core&) = delete;
+	static constexpr float nearClip = 0.01;
+	static constexpr float farClip = 10000;
 
-	Core() = default;
+	struct Eye {
+		Eye(const Eye&) = delete;
+		Eye() : framebuffer() {};
+		tb::Matrix<4, 4, float> projection; // Transpose(GetProjectionMatrix)
+		tb::Matrix<4, 4, float>
+			eye2Head; // Transpose(GetEyeToHeadTransform()).InvertAffine()
+		GL::Framebuffer framebuffer;
+	};
+	struct Eyes {
+		Eyes(Eye* e, unsigned n) : eyes(e), nEye(n) {};
+		Eye* eyes;
+		unsigned nEye;
+	};
+	const Eyes& eyes;
+
+	Core(const Eyes& e) : eyes(e) {};
 
 	/***** 姿勢を取得 */
 	virtual const tb::Matrix<4, 4, float>& Pose() = 0;
-
-	/***** 次の視野情報取得、設定
-	 * 暗黙の描画先を設定
-	 * 投影行列のポインタを返す／すべての視野が終了していたら0を返す
-	 */
-	virtual const tb::Matrix<4, 4, float>* NextEye() = 0;
 
 	/***** フレームバッファを画面へ出力
 	 * NextEyeで返す行列の視点番号を最初に戻す
@@ -65,4 +77,7 @@ private:
 	static bool keep;
 	static tb::Timestamp timestamp;
 	const tb::Matrix<4, 4, float>* projection; // 投影(左右の目はこっちで分ける)
+
+	Core(const Core&) = delete;
+	Core() = delete;
 };

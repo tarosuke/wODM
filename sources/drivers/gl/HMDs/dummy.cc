@@ -42,44 +42,38 @@ class DummyHMD : GLX, tb::linux::Input {
 	const int screen;
 	Window window;
 	unsigned eIndex;
-	tb::Matrix<4, 4, float> projection;
 	tb::Matrix<4, 4, float> view;
 	Atom wmDeleteNotify;
+
+	static Eye eye;
+	static Eyes eyes;
 
 	struct F : tb::Factory<Core> {
 		uint Score() final { return useDummyHMD ? ~0 : 0; };
 		Core* New() final { return new DummyHMD; };
 	};
 
-	DummyHMD()
-		: GLX(), screen(DefaultScreen(display)),
-		  window(XCreateSimpleWindow(
-			  display,
-			  RootWindow(display, screen),
-			  0,
-			  0,
-			  size[0],
-			  size[1],
-			  1,
-			  BlackPixel(display, screen),
-			  BlackPixel(display, screen))),
-		  eIndex(0),
-		  wmDeleteNotify(XInternAtom(display, "WM_DELETE_WINDOW", False)) {
+	DummyHMD() :
+		GLX(eyes),
+		screen(DefaultScreen(display)),
+		window(XCreateSimpleWindow(
+			display,
+			RootWindow(display, screen),
+			0,
+			0,
+			size[0],
+			size[1],
+			1,
+			BlackPixel(display, screen),
+			BlackPixel(display, screen))),
+		eIndex(0),
+		wmDeleteNotify(XInternAtom(display, "WM_DELETE_WINDOW", False)) {
 		GLX::Setup(window);
 
 		XSelectInput(
-			display,
-			window,
-			StructureNotifyMask | SubstructureNotifyMask);
+			display, window, StructureNotifyMask | SubstructureNotifyMask);
 		XSetStandardProperties(
-			display,
-			window,
-			"Sample",
-			"Sample",
-			None,
-			0,
-			0,
-			0);
+			display, window, "Sample", "Sample", None, 0, 0, 0);
 		// WondowManagerが勝手に窓を閉じる前に通知させる
 		XSetWMProtocols(display, window, &wmDeleteNotify, 1);
 
@@ -96,25 +90,18 @@ class DummyHMD : GLX, tb::linux::Input {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glFrustum(-w, w, -h, h, near, far);
-		glGetFloatv(GL_PROJECTION_MATRIX, projection);
+		glGetFloatv(GL_PROJECTION_MATRIX, eye.projection);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		view.Identity();
+
+		eye.eye2Head.Identity();
 	};
 
 	const tb::Matrix<4, 4, float>& Pose() {
 		GetInput();
 		return view;
-	};
-	const tb::Matrix<4, 4, float>* NextEye() final {
-		if (eIndex++) {
-			return 0;
-		}
-		glClearColor(0.2, 0.2, 0.2, 1);
-		glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-		return &projection;
 	};
 	void Finish() final {
 		eIndex = 0;
@@ -185,3 +172,6 @@ tb::Prefs<bool> DummyHMD::useDummyHMD(
 	"--GLDummyHMD", "ダミーのHMDを使う", tb::CommonPrefs::nosave);
 DummyHMD::Factory DummyHMD::factory;
 const tb::Spread<2, unsigned> DummyHMD::size(1280u, 720u);
+
+Core::Eye DummyHMD::eye;
+Core::Eyes DummyHMD::eyes(&DummyHMD::eye, 1U);
