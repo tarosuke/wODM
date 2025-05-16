@@ -44,9 +44,7 @@ void Core::Run() {
 		// World::UpdateAll();
 		GL::Scenery::UpdateAll();
 
-		for (unsigned n(0); n < eyes.nEye; ++n) {
-			Eye& e(eyes.eyes[n]);
-
+		for (auto& e : eyes) {
 			GL::Framebuffer::Key fb(e.framebuffer);
 			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 

@@ -25,7 +25,6 @@
 namespace GL {
 
 	class Texture {
-		Texture();
 		Texture(const Texture&);
 		void operator=(const Texture&);
 
@@ -59,11 +58,14 @@ namespace GL {
 		private:
 		};
 
-		Texture(unsigned width,
+		Texture() : tid(0) {};
+		Texture(
+			unsigned width,
 			unsigned height,
 			Format = RGB,
 			const Style& = defaultStyle);
-		Texture(const void*,
+		Texture(
+			const void*,
 			unsigned width,
 			unsigned height,
 			Format = RGB,
@@ -71,9 +73,13 @@ namespace GL {
 
 		Texture(const tb::Image&, const Style& = defaultStyle);
 
+		Texture(Texture&& o) : tid(o.tid), transparent(o.transparent) {};
+		void operator=(Texture&&);
+
 		~Texture();
 
-		void Update(const void*,
+		void Update(
+			const void*,
 			int x,
 			int y,
 			unsigned width,
@@ -98,7 +104,7 @@ namespace GL {
 		static int ToGLFormat(Format);
 		static void SetupAttributes(const Style&);
 
-		const unsigned tid;
+		unsigned tid;
 		bool transparent;
 	};
 }

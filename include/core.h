@@ -45,21 +45,15 @@ protected:
 	static constexpr float farClip = 10000;
 
 	struct Eye {
-		Eye(const Eye&) = delete;
-		Eye() : framebuffer() {};
 		tb::Matrix<4, 4, float> projection; // Transpose(GetProjectionMatrix)
 		tb::Matrix<4, 4, float>
 			eye2Head; // Transpose(GetEyeToHeadTransform()).InvertAffine()
 		GL::Framebuffer framebuffer;
 	};
-	struct Eyes {
-		Eyes(Eye* e, unsigned n) : eyes(e), nEye(n) {};
-		Eye* eyes;
-		unsigned nEye;
-	};
-	const Eyes& eyes;
+	using Eyes = std::vector<Eye>;
+	Eyes& eyes;
 
-	Core(const Eyes& e) : eyes(e) {};
+	Core(Eyes& e) : eyes(e) {};
 
 	/***** 姿勢を取得 */
 	virtual const tb::Matrix<4, 4, float>& Pose() = 0;

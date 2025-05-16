@@ -56,6 +56,18 @@ namespace GL {
 			Format = Texture::RGB,
 			bool withDepth = true);
 		Framebuffer(Size, Format = Texture::RGB, bool withDepth = true);
+
+		Framebuffer(Framebuffer&& o) :
+			Texture(std::move(o)),
+			fbID(o.fbID),
+			dbID(o.dbID) {};
+		void operator=(Framebuffer&& o) {
+			*(Texture*)this = std::move(o);
+			fbID = o.fbID;
+			dbID = o.dbID;
+			o.fbID = o.dbID = 0;
+		}
+
 		~Framebuffer();
 
 		unsigned GetFBID() const { return fbID; };
@@ -63,8 +75,8 @@ namespace GL {
 		unsigned GetDepthBufferID() const { return dbID; };
 
 	private:
-		const unsigned fbID;
-		const unsigned dbID;
+		unsigned fbID;
+		unsigned dbID;
 		static unsigned NewID();
 		static unsigned NewDB();
 
