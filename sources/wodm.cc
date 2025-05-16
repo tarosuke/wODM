@@ -30,7 +30,7 @@ struct wODM : tb::App {
 		syslog(LOG_CRIT, "start wODM.");
 		Core* const core(Core::New());
 		if (core) {
-			Scenery::New();
+			GL::Scenery::New();
 			core->Run();
 			delete core;
 		} else {

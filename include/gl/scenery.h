@@ -32,46 +32,51 @@
 #include "gl/texture.h"
 #include "model.h"
 
-class Scenery : public Model_C {
-	Scenery() = delete;
-	Scenery(const Scenery&) = delete;
-	void operator=(const Scenery&) = delete;
 
-public:
-	using Factory = tb::Factory<Scenery, const tb::Image&>;
-	using NullFactory = tb::Factory<Scenery>;
-	static Scenery* New(const std::filesystem::path* path = 0);
-	static void DrawAll() {
-		if (stack) {
-			// Allと言いつつstackのtopだけ描画
-			glColor3f(1, 1, 1);
-			glDisable(GL_CULL_FACE);
-			stack->Draw();
-			glEnable(GL_CULL_FACE);
-			if (const auto e = glGetError()) {
-				syslog(LOG_ERR, "%s:%u(%x).", __FILE__, __LINE__, e);
+namespace GL {
+
+	class Scenery : public Model_C {
+		Scenery() = delete;
+		Scenery(const Scenery&) = delete;
+		void operator=(const Scenery&) = delete;
+
+	public:
+		using Factory = tb::Factory<Scenery, const tb::Image&>;
+		using NullFactory = tb::Factory<Scenery>;
+		static Scenery* New(const std::filesystem::path* path = 0);
+		static void DrawAll() {
+			if (stack) {
+				// Allと言いつつstackのtopだけ描画
+				glColor3f(1, 1, 1);
+				glDisable(GL_CULL_FACE);
+				stack->Draw();
+				glEnable(GL_CULL_FACE);
+				if (const auto e = glGetError()) {
+					syslog(LOG_ERR, "%s:%u(%x).", __FILE__, __LINE__, e);
+				}
 			}
-		}
-	};
-	static void UpdateAll() {
-		if (stack) {
-			// Allと言いつつスタックトップだけが対象
-			stack->Update();
-		}
+		};
+		static void UpdateAll() {
+			if (stack) {
+				// Allと言いつつスタックトップだけが対象
+				stack->Update();
+			}
+		};
+
+	protected:
+		static constexpr float scale = 9990; // 10km(far端よりは小さくする)
+		Scenery(
+			const Params&,
+			const tb::Image&,
+			const GL::Texture::Style& style = GL::Texture::defaultStyle);
+		~Scenery() { stack = next; }
+		virtual void Update() {};
+
+	private:
+		static Scenery* stack;
+		Scenery* const next;
+		static tb::Prefs<tb::String> path;
+		static void UpdateInstance(Scenery*) noexcept(false);
 	};
 
-protected:
-	static constexpr float scale = 10000; // 10km
-	Scenery(
-		const Params&,
-		const tb::Image&,
-		const GL::Texture::Style& style = GL::Texture::defaultStyle);
-	~Scenery() { stack = next; }
-	virtual void Update() {};
-
-private:
-	static Scenery* stack;
-	Scenery* const next;
-	static tb::Prefs<tb::String> path;
-	static void UpdateInstance(Scenery*) noexcept(false);
-};
+}

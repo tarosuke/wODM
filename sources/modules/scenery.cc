@@ -21,62 +21,69 @@
 #include <syslog.h>
 #include <tb/canvas.h>
 
-template <>
-tb::Factory<Scenery, const tb::Image&>*
-	tb::Factory<Scenery, const tb::Image&>::start(0);
-template <> tb::Factory<Scenery>* tb::Factory<Scenery>::start(0);
-Scenery* Scenery::stack(0);
 
-// コマンドラインオプション--scenery
-tb::Prefs<tb::String>
-	Scenery::path("--scenery", "背景指定", tb::CommonPrefs::nosave);
 
-Scenery::Scenery(
-	const Params& params,
-	const tb::Image& image,
-	const GL::Texture::Style& style) :
-	Model_C(params, image, style),
-	next(stack) {
-	stack = this;
-}
+namespace GL {
 
-Scenery* Scenery::New(const std::filesystem::path* p) {
-	const char* pp(0);
-	if (p && p->string().size()) {
-		// パスが指定されている
-		pp = p->string().c_str();
-	} else {
-		const tb::String& ppp(path);
-		if (ppp.size()) {
-			// パスが設定されている
-			pp = ppp.c_str();
+	template <>
+	tb::Factory<Scenery, const tb::Image&>*
+		tb::Factory<Scenery, const tb::Image&>::start(0);
+	template <> tb::Factory<Scenery>* tb::Factory<Scenery>::start(0);
+	Scenery* Scenery::stack(0);
+
+	// コマンドラインオプション--scenery
+	tb::Prefs<tb::String>
+		Scenery::path("--scenery", "背景指定", tb::CommonPrefs::nosave);
+
+	Scenery::Scenery(
+		const Params& params,
+		const tb::Image& image,
+		const GL::Texture::Style& style) :
+		Model_C(params, image, style),
+		next(stack) {
+		stack = this;
+	}
+
+	Scenery* Scenery::New(const std::filesystem::path* p) {
+		const char* pp(0);
+		if (p && p->string().size()) {
+			// パスが指定されている
+			pp = p->string().c_str();
+		} else {
+			const tb::String& ppp(path);
+			if (ppp.size()) {
+				// パスが設定されている
+				pp = ppp.c_str();
+			}
 		}
-	}
 
-	if (pp) {
-		try {
-			// Imageを読んでParam型に格納
-			tb::Canvas canvas(pp);
-			tb::Canvas::Image image(canvas);
+		if (pp) {
+			try {
+				// Imageを読んでParam型に格納
+				tb::Canvas canvas(pp);
+				tb::Canvas::Image image(canvas);
 
-			// Imageに対応するSceneryをnewする
-			UpdateInstance(Factory::Create(image));
-			syslog(LOG_INFO, "Scenery(%s) was activated.", pp);
+				// Imageに対応するSceneryをnewする
+				UpdateInstance(Factory::Create(image));
+				syslog(LOG_INFO, "Scenery(%s) was activated.", pp);
 
-			return stack;
-		} catch (...) {
-			syslog(
-				LOG_WARNING, "Failed to load scenery(%s). Falling back...", pp);
+				return stack;
+			} catch (...) {
+				syslog(
+					LOG_WARNING, "Failed to load scenery(%s). Falling back...",
+					pp);
+			}
 		}
+		// デフォルトを設定
+		UpdateInstance(NullFactory::Create());
+		return stack;
 	}
-	// デフォルトを設定
-	UpdateInstance(NullFactory::Create());
-	return stack;
-}
 
-void Scenery::UpdateInstance(Scenery* s) {
-	if (!s) {
-		throw "empty scenery";
+	void Scenery::UpdateInstance(Scenery* s) {
+		if (!s) {
+			throw "empty scenery";
+		}
+		syslog(LOG_INFO, "new scenery was activated:");
 	}
-	syslog(LOG_INFO, "new scenery was activated:");
+
 }

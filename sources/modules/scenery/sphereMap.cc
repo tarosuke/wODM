@@ -26,12 +26,12 @@
 
 
 
-namespace vr_core {
+namespace GL {
 
 	class SphereMap : public Scenery {
 	public:
-		SphereMap(const ::Model_C::Params& params, const tb::Image& image)
-			: Scenery(params, image) {};
+		SphereMap(const ::Model_C::Params& params, const tb::Image& image) :
+			Scenery(params, image) {};
 		struct Factory : Scenery::Factory {
 			Scenery* New(const tb::Image& i) final {
 				const ::Model::Params params = {
