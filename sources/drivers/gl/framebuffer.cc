@@ -25,14 +25,17 @@
 namespace GL {
 
 	Framebuffer::Framebuffer(
-		unsigned width, unsigned height, Format format, bool withDepth)
-		: Texture(width, height, format), fbID(NewID()), dbID(NewDB()) {
+		unsigned width, unsigned height, Format format, bool withDepth) :
+		Texture(width, height, format),
+		fbID(NewID()),
+		dbID(NewDB()) {
 		Assign(width, height, format, withDepth);
 	}
 
-	Framebuffer::Framebuffer(Size size, Format format, bool withDepth)
-		: Texture(size.width, size.height, format), fbID(NewID()),
-		  dbID(NewDB()) {
+	Framebuffer::Framebuffer(Size size, Format format, bool withDepth) :
+		Texture(size.width, size.height, format),
+		fbID(NewID()),
+		dbID(NewDB()) {
 		Assign(size.width, size.height, format, withDepth);
 	}
 
@@ -44,27 +47,18 @@ namespace GL {
 		if (withDepth) {
 			glBindRenderbuffer(GL_RENDERBUFFER, dbID);
 			glRenderbufferStorage(
-				GL_RENDERBUFFER,
-				GL_DEPTH_COMPONENT,
-				width,
-				height);
+				GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
 			glBindRenderbuffer(GL_RENDERBUFFER, 0);
 		}
 
 		// カラーバッファ割り当て
 		glFramebufferTexture2D(
-			GL_FRAMEBUFFER,
-			GL_COLOR_ATTACHMENT0,
-			GL_TEXTURE_2D,
-			TextureID(),
+			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, TextureID(),
 			0);
 
 		// デプスバッファ割り当て
 		glFramebufferRenderbuffer(
-			GL_FRAMEBUFFER,
-			GL_DEPTH_ATTACHMENT,
-			GL_RENDERBUFFER,
-			dbID);
+			GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, dbID);
 	}
 
 	unsigned Framebuffer::NewID() {
@@ -81,25 +75,21 @@ namespace GL {
 
 
 	Framebuffer::~Framebuffer() {
-		glDeleteFramebuffers(1, &fbID);
-		glDeleteRenderbuffers(1, &dbID);
+		if (fbID) {
+			glDeleteFramebuffers(1, &fbID);
+		}
+		if (dbID) {
+			glDeleteRenderbuffers(1, &dbID);
+		}
 	}
 
 
 	/** Key/CanKey
 	 * RAIIによるアクティベート管理
 	 */
-	int Framebuffer::activeID(0);
-
 	Framebuffer::Key::Key(Framebuffer& fb) {
-		assert(!activeID);
-		activeID = fb.fbID;
 		glBindFramebuffer(GL_FRAMEBUFFER, fb.fbID);
 	}
-	Framebuffer::Key::~Key() {
-		assert(activeID);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		activeID = 0;
-	}
+	Framebuffer::Key::~Key() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
 }

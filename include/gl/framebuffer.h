@@ -25,12 +25,7 @@
 
 namespace GL {
 
-	class Framebuffer : public Texture {
-		Framebuffer();
-		Framebuffer(const Framebuffer&);
-		void operator=(const Framebuffer&);
-
-	public:
+	struct Framebuffer : public Texture {
 		/** Size
 		 * サイズ
 		 */
@@ -54,6 +49,7 @@ namespace GL {
 		private:
 		};
 
+		Framebuffer() : Texture(1, 1, Texture::RGB), fbID(0), dbID(0) {};
 		Framebuffer(
 			unsigned width,
 			unsigned height,
@@ -71,10 +67,10 @@ namespace GL {
 		const unsigned dbID;
 		static unsigned NewID();
 		static unsigned NewDB();
-		static int activeID;
 
 		void Assign(unsigned width, unsigned height, Format, bool withDepth);
+
+		Framebuffer(const Framebuffer&) = delete;
+		void operator=(const Framebuffer&) = delete;
 	};
-
-
 };
