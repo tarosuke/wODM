@@ -31,7 +31,7 @@ struct GLX : Core {
 	GLX() = delete;
 	void operator=(const GLX&) = delete;
 
-	GLX(const Eyes& e) : Core(e), display(XOpenDisplay(0)) {};
+	GLX(Eyes& e) : Core(e), display(XOpenDisplay(0)) {};
 
 	~GLX() {
 		glXMakeCurrent(display, None, 0);

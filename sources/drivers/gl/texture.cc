@@ -25,20 +25,14 @@
 namespace GL {
 
 	Texture::Texture(
-		unsigned width, unsigned height, Format format, const Style& style)
-		: tid(NewID()), transparent(IsTransparent(format)) {
+		unsigned width, unsigned height, Format format, const Style& style) :
+		tid(NewID()),
+		transparent(IsTransparent(format)) {
 		Binder b(*this);
 
 		glTexImage2D(
-			GL_TEXTURE_2D,
-			0,
-			ToGLFormat(format),
-			width,
-			height,
-			0,
-			ToGLFormat(format),
-			GL_UNSIGNED_BYTE,
-			0);
+			GL_TEXTURE_2D, 0, ToGLFormat(format), width, height, 0,
+			ToGLFormat(format), GL_UNSIGNED_BYTE, 0);
 
 		SetupAttributes(style);
 	}
@@ -48,43 +42,45 @@ namespace GL {
 		unsigned width,
 		unsigned height,
 		Format format,
-		const Style& style)
-		: tid(NewID()), transparent(IsTransparent(format)) {
+		const Style& style) :
+		tid(NewID()),
+		transparent(IsTransparent(format)) {
 		Binder b(*this);
 
 		glTexImage2D(
-			GL_TEXTURE_2D,
-			0,
-			IsTransparent(format) ? GL_RGBA : GL_RGB,
-			width,
-			height,
-			0,
-			GL_BGRA,
-			GL_UNSIGNED_BYTE,
-			buffer);
+			GL_TEXTURE_2D, 0, IsTransparent(format) ? GL_RGBA : GL_RGB, width,
+			height, 0, GL_BGRA, GL_UNSIGNED_BYTE, buffer);
 
 		SetupAttributes(style);
 	}
 
-	Texture::Texture(const tb::Image& image, const Style& style)
-		: tid(NewID()) {
+	Texture::Texture(const tb::Image& image, const Style& style) :
+		tid(NewID()) {
 		Binder b(*this);
 		glTexImage2D(
-			GL_TEXTURE_2D,
-			0,
-			image.Transparent() ? GL_RGBA : GL_RGB,
-			image.Width(),
-			image.Height(),
-			0,
-			GL_BGRA,
-			GL_UNSIGNED_BYTE,
+			GL_TEXTURE_2D, 0, image.Transparent() ? GL_RGBA : GL_RGB,
+			image.Width(), image.Height(), 0, GL_BGRA, GL_UNSIGNED_BYTE,
 			image.Data());
 
 		SetupAttributes(style);
 		transparent = image.Transparent();
 	}
 
-	Texture::~Texture() { glDeleteTextures(1, &tid); }
+	void Texture::operator=(Texture&& o) {
+		if (tid) {
+			glDeleteTextures(1, &tid);
+			tid = 0;
+		}
+		tid = o.tid;
+		transparent = o.transparent;
+		o.tid = 0;
+	};
+
+	Texture::~Texture() {
+		if (tid) {
+			glDeleteTextures(1, &tid);
+		}
+	}
 
 
 	void Texture::Update(
@@ -96,29 +92,15 @@ namespace GL {
 		Format format) {
 		Binder b(*this);
 		glTexSubImage2D(
-			GL_TEXTURE_2D,
-			0,
-			x,
-			y,
-			width,
-			height,
-			ToGLFormat(format),
-			GL_UNSIGNED_BYTE,
-			buffer);
+			GL_TEXTURE_2D, 0, x, y, width, height, ToGLFormat(format),
+			GL_UNSIGNED_BYTE, buffer);
 	}
 
 	void Texture::Update(const tb::Image& image, const tb::Vector<2, int>& to) {
 		Binder b(*this);
 		glTexSubImage2D(
-			GL_TEXTURE_2D,
-			0,
-			to[0],
-			to[1],
-			image.Width(),
-			image.Height(),
-			ToGLFormat(RGBA),
-			GL_UNSIGNED_BYTE,
-			image.Data());
+			GL_TEXTURE_2D, 0, to[0], to[1], image.Width(), image.Height(),
+			ToGLFormat(RGBA), GL_UNSIGNED_BYTE, image.Data());
 	}
 
 

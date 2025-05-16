@@ -45,8 +45,7 @@ class DummyHMD : GLX, tb::linux::Input {
 	tb::Matrix<4, 4, float> view;
 	Atom wmDeleteNotify;
 
-	static Eye eye;
-	static Eyes eyes;
+	Eyes eyes;
 
 	struct F : tb::Factory<Core> {
 		uint Score() final { return useDummyHMD ? ~0 : 0; };
@@ -87,6 +86,7 @@ class DummyHMD : GLX, tb::linux::Input {
 
 		glViewport(0, 0, size[0], size[1]);
 
+		Eye eye;
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glFrustum(-w, w, -h, h, near, far);
@@ -97,6 +97,7 @@ class DummyHMD : GLX, tb::linux::Input {
 		view.Identity();
 
 		eye.eye2Head.Identity();
+		eyes.emplace_back(std::move(eye));
 	};
 
 	const tb::Matrix<4, 4, float>& Pose() {
@@ -172,6 +173,3 @@ tb::Prefs<bool> DummyHMD::useDummyHMD(
 	"--GLDummyHMD", "ダミーのHMDを使う", tb::CommonPrefs::nosave);
 DummyHMD::Factory DummyHMD::factory;
 const tb::Spread<2, unsigned> DummyHMD::size(1280u, 720u);
-
-Core::Eye DummyHMD::eye;
-Core::Eyes DummyHMD::eyes(&DummyHMD::eye, 1U);
