@@ -138,7 +138,7 @@ class DummyHMD : GLX, tb::linux::Input {
 	static tb::Prefs<bool> useDummyHMD;
 	static class Factory : tb::Factory<Core> {
 		uint Score() {
-			return DummyHMD::useDummyHMD ? Certitude::passiveMatch : 0;
+			return DummyHMD::useDummyHMD ? Certitude::uniqueMatch : 0;
 		};
 		Core* New() { return new DummyHMD; };
 	} factory;
