@@ -31,6 +31,7 @@ struct GLX : Core {
 	GLX() = delete;
 	void operator=(const GLX&) = delete;
 
+protected:
 	GLX(Eyes& e) : Core(e), display(XOpenDisplay(0)) {};
 
 	~GLX() {
@@ -41,7 +42,6 @@ struct GLX : Core {
 		XCloseDisplay(display);
 	};
 
-protected:
 	Display* const display;
 
 	void Setup(Drawable drawable, int attributes[] = defaultAttributes) {

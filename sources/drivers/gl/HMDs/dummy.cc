@@ -27,8 +27,6 @@
 #include <tb/linux/input.h>
 #include <tb/prefs.h>
 
-#include "core.h"
-#include "gl/gl.h"
 #include "gl/glx.h"
 
 
@@ -42,15 +40,9 @@ class DummyHMD : GLX, tb::linux::Input {
 	const int screen;
 	Window window;
 	unsigned eIndex;
-	tb::Matrix<4, 4, float> view;
 	Atom wmDeleteNotify;
 
 	Eyes eyes;
-
-	struct F : tb::Factory<Core> {
-		uint Score() final { return useDummyHMD ? ~0 : 0; };
-		Core* New() final { return new DummyHMD; };
-	};
 
 	DummyHMD() :
 		GLX(eyes),
@@ -67,7 +59,7 @@ class DummyHMD : GLX, tb::linux::Input {
 			BlackPixel(display, screen))),
 		eIndex(0),
 		wmDeleteNotify(XInternAtom(display, "WM_DELETE_WINDOW", False)) {
-		GLX::Setup(window);
+		Setup(window);
 
 		XSelectInput(
 			display, window, StructureNotifyMask | SubstructureNotifyMask);
@@ -94,16 +86,12 @@ class DummyHMD : GLX, tb::linux::Input {
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		view.Identity();
 
 		eye.eye2Head.Identity();
 		eyes.emplace_back(std::move(eye));
 	};
 
-	const tb::Matrix<4, 4, float>& Pose() {
-		GetInput();
-		return view;
-	};
+	void UpdatePose() final { GetInput(); };
 	void Finish() final {
 		eIndex = 0;
 
@@ -148,7 +136,7 @@ class DummyHMD : GLX, tb::linux::Input {
 			// 右スティッが動かされた
 			const float angle[3] = {(float)a.value[4], (float)a.value[3], 0};
 			tb::Complex<4, float> qon(angle, M_PI / 32769);
-			view = qon;
+			pose = qon;
 
 #if 0
 			printf("%+6d %+6d\n", a.value[3], a.value[4]);
@@ -170,6 +158,6 @@ class DummyHMD : GLX, tb::linux::Input {
 
 
 tb::Prefs<bool> DummyHMD::useDummyHMD(
-	"--GLDummyHMD", "ダミーのHMDを使う", tb::CommonPrefs::nosave);
+	"--GLDummyHMD", false, "ダミーのHMDを使う", tb::CommonPrefs::nosave);
 DummyHMD::Factory DummyHMD::factory;
 const tb::Spread<2, unsigned> DummyHMD::size(1280u, 720u);

@@ -45,6 +45,14 @@ protected:
 	static constexpr float farClip = 10000;
 
 	struct Eye {
+		Eye() {};
+		Eye(Eye&& o) { *this = std::move(o); };
+		Eye(unsigned width, unsigned height) : framebuffer(width, height) {};
+		void operator=(Eye&& o) {
+			projection = o.projection;
+			eye2Head = o.eye2Head;
+			framebuffer = std::move(o.framebuffer);
+		};
 		tb::Matrix<4, 4, float> projection; // Transpose(GetProjectionMatrix)
 		tb::Matrix<4, 4, float>
 			eye2Head; // Transpose(GetEyeToHeadTransform()).InvertAffine()
@@ -56,7 +64,8 @@ protected:
 	Core(Eyes& e) : eyes(e) {};
 
 	/***** 姿勢を取得 */
-	virtual const tb::Matrix<4, 4, float>& Pose() = 0;
+	tb::Matrix<4, 4, float> pose;
+	virtual void UpdatePose() = 0;
 
 	/***** フレームバッファを画面へ出力
 	 * NextEyeで返す行列の視点番号を最初に戻す

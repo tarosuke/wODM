@@ -18,6 +18,7 @@
  */
 #include "core.h"
 #include "gl/gl.h"
+#include "gl/glx.h"
 #include "gl/scenery.h"
 #include "widget.h"
 #include <assert.h>
@@ -33,10 +34,11 @@ template <> tb::Factory<Core>* tb::Factory<Core>::start(0);
 
 
 void Core::Run() {
+	pose.Identity();
 	for (keep = true; keep;) {
 		timestamp.Update();
 
-		const auto& pose(Pose());
+		UpdatePose();
 
 		// 各種Update
 		// Stickies::UpdateAll();

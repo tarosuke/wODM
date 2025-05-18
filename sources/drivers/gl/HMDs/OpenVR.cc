@@ -19,67 +19,17 @@
 #include <X11/X.h>
 #include <openvr/openvr.h>
 
-#include <tb/input.h>
-#include <tb/linux/input.h>
 #include <tb/matrix.h>
 #include <tb/prefs.h>
 
-#include "core.h"
 #include "gl/framebuffer.h"
 #include "gl/gl.h"
 #include "gl/glx.h"
 
 
 
-namespace {
-	::Display* GetDisplay() {
-		::Display* display(XOpenDisplay(""));
-
-		/** デフォルトのビジュアルフォーマット
-		 */
-		static int attr[] = {
-			GLX_USE_GL,
-			GLX_LEVEL,
-			0,
-			GLX_RGBA,
-			GLX_DOUBLEBUFFER,
-			GLX_RED_SIZE,
-			8,
-			GLX_GREEN_SIZE,
-			8,
-			GLX_BLUE_SIZE,
-			8,
-			GLX_ALPHA_SIZE,
-			8,
-			GLX_DEPTH_SIZE,
-			24,
-			GLX_STENCIL_SIZE,
-			8,
-			GLX_ACCUM_RED_SIZE,
-			0,
-			GLX_ACCUM_GREEN_SIZE,
-			0,
-			GLX_ACCUM_BLUE_SIZE,
-			0,
-			GLX_ACCUM_ALPHA_SIZE,
-			0,
-			None};
-		XVisualInfo* visual(
-			glXChooseVisual(display, DefaultScreen(display), attr));
-		GLXContext context(glXCreateContext(display, visual, NULL, True));
-		glXMakeCurrent(display, DefaultRootWindow(display), context);
-
-		// glew初期化
-		if (GLEW_OK != glewInit()) {
-			throw "GLEWが使えません";
-		}
-
-		return display;
-	}
-}
-
-
-struct OpenVR : GLX, tb::linux::Input {
+struct OpenVR : GLX {
+private:
 	struct Exception {
 		const char* message;
 		vr::HmdError code;
@@ -87,11 +37,6 @@ struct OpenVR : GLX, tb::linux::Input {
 
 	OpenVR();
 	~OpenVR();
-
-private:
-	unsigned eIndex;
-	tb::Matrix<4, 4, float> projection;
-	tb::Matrix<4, 4, float> view;
 
 	struct F : tb::Factory<Core> {
 		uint Score() final {
@@ -101,43 +46,26 @@ private:
 	};
 	static F factory;
 
-	struct Pose : public tb::Matrix<4, 4, float> {
-		Pose() {};
-		Pose(const vr::HmdMatrix44_t& o) { *this = o; };
-		Pose(const vr::HmdMatrix34_t& o) { *this = o; };
-		void operator=(const vr::HmdMatrix44_t& o) { Transpose(o.m); };
-		void operator=(const vr::HmdMatrix34_t& o) { TransposeAffine(o.m); };
-	};
-
 	vr::TrackedDevicePose_t devicePoses[vr::k_unMaxTrackedDeviceCount];
-	Pose headPose;
 	vr::IVRSystem& openVR;
 
 	// フレームバッファ他
 	GL::Framebuffer::Size renderSize;
-#if 0
-	struct Eye {
-		Eye(vr::IVRSystem&, vr::EVREye, GL::Framebuffer::Size&);
-		const vr::EVREye side;
-		GL::Framebuffer framebuffer;
-		vr::HmdMatrix44_t projecionMatrix;
-		Pose eye2HeadMatrix;
-		vr::Texture_t fbFeature;
-	} eyes[2];
-#endif
 	Eyes eyes;
 	static constexpr vr::EVREye eyeIndex[2] = {vr::Eye_Right, vr::Eye_Left};
-	vr::Texture_t fbFeature[2];
+	vr::Texture_t fbFeatures[2];
 
 	// 初期化サポート
 	static vr::IVRSystem& GetOpenVR(); // 失敗したら例外
 	static GL::Framebuffer::Size GetRenderSize(vr::IVRSystem&);
 
-	const tb::Matrix<4, 4, float>& Pose() {
-		GetInput();
-		return view;
+	// 姿勢取得
+	void UpdatePose() final;
+	void Finish() final {
+		for (unsigned n(0); n < 2; ++n) {
+			vr::VRCompositor()->Submit(eyeIndex[n], &fbFeatures[n]);
+		}
 	};
-	void Finish() final {};
 };
 
 
@@ -145,66 +73,48 @@ OpenVR::OpenVR() :
 	GLX(eyes),
 	openVR(GetOpenVR()),
 	renderSize(GetRenderSize(openVR)) {
+
+	Setup(DefaultRootWindow(display));
+
 	// eyes初期化
-	GL::Framebuffer::Size size;
-	openVR.GetRecommendedRenderTargetSize(&size.width, &size.height);
 	for (unsigned n(0); n < 2; ++n) {
 		const auto ei(eyeIndex[n]);
 		vr::HmdMatrix44_t pm(openVR.GetProjectionMatrix(ei, nearClip, farClip));
 		vr::HmdMatrix34_t eh(openVR.GetEyeToHeadTransform(ei));
 
-		Eye eye;
+		Eye eye(renderSize.width, renderSize.height);
 		eye.projection.Transpose(pm.m);
-		eye.eye2Head.TransposeAffine(eh.m), GL::Framebuffer();
+		eye.eye2Head.TransposeAffine(eh.m);
 		eye.eye2Head.InvertAffine();
-		eye.framebuffer = std::move(GL::Framebuffer(size));
+
+		fbFeatures[n].handle =
+			(void*)(uintptr_t)eye.framebuffer.GetColorBufferID();
+		fbFeatures[n].eType = vr::TextureType_OpenGL;
+		fbFeatures[n].eColorSpace = vr::ColorSpace_Gamma;
 
 		eyes.emplace_back(std::move(eye));
 	}
-
-	// 基本設定
-	glEnable(GL_POLYGON_SMOOTH);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_TEXTURE_2D);
 }
-OpenVR::~OpenVR() {
-	XCloseDisplay((::Display*)display);
-	vr::VR_Shutdown();
-}
+OpenVR::~OpenVR() { vr::VR_Shutdown(); }
 
-// TODO:以下の姿勢取得とOpenVRへの送付を分離(後者はFinishとでも)
-// void OpenVR::Draw(const TB::Matrix<4, 4, float>& view) {
-// 	// 全デバイスの姿勢を取得
-// 	vr::VRCompositor()
-// 		->WaitGetPoses(devicePoses, vr::k_unMaxTrackedDeviceCount, NULL, 0);
-// 	for (unsigned n(0); n < vr::k_unMaxTrackedDeviceCount; ++n) {
-// 		if (devicePoses[n].bPoseIsValid) {
-// 			switch (openVR.GetTrackedDeviceClass(n)) {
-// 			case vr::TrackedDeviceClass_HMD:
-// 				headPose = devicePoses[n].mDeviceToAbsoluteTracking;
-// 				headPose.InvertAffine();
-// 				break;
-// 			default:
-// 				break;
-// 			}
-// 		}
-// 	}
-
-// 	TG::Scene::SetHeadPose(headPose);
-
-// 	for (auto& eye : eyes) {
-// 		TB::Framebuffer::Key key(eye.framebuffer);
-// 		glViewport(0, 0, renderSize.width, renderSize.height);
-
-// 		glMatrixMode(GL_PROJECTION);
-// 		glLoadTransposeMatrixf(&eye.projecionMatrix.m[0][0]);
-// 		glMatrixMode(GL_MODELVIEW);
-// 		Scene::Draw(eye.eye2HeadMatrix * headPose * view);
-// 		vr::VRCompositor()->Submit(eye.side, &eye.fbFeature);
-// 	}
-// }
+void OpenVR::UpdatePose() {
+	// 全デバイスの姿勢を取得
+	vr::VRCompositor()->WaitGetPoses(
+		devicePoses, vr::k_unMaxTrackedDeviceCount, NULL, 0);
+	for (unsigned n(0); n < vr::k_unMaxTrackedDeviceCount; ++n) {
+		if (devicePoses[n].bPoseIsValid) {
+			switch (openVR.GetTrackedDeviceClass(n)) {
+			case vr::TrackedDeviceClass_HMD:
+				pose.TransposeAffine(
+					devicePoses[n].mDeviceToAbsoluteTracking.m);
+				pose.InvertAffine();
+				break;
+			default:
+				break;
+			}
+		}
+	}
+};
 
 vr::IVRSystem& OpenVR::GetOpenVR() {
 	Exception exception = {"Failed to initialize OpenVR"};

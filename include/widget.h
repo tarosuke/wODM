@@ -114,10 +114,10 @@ struct CanvasWidget : public RectWidget, public tb::Canvas, GL::Texture {
 	CanvasWidget(const tb::Spread<2, unsigned>&);
 
 protected:
-	struct Fragment : tb::List<Fragment>::Node,
-					  public tb::BufferedImage<tb::ImageARGB32> {
-		Fragment(const tb::Image& origin, const tb::Vector<2, int>& offset,
-				 const tb::Spread<2, int>&);
+	struct Fragment : tb::List<Fragment>::Node, public tb::BufferedImage {
+		Fragment(const tb::Image& origin,
+			const tb::Vector<2, int>& offset,
+			const tb::Spread<2, int>&);
 		const tb::Vector<2, int> offset;
 	};
 	void AddFragment(Fragment& f) { updates.Add(f); };
