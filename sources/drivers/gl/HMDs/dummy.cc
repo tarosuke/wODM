@@ -76,9 +76,9 @@ class DummyHMD : GLX, tb::linux::Input {
 		static constexpr double w = width * near;
 		static const double h = w * size[1] / size[0];
 
-		glViewport(0, 0, size[0], size[1]);
-
 		Eye eye;
+		eye.width = size[0];
+		eye.height = size[1];
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glFrustum(-w, w, -h, h, near, far);
@@ -92,7 +92,7 @@ class DummyHMD : GLX, tb::linux::Input {
 	};
 
 	void UpdatePose() final { GetInput(); };
-	void Finish() final {
+	void Finish(Eye&) final {
 		eIndex = 0;
 
 		// Xのイベントを処理
@@ -114,14 +114,8 @@ class DummyHMD : GLX, tb::linux::Input {
 				break;
 			}
 		}
-
-// 窓へ出力
-#if 1
-		glFinish();
-#else
-		glXSwapBuffers(display, window);
-#endif
 	};
+	void Finish() final { glFinish(); };
 
 	static tb::Prefs<bool> useDummyHMD;
 	static class Factory : tb::Factory<Core> {

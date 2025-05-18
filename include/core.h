@@ -47,16 +47,25 @@ protected:
 	struct Eye {
 		Eye() {};
 		Eye(Eye&& o) { *this = std::move(o); };
-		Eye(unsigned width, unsigned height) : framebuffer(width, height) {};
+		Eye(unsigned width, unsigned height) :
+			framebuffer(width, height),
+			width(width),
+			height(height) {};
 		void operator=(Eye&& o) {
 			projection = o.projection;
 			eye2Head = o.eye2Head;
+			memo = o.memo;
+			width = o.width;
+			height = o.height;
 			framebuffer = std::move(o.framebuffer);
 		};
 		tb::Matrix<4, 4, float> projection; // Transpose(GetProjectionMatrix)
 		tb::Matrix<4, 4, float>
 			eye2Head; // Transpose(GetEyeToHeadTransform()).InvertAffine()
 		GL::Framebuffer framebuffer;
+		unsigned memo;
+		unsigned width;
+		unsigned height;
 	};
 	using Eyes = std::vector<Eye>;
 	Eyes& eyes;
@@ -70,6 +79,7 @@ protected:
 	/***** フレームバッファを画面へ出力
 	 * NextEyeで返す行列の視点番号を最初に戻す
 	 */
+	virtual void Finish(Eye&) {};
 	virtual void Finish() = 0;
 
 	/***** 繰り返しから抜ける */

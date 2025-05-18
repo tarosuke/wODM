@@ -50,18 +50,25 @@ void Core::Run() {
 			GL::Framebuffer::Key fb(e.framebuffer);
 			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+			glViewport(0, 0, e.width, e.height);
+
+			glMatrixMode(GL_PROJECTION);
+			glLoadMatrixf(e.projection);
+
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
+
 			// Stickies::DrawAll();
 			Widget::DrawAll();
-			glLoadMatrixf(pose);
+			glLoadMatrixf(pose * e.eye2Head);
 			// World::DrawAll();
 			GL::Scenery::DrawAll();
 			// World::TrawAll();
 			Widget::TrawAll();
 			// Stickies::TrawAll();
-		}
 
+			Finish(e);
+		}
 		Finish();
 	}
 }

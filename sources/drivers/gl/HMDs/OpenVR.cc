@@ -61,10 +61,12 @@ private:
 
 	// 姿勢取得
 	void UpdatePose() final;
+	void Finish(Eye& e) final {
+		vr::VRCompositor()->Submit(eyeIndex[e.memo], &fbFeatures[e.memo]);
+	};
 	void Finish() final {
-		for (unsigned n(0); n < 2; ++n) {
-			vr::VRCompositor()->Submit(eyeIndex[n], &fbFeatures[n]);
-		}
+		glFlush();
+		glFinish();
 	};
 };
 
@@ -86,6 +88,7 @@ OpenVR::OpenVR() :
 		eye.projection.Transpose(pm.m);
 		eye.eye2Head.TransposeAffine(eh.m);
 		eye.eye2Head.InvertAffine();
+		eye.memo = n;
 
 		fbFeatures[n].handle =
 			(void*)(uintptr_t)eye.framebuffer.GetColorBufferID();
