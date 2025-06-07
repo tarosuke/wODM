@@ -41,9 +41,8 @@ void Core::Run() {
 		UpdatePose();
 
 		// 各種Update
-		// Stickies::UpdateAll();
-		Widget::UpdateAll(pose);
-		// World::UpdateAll();
+		Widget::UpdateAll(pose, timestamp);
+		// World::Update();
 		GL::Scenery::UpdateAll();
 
 		for (auto& e : eyes) {
@@ -56,16 +55,26 @@ void Core::Run() {
 			glLoadMatrixf(e.projection);
 
 			glMatrixMode(GL_MODELVIEW);
-			glLoadIdentity();
 
-			// Stickies::DrawAll();
-			Widget::DrawAll();
+			// opaque stickies
+			glLoadMatrixf(e.eye2Head);
+			Widget::DrawNavigationAll();
+
+			// opaque GUI
+			Widget::DrawAll(e.eye2Head);
+
+			// opaque World
 			glLoadMatrixf(pose * e.eye2Head);
 			// World::DrawAll();
+
+			// Scenery
 			GL::Scenery::DrawAll();
+
+			// transparent World
 			// World::TrawAll();
+
+			// transparent GUI & Navigation
 			Widget::TrawAll();
-			// Stickies::TrawAll();
 
 			Finish(e);
 		}

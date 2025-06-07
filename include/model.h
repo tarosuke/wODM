@@ -22,11 +22,14 @@
 #include <gl/vbo.h>
 #include <tb/image.h>
 
-#include "core.h"
+
 
 // Abstract Model
-class Model : Core::Object {
-public:
+struct Model {
+	virtual void Draw() = 0;
+	virtual void Traw() = 0;
+
+
 	// Model有効判定
 	operator bool() { return !!vbo; };
 
@@ -44,8 +47,8 @@ protected:
 
 	// バッファタイプ別に作るとキリがないので
 	template <typename T>
-	Model(const T& p)
-		: vbo(GL::VBO::New(p.numOfIndex, p.index, p.numOfVertex, p.vertex)){};
+	Model(const T& p) :
+		vbo(GL::VBO::New(p.numOfIndex, p.index, p.numOfVertex, p.vertex)){};
 
 	GL::VBO* const vbo;
 
@@ -58,7 +61,8 @@ public:
 protected:
 	using Params = Params<GL::VBO::V_UV>;
 
-	Model_C(const Params&,
+	Model_C(
+		const Params&,
 		const tb::Image&,
 		const GL::Texture::Style& style = GL::Texture::defaultStyle);
 	void Draw() override;
