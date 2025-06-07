@@ -1,5 +1,5 @@
 ﻿/*****************************************************************************
- * Copyright (C) 2024 tarosuke<webmaster@tarosuke.net>
+ * Copyright (C) 2024,2025 tarosuke<webmaster@tarosuke.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,6 +18,7 @@
  */
 #pragma once
 
+#include "model.h"
 #include <tb/canvas.h>
 #include <tb/image.h>
 #include <tb/list.h>
@@ -27,105 +28,88 @@
 #include <tb/spread.h>
 #include <tb/time.h>
 #include <tb/vector.h>
+#include <wOLIB/message.h>
+
+
 
 struct Widget : tb::List<Widget>::Node {
-	static void RegisterRoot(Widget& w);
-	static void UpdateAll(const tb::Matrix<4, 4, float>&);
-	static void DrawAll();
+	using P = tb::Vector<2, float>;
+	using S = tb::Spread<2, unsigned>;
+	using R = tb::Rect<2, float>;
+	using A = tb::Matrix<4, 4, float>;
+
+	static void UpdateAll(const A&, const tb::Timestamp&);
+	static void DrawAll(const A& eye2Head);
 	static void TrawAll();
+	static void DrawNavigationAll() { root.Foreach(&Widget::DrawNavigation); };
+	static void TrawNavigationAll();
+
+protected:
+	static tb::Prefs<float> vDistance;
+	static tb::Prefs<float> vStep;
+	static tb::Prefs<float> scale;
+
+	// navigation用の点を描画
+	float inRadious;
+	float outRadious;
+	static void Dot(const P&);
+
+
+
+	// 描画、制御ハンドラ
+	virtual void Update(const tb::Timestamp&);
+	virtual void Draw() { children.Foreach(&Widget::Draw); };
+	virtual void Traw() { children.Foreach(&Widget::Traw); };
+	virtual void Draw(const R& r) { children.Foreach(&Widget::Draw, r); };
+	virtual void Traw(const R& r) { children.Foreach(&Widget::Traw, r); };
+	virtual void DrawNavigation() {
+		children.Foreach(&Widget::DrawNavigation);
+	};
 
 	// その他操作
 	void SetVisibility(bool v) { visible = v; };
 
+	void OnMessage(const wO::Message&);
+
 protected:
-	Widget() : parent(0), visible(true) {};
+	Widget* parent;
+	tb::List<Widget> children;
+
+	Widget() : visible(true) {};
 	virtual ~Widget() {};
+
 	void Register(Widget& w) {
-		if (Widget* const r = Root()) {
-			r->Insert(w);
-		}
+		w.parent = this;
+		children.Insert(w); // 普通は先頭に
 	};
+
+
 
 	// ユーザ向けハンドラ
 	virtual void OnUpdate() {};
 
-	// 内部ハンドラ
-	virtual void Update();
-	virtual void Draw();
-	virtual void Traw();
-	virtual void Draw(const tb::Rect<2, int>&);
-	virtual void Traw(const tb::Rect<2, int>&);
+
+	static struct Navigator {
+		float innerRadious; // ナビゲーションサークルの内径(現物と一致)
+		float outerRadious; // 同外形(無限遠)
+		float thickness;	// 上二つの差
+	} navigator;
+
+
+	static P lookingPoint;
 
 private:
-	static tb::Prefs<float> vDistance;
-	static tb::Prefs<float> scale;
-	static tb::List<Widget> roots;
-	static tb::Vector<2, float> lookingPoint;
-	static tb::Matrix<4, 4, float> view;
-	static Widget& Root(); // NOTE:これの実体はwodm.ccにある
+	static A viewMatrix;
 
-	Widget* parent;
-	tb::List<Widget> children;
+	static tb::List<Widget> root;
+
+
 	bool visible;
 
 	// つながってるリストがなくなったら一緒に消滅
 	void NotifyListDeleted() final { delete this; };
-};
 
-// 範囲だけがあるWidget
-struct RectWidget : public Widget {
-	RectWidget(const tb::Rect<2, int>&);
-	RectWidget(const tb::Vector<2, int>&, const tb::Spread<2, unsigned>&);
-	RectWidget(const tb::Spread<2, unsigned>&);
 
-protected:
-	// 移動(Jump:即時/Move:追随, 無印:差分指定/To:目的位置指定)
-	void Jump(const tb::Vector<2, int>&);
-	void JumpTo(const tb::Vector<2, int>& t) { Jump(leftTop - t); };
-	void Move(const tb::Vector<2, int>& d) { target += d; };
-	void MoveTo(const tb::Vector<2, int>& t) { target = t; };
-
-	// 内部ハンドラ
-	void Update() override;
-	void Draw() override;
-	void Traw() override;
-	void Draw(const tb::Rect<2, int>&) override;
-	void Traw(const tb::Rect<2, int>&) override;
-
-private:
-	static tb::Prefs<unsigned> moveRatio;
-
-	tb::Rect<2, int> rect;
-	tb::Vector<2, int> leftTop;
-	tb::Spread<2, unsigned> size;
-	tb::Color color;
-	bool draw; // 背景を描画する
-
-	tb::Vector<2, int> target; // leftTopと異なる時Updateで移動
-};
-
-#include "gl/texture.h"
-
-// 描画できるWidget
-struct CanvasWidget : public RectWidget, public tb::Canvas, GL::Texture {
-	static constexpr int maxFragmentPixels = 64 * 64;
-
-	CanvasWidget(const tb::Rect<2, int>&);
-	CanvasWidget(const tb::Spread<2, unsigned>&);
-
-protected:
-	struct Fragment : tb::List<Fragment>::Node, public tb::BufferedImage {
-		Fragment(const tb::Image& origin,
-			const tb::Vector<2, int>& offset,
-			const tb::Spread<2, int>&);
-		const tb::Vector<2, int> offset;
-	};
-	void AddFragment(Fragment& f) { updates.Add(f); };
-
-private:
-	tb::List<Fragment> updates;
-	void Update() final;
-
-	void OnCanvasUpdated(const tb::Rect<2, double>&) final;
-	Fragment* GetFragment() { return updates.Get(); };
+	Widget(const Widget&) = delete;
+	void operator=(const Widget&) = delete;
 };
