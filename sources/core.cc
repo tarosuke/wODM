@@ -20,7 +20,7 @@
 #include "gl/gl.h"
 #include "gl/glx.h"
 #include "gl/scenery.h"
-#include "widget.h"
+#include "pane/rootPane.h"
 #include <assert.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -41,27 +41,26 @@ void Core::Run() {
 		UpdatePose();
 
 		// 各種Update
-		Widget::UpdateAll(pose, timestamp);
-		// World::Update();
+		RootPane::UpdateAll(pose, timestamp);
+		// World::Update(timestamp);
 		GL::Scenery::UpdateAll();
 
 		for (auto& e : eyes) {
 			GL::Framebuffer::Key fb(e.framebuffer);
 			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
 			glViewport(0, 0, e.width, e.height);
-
 			glMatrixMode(GL_PROJECTION);
 			glLoadMatrixf(e.projection);
-
 			glMatrixMode(GL_MODELVIEW);
 
-			// opaque stickies
-			glLoadMatrixf(e.eye2Head);
-			Widget::DrawNavigationAll();
+			/***** 不透明物体
+			 * オーバードロー避けでおよそ手前から描画される
+			 * またデプスバッファへの書き込み設定を戻す
+			 */
+			glDisable(GL_BLEND);
+			glDepthMask(GL_TRUE);
 
-			// opaque GUI
-			Widget::DrawAll(e.eye2Head);
+			RootPane::DrawAll(e.eye2Head);
 
 			// opaque World
 			glLoadMatrixf(pose * e.eye2Head);
@@ -70,11 +69,21 @@ void Core::Run() {
 			// Scenery
 			GL::Scenery::DrawAll();
 
+			/***** 以後透過
+			 * wODMにおいて透過は透過率による乗算で実現する。
+			 * なのでdepthは評価はされるが書き込まれない。
+			 * アルファブレンドが必要なら自分で設定して元に戻す。
+			 * 透明な物体は透過率、網などの穴はアルファブレンドを用いる
+			 */
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+			glDepthMask(GL_FALSE);
+
 			// transparent World
 			// World::TrawAll();
 
 			// transparent GUI & Navigation
-			Widget::TrawAll();
+			RootPane::TrawAll(e.eye2Head);
 
 			Finish(e);
 		}
