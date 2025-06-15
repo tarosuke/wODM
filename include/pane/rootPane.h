@@ -32,6 +32,7 @@ struct RootPane : BasePane {
 	RootPane() : BasePane(-baseStep) { UpdateNav(); };
 
 private:
+	static tb::Prefs<float> pDistance;
 	static tb::Prefs<float> vDistance;
 	static tb::Prefs<float> scale;
 	static tb::Prefs<float> navigationAngle;

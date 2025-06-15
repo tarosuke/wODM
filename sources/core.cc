@@ -47,6 +47,9 @@ void Core::Run() {
 
 		for (auto& e : eyes) {
 			GL::Framebuffer::Key fb(e.framebuffer);
+			glDisable(GL_BLEND);
+			glDepthMask(GL_TRUE);
+
 			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 			glViewport(0, 0, e.width, e.height);
 			glMatrixMode(GL_PROJECTION);
@@ -56,10 +59,8 @@ void Core::Run() {
 			/***** 不透明物体
 			 * オーバードロー避けでおよそ手前から描画される
 			 * またデプスバッファへの書き込み設定を戻す
+			 * この領域はブレンドなし、デプス評価、書き換えあり
 			 */
-			glDisable(GL_BLEND);
-			glDepthMask(GL_TRUE);
-
 			RootPane::DrawAll(e.eye2Head);
 
 			// opaque World
@@ -83,7 +84,7 @@ void Core::Run() {
 			// World::TrawAll();
 
 			// transparent GUI & Navigation
-			RootPane::TrawAll(e.eye2Head);
+			// RootPane::TrawAll(e.eye2Head);
 
 			Finish(e);
 		}

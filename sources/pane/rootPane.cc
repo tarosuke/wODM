@@ -33,8 +33,12 @@ namespace {
 }
 
 
+tb::Prefs<float> RootPane::pDistance(
+	"widget/paneDistance", 1.0f, "一番手前のWidgetが見える奥行き[m]");
 tb::Prefs<float> RootPane::vDistance(
-	"widget/virtualDistance", 1.0f, "一番手前のWidgetが見える奥行き[m]");
+	"widget/virtualDistance",
+	1.0f,
+	"視野中心を決めるための視点の投影面までの距離[m]");
 tb::Prefs<float> RootPane::scale("widget/scale", 0.001f, "1pxのサイズ[m]");
 tb::Prefs<float> RootPane::navigationAngle(
 	"widget/navigationAngle",
@@ -66,8 +70,11 @@ void RootPane::DrawAll(const A& e2h) {
 
 	// Navigation描画
 	glLoadMatrixf((const float*)e2h);
+	glColor3f(1, 0, 0);
+	glPointSize(16);
 	glBegin(GL_POINTS);
 	rootPane.DrawNavigation(lookingPoint);
+	glVertex3f(0, 0, -pDistance);
 	glEnd();
 
 	// 描画

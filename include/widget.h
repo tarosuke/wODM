@@ -19,95 +19,45 @@
 #pragma once
 
 #include "model.h"
+#include "pane/pane.h"
 #include <tb/canvas.h>
 #include <tb/image.h>
-#include <tb/list.h>
-#include <tb/matrix.h>
 #include <tb/prefs.h>
-#include <tb/rect.h>
-#include <tb/spread.h>
-#include <tb/time.h>
 #include <tb/vector.h>
-#include <wOLIB/message.h>
 
 
 
-struct Widget : tb::List<Widget>::Node {
-	using P = tb::Vector<2, float>;
-	using S = tb::Spread<2, unsigned>;
-	using R = tb::Rect<2, float>;
-	using A = tb::Matrix<4, 4, float>;
-
-	static void UpdateAll(const A&, const tb::Timestamp&);
-	static void DrawAll(const A& eye2Head);
-	static void TrawAll();
-	static void DrawNavigationAll() { root.Foreach(&Widget::DrawNavigation); };
-	static void TrawNavigationAll();
+/***** Widget
+ * 画面直下のPane兼制御のエントリ
+ * 位置のみを持つ
+ * Windowの各要素を子に持つ
+ * その関係でstepは0でNextStepは親のNextStepを転送
+ */
+struct Widget : Pane {
 
 protected:
-	static tb::Prefs<float> vDistance;
-	static tb::Prefs<float> vStep;
-	static tb::Prefs<float> scale;
-
-	// navigation用の点を描画
-	float inRadious;
-	float outRadious;
-	static void Dot(const P&);
+	/***** 位置、奥行
+	 */
+	P center;
+	P target;
+	float depth;
+	float targetDepth;
 
 
 
-	// 描画、制御ハンドラ
-	virtual void Update(const tb::Timestamp&);
-	virtual void Draw() { children.Foreach(&Widget::Draw); };
-	virtual void Traw() { children.Foreach(&Widget::Traw); };
-	virtual void Draw(const R& r) { children.Foreach(&Widget::Draw, r); };
-	virtual void Traw(const R& r) { children.Foreach(&Widget::Traw, r); };
-	virtual void DrawNavigation() {
-		children.Foreach(&Widget::DrawNavigation);
-	};
-
-	// その他操作
-	void SetVisibility(bool v) { visible = v; };
-
-	void OnMessage(const wO::Message&);
-
-protected:
-	Widget* parent;
-	tb::List<Widget> children;
-
-	Widget() : visible(true) {};
-	virtual ~Widget() {};
-
-	void Register(Widget& w) {
-		w.parent = this;
-		children.Insert(w); // 普通は先頭に
-	};
+	Widget() = default;
 
 
-
-	// ユーザ向けハンドラ
-	virtual void OnUpdate() {};
-
-
-	static struct Navigator {
-		float innerRadious; // ナビゲーションサークルの内径(現物と一致)
-		float outerRadious; // 同外形(無限遠)
-		float thickness;	// 上二つの差
-	} navigator;
-
-
-	static P lookingPoint;
 
 private:
-	static A viewMatrix;
+	void Update(const tb::Timestamp&) final;
+	void DrawNavigation(const P& lookingPoint) final;
 
-	static tb::List<Widget> root;
 
+	float NextStep() final {
+		return parent.NextStep();
+	}; // Widgetのstepは0なので代わりにrootのNextStepを返す
 
-	bool visible;
-
-	// つながってるリストがなくなったら一緒に消滅
-	void NotifyListDeleted() final { delete this; };
 
 
 	Widget(const Widget&) = delete;

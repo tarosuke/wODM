@@ -24,49 +24,8 @@
 
 
 
-tb::List<Widget> Widget::root;
-Widget::P Widget::lookingPoint;
-Widget::A Widget::viewMatrix;
-
-
-void Widget::UpdateAll(
-	const tb::Matrix<4, 4, float>& pose, const tb::Timestamp& ts) {
-	// lookingPoint算出
-	const tb::Vector<3, float> fv((const float[3]){0.0f, 0.0f, 1.0f});
-	const tb::Vector<3, float> lv(pose * fv + fv); // 正面と頭の向きの中間
-	lookingPoint = lv * (float)vDistance / lv[2];
-
-	// 子要素ののUpdate
-	root.Foreach(&Widget::Update, ts);
-}
-void Widget::DrawAll(const tb::Matrix<4, 4, float>& e2h) {
-	// headMatrixとe2hからviewMatrixを算出
-	tb::Matrix<4, 4, float> headMatrix = (const float[4][4]){
-		{scale, 0.0, 0.0, 0.0},
-		{0.0, scale, 0.0, 0.0},
-		{0.0, 0.0, 1.0, 0.0},
-		{-lookingPoint[0], -lookingPoint[1], 0.0, 0.0}}; // 頭の姿勢
-	viewMatrix = e2h * headMatrix;
-
-	// 描画
-	glLoadMatrixf(viewMatrix);
-	root.Foreach(&Widget::Draw);
-}
-void Widget::TrawAll() {
-	glLoadMatrixf(viewMatrix);
-	root.Reveach(&Widget::Traw);
-}
-
-
-
-tb::Prefs<float> Widget::vDistance(
-	"widget/virtualDistance", 1.0f, "一番手前のWidgetが見える奥行き");
-tb::Prefs<float> Widget::vStep("widget/vStep", 0.01f, "root直下の窓の奥行差");
-tb::Prefs<float> Widget::scale("widget/scale", 0.001f, "1pxのサイズ");
-
-
-
-void Widget::Update(const tb::Timestamp& t) {
-	OnUpdate();
-	children.Foreach(&Widget::Update, t);
+void Widget::Update(const tb::Timestamp& ts) {
+	center += (target - center) * (float)movingRatio;
+	depth += (targetDepth - depth) * (float)movingRatio;
+	Pane::Update(ts);
 }
