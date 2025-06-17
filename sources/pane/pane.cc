@@ -39,14 +39,14 @@ void BasePane::UpdateDepth() {
 		(*i).SetDepth(d);
 	}
 }
-void BasePane::Pick(Pane& p) {
+void BasePane::AddHead(Pane& p) {
 	children.Insert(p);
 	UpdateDepth();
-}
-void BasePane::Away(Pane& p) {
+};
+void BasePane::AddTail(Pane& p) {
 	children.Add(p);
 	UpdateDepth();
-}
+};
 void BasePane::Update(const tb::Timestamp& ts) {
 	for (tb::List<Pane>::I i(children); ++i;) {
 		(*i).Update(ts);
@@ -65,5 +65,5 @@ void BasePane::DrawNavigation(const P& lp) {
 
 
 Pane::Pane(BasePane& parent) : BasePane(parent.NextStep()), parent(parent) {
-	Pick(*this);
+	Pick();
 }

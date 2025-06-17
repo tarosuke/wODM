@@ -37,6 +37,8 @@ struct BasePane {
 
 	virtual float NextStep(); // 子要素の奥行差を返す
 	virtual void UpdateDepth();
+	void AddHead(struct Pane&);
+	void AddTail(struct Pane&);
 
 protected:
 	tb::List<struct Pane> children;
@@ -57,8 +59,8 @@ protected:
 	 */
 	float step; // 要素間の奥行きの差
 	virtual void SetDepth(float) {};
-	void Pick(struct Pane&); // 最前面へ移動/追加
-	void Away(struct Pane&); // 最背面へ移動/追加
+
+
 
 	/***** 周期処理
 	 * デフォルトの、子要素全てを再帰で呼ぶハンドラ
@@ -120,6 +122,9 @@ protected:
 	BasePane& parent;
 	Pane(); // 根直下
 	Pane(BasePane&);
+
+	void Pick() { parent.AddHead(*this); };
+	void Away() { parent.AddTail(*this); };
 
 private:
 	// つながってるリストがなくなったら一緒に消滅

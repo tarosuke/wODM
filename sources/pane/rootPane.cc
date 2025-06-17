@@ -42,7 +42,7 @@ tb::Prefs<float> RootPane::vDistance(
 tb::Prefs<float> RootPane::scale("widget/scale", 0.001f, "1pxのサイズ[m]");
 tb::Prefs<float> RootPane::navigationAngle(
 	"widget/navigationAngle",
-	1.0f,
+	0.56f,
 	"ナビゲーションリングの外径視野角[対奥行比]");
 tb::Prefs<float> RootPane::navigationThick(
 	"widget/navigationAngle", 16.0f, "ナビゲーションリングの太さ[px]");
@@ -58,28 +58,35 @@ void RootPane::UpdateAll(
 	// lookingPoint算出
 	const tb::Vector<3, float> fv((const float[3]){0.0f, 0.0f, 1.0f});
 	const tb::Vector<3, float> lv(pose * fv + fv); // 正面と頭の向きの中間
-	lookingPoint = lv * (float)vDistance / lv[2];
+	lookingPoint = {
+		lv[0] * (float)vDistance / (lv[2] * scale),
+		lv[1] * (float)vDistance / (lv[2] * scale)};
 }
 void RootPane::DrawAll(const A& e2h) {
-	// headMatrixとe2hからviewMatrixを算出
-	tb::Matrix<4, 4, float> headMatrix = (const float[4][4]){
-		{scale, 0.0, 0.0, 0.0},
-		{0.0, scale, 0.0, 0.0},
-		{0.0, 0.0, 1.0, 0.0},
-		{-lookingPoint[0], -lookingPoint[1], 0.0, 0.0}}; // 頭の姿勢
-
 	// Navigation描画
 	glLoadMatrixf((const float*)e2h);
 	glColor3f(1, 0, 0);
 	glPointSize(16);
+	glScalef(scale, scale, 1.0);
+	glPushMatrix();
+	glTranslatef(0, 0, -pDistance);
+
 	glBegin(GL_POINTS);
 	rootPane.DrawNavigation(lookingPoint);
-	glVertex3f(0, 0, -pDistance);
+	// glVertex3f(0, 0, -pDistance);
 	glEnd();
+	glPopMatrix();
 
 	// 描画
-	glMultMatrixf((const float*)headMatrix);
+	// glMultMatrixf((const float*)headMatrix);
+	glTranslatef(lookingPoint[0], lookingPoint[1], -pDistance);
 	rootPane.Draw();
+	glColor3f(0, 1, 0);
+	glBegin(GL_POINTS);
+	glVertex2f(0, 0);	 // glBegin/glEndは処理全体
+	glVertex2f(100, 0);	 // glBegin/glEndは処理全体
+	glVertex2f(-100, 0); // glBegin/glEndは処理全体
+	glEnd();
 }
 void RootPane::TrawAll(const A& e2h) {
 	glLoadMatrixf((const float*)e2h);
@@ -92,9 +99,10 @@ void RootPane::TrawAll(const A& e2h) {
 
 
 /***** 設定からnav経の変換
+ * TODO:初期化するのが早すぎる。mainに入るまではtb::Prefsの値は無効
  */
 void RootPane::UpdateNav() {
-	nav.out = vDistance * scale * navigationAngle;
+	nav.out = vDistance * navigationAngle / scale;
 	nav.th = navigationThick;
 	nav.in = nav.out - nav.th;
 };
@@ -109,7 +117,7 @@ Pane::Pane() : Pane(rootPane) {}
  * NOTE:ナビゲーションリングの諸元を見るためにここにある
  */
 void Widget::DrawNavigation(const P& lookingPoint) {
-	tb::Vector<2, float> p(center - lookingPoint);
+	tb::Vector<2, float> p(lookingPoint - center);
 	const float norm(p.Norm());
 	if (norm <= nav.in) {
 		// ナビゲーションサークル以内は輝点を表示しない
@@ -119,6 +127,5 @@ void Widget::DrawNavigation(const P& lookingPoint) {
 	// リングの内外径に内径-無限遠が収まるよう極軸座標系で計算
 	const float r(nav.out - nav.th / (norm - nav.in));
 	const tb::Vector<2, float> pp(p * r / norm);
-
 	glVertex2f(pp[0], pp[1]); // glBegin/glEndは処理全体
 }

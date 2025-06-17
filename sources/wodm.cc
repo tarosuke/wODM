@@ -22,7 +22,9 @@
 
 #include "core.h"
 #include "gl/scenery.h"
+#include "pane/rootPane.h"
 #include "widget.h"
+
 
 
 struct Login : Widget {
@@ -36,11 +38,12 @@ struct Login : Widget {
 
 struct wODM : tb::App {
 	int Main(uint, const char**) {
+		RootPane::UpdateNav();
 		syslog(LOG_CRIT, "start wODM.");
 		Core* const core(Core::New());
 		if (core) {
 			GL::Scenery::New();
-			new Login;
+			new Login; // TODO:登録されないので直す
 			core->Run();
 			delete core;
 		} else {

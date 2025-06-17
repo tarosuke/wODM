@@ -59,7 +59,6 @@ protected:
 
 private:
 	tb::List<Fragment> updates; // 画像更新キュー
-	void Update(const tb::Timestamp&) final;
 
 	void OnCanvasUpdated(const tb::Rect<2, double>&) final;
 	Fragment* GetFragment() { return updates.Get(); };

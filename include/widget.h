@@ -45,7 +45,7 @@ protected:
 
 
 
-	Widget() = default;
+	Widget() : center{0.0f, 0.0f}, target{0.0f, 0.0f}, depth(0.0f) {};
 
 
 

@@ -29,7 +29,8 @@ struct RootPane : BasePane {
 	static void TrawAll(const A& eye2Head);
 
 
-	RootPane() : BasePane(-baseStep) { UpdateNav(); };
+	RootPane() : BasePane(-baseStep) {};
+	static void UpdateNav();
 
 private:
 	static tb::Prefs<float> pDistance;
@@ -39,6 +40,4 @@ private:
 	static tb::Prefs<float> navigationThick;
 
 	static P lookingPoint;
-
-	void UpdateNav();
 };

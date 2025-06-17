@@ -18,37 +18,16 @@
  */
 #pragma once
 
-#include "gl/gl.h"
-#include "pane/rectPane.h"
-#include "pane/tabPane.h"
+#include "widget.h"
 
 
 
 /***** Window
- * DrawNavigationで自らの中心に対応した点を打つ
- * コンテントはtabかセパレートパネルで持つ
- * 基本的にユーザがWidgetをまとめて操作するためのもの
+ * Widgetにコンテントや各種コントロールを生やしたもの
  */
-struct Window : RectPane {
+struct Window : Widget {
 	Window(
 		const tb::Vector<2, int>& center, const tb::Spread<2, unsigned>& size);
 
 private:
-	tb::Vector<2, float> center;
-
-	void DrawNavigation() final {
-		tb::Vector<2, float> p(center - lookingPoint);
-		const float norm(p.Norm());
-		if (norm < navigator.innerRadious) {
-			// ナビゲーションサークルより内側なので輝点は表示しない
-			return;
-		}
-
-		const float r(
-			navigator.innerRadious
-			+ navigator.thickness / (norm - navigator.innerRadious));
-		const tb::Vector<2, float> pp(p * r / norm);
-
-		glVertex2f(pp[0], pp[1]); // glBegin/glEndは処理全体
-	};
 };
