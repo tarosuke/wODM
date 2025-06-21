@@ -18,21 +18,44 @@
  */
 #pragma once
 
+#include "gl/texture.h"
+#include "gl/vbo.h"
+#include "model.h"
 #include "pane.h"
 #include <tb/prefs.h>
 
 
 
 struct RootPane : BasePane {
+	struct Nav {
+		float in;  // 内径
+		float out; // 外径
+		float th;  // 太さ
+	}; // ナビゲーションリングの諸元
+
 	static void UpdateAll(const A&, const tb::Timestamp&);
 	static void DrawAll(const A& eye2Head);
 	static void TrawAll(const A& eye2Head);
+	static void DotNavigation(const P& lookintPoint, const P& center);
 
-
-	RootPane() : BasePane(-baseStep) {};
+	RootPane();
 	static void UpdateNav();
 
 private:
+	struct I : tb::Image {
+		I();
+	};
+	static struct M : I, Model_C {
+		M() : Model_C(params, *this, textureStyle) { Update(); };
+		static constexpr unsigned nVertex = 16;
+		static constexpr unsigned nIndex = 16;
+		static GL::VBO::V_UV vertexBuffer[nVertex];
+		static const unsigned indexBuffer[nIndex][3];
+		static const Model_C::Params params;
+		static const GL::Texture::Style textureStyle;
+		static void Update(); // 頂点バッファのUVと後半を作る
+	} navigationPanel;
+
 	static tb::Prefs<float> pDistance;
 	static tb::Prefs<float> vDistance;
 	static tb::Prefs<float> scale;
@@ -40,4 +63,7 @@ private:
 	static tb::Prefs<float> navigationThick;
 
 	static P lookingPoint;
+	static Nav nav;
+
+	void Traw() final;
 };

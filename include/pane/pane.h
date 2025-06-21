@@ -35,6 +35,8 @@ struct BasePane {
 	using R = tb::Rect<2, float>;
 	using A = tb::Matrix<4, 4, float>;
 
+	/***** 奥行管理
+	 */
 	virtual float NextStep(); // 子要素の奥行差を返す
 	virtual void UpdateDepth();
 	void AddHead(struct Pane&);
@@ -60,8 +62,6 @@ protected:
 	float step; // 要素間の奥行きの差
 	virtual void SetDepth(float) {};
 
-
-
 	/***** 周期処理
 	 * デフォルトの、子要素全てを再帰で呼ぶハンドラ
 	 */
@@ -71,7 +71,6 @@ protected:
 	virtual void Draw(const R&);
 	virtual void Traw(const R&);
 	virtual void DrawNavigation(const P&);
-
 
 #if 0
 	// イベント仕分けハンドラ

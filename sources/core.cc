@@ -84,7 +84,7 @@ void Core::Run() {
 			// World::TrawAll();
 
 			// transparent GUI & Navigation
-			// RootPane::TrawAll(e.eye2Head);
+			RootPane::TrawAll(e.eye2Head);
 
 			Finish(e);
 		}

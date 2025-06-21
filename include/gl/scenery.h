@@ -77,7 +77,5 @@ namespace GL {
 		Scenery* const next;
 		static tb::Prefs<tb::String> path;
 		static void UpdateInstance(Scenery*) noexcept(false);
-
-		void Traw() final {};
 	};
 }

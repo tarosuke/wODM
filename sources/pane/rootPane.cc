@@ -19,17 +19,13 @@
 #include "pane/rootPane.h"
 #include "gl/gl.h"
 #include "widget.h"
-#include <math.h>
+#include <cmath>
+#include <tb/canvas.h>
 
 
 
 namespace {
 	RootPane rootPane;
-	struct {
-		float in;  // 内径
-		float out; // 外径
-		float th;  // 太さ
-	} nav;		   // ナビゲーションリングの諸元
 }
 
 
@@ -45,13 +41,13 @@ tb::Prefs<float> RootPane::navigationAngle(
 	0.56f,
 	"ナビゲーションリングの外径視野角[対奥行比]");
 tb::Prefs<float> RootPane::navigationThick(
-	"widget/navigationAngle", 16.0f, "ナビゲーションリングの太さ[px]");
+	"widget/navigationAngle", 64.0f, "ナビゲーションリングの太さ[px]");
 
 
 
 RootPane::P RootPane::lookingPoint;
-
-
+RootPane::Nav RootPane::nav;
+RootPane::M RootPane::navigationPanel;
 
 void RootPane::UpdateAll(
 	const tb::Matrix<4, 4, float>& pose, const tb::Timestamp& ts) {
@@ -66,7 +62,7 @@ void RootPane::DrawAll(const A& e2h) {
 	// Navigation描画
 	glLoadMatrixf((const float*)e2h);
 	glColor3f(1, 0, 0);
-	glPointSize(16);
+	glPointSize(3);
 	glScalef(scale, scale, 1.0);
 	glPushMatrix();
 	glTranslatef(0, 0, -pDistance);
@@ -80,26 +76,50 @@ void RootPane::DrawAll(const A& e2h) {
 	// 描画
 	// glMultMatrixf((const float*)headMatrix);
 	glTranslatef(lookingPoint[0], lookingPoint[1], -pDistance);
+
+	// 窓はNevより遠いので輝点のあとに描画
 	rootPane.Draw();
-	glColor3f(0, 1, 0);
-	glBegin(GL_POINTS);
-	glVertex2f(0, 0);	 // glBegin/glEndは処理全体
-	glVertex2f(100, 0);	 // glBegin/glEndは処理全体
-	glVertex2f(-100, 0); // glBegin/glEndは処理全体
-	glEnd();
 }
 void RootPane::TrawAll(const A& e2h) {
 	glLoadMatrixf((const float*)e2h);
+	glTranslatef(0, 0, -pDistance);
 
 	// traw widgets
 	rootPane.Traw();
+}
+
+void RootPane::Traw() {
+	// 窓はNavより遠いので先に描画(透過率なのであまり関係ないが)
+	BasePane::Traw();
 
 	// TODO:traw navigationring
+	glColor3f(0.8, 0.9, 0.8);
+	navigationPanel.Draw();
+	// GL::Texture::Binder b(texture);
+	// glBegin(GL_TRIANGLE_FAN);
+	// glVertex2f(0, 0);
+	// glVertex2f(-nav.out, 0);
+	// glVertex2f(0, -nav.out);
+	// glVertex2f(nav.out, 0);
+	// glVertex2f(0, nav.out);
+	// glEnd();
 }
 
 
+RootPane::RootPane() : BasePane(-baseStep) {
+	tb::Canvas c(512, 512);
+	{
+		tb::Canvas::GC gc(c);
+		gc.Clear(tb::Color(0xffffffff));
+		tb::Color c(0xfff0faf0);
+		gc.Set(tb::Canvas::GC::cap_round);
+		gc.SetFill(c);
+		gc.SetStroke(c);
+		gc.Arc(0.0, 0.0, 256, -std::numbers::pi, std::numbers::pi);
+	}
+}
+
 /***** 設定からnav経の変換
- * TODO:初期化するのが早すぎる。mainに入るまではtb::Prefsの値は無効
  */
 void RootPane::UpdateNav() {
 	nav.out = vDistance * navigationAngle / scale;
@@ -107,16 +127,7 @@ void RootPane::UpdateNav() {
 	nav.in = nav.out - nav.th;
 };
 
-/***** 引数なしPaneコンストラクタ(Widget専用)
- * NOTE:rootPaneが見える必要があるのでPane.ccではなくここにある
- */
-Pane::Pane() : Pane(rootPane) {}
-
-
-/***** Widgetのメソッド
- * NOTE:ナビゲーションリングの諸元を見るためにここにある
- */
-void Widget::DrawNavigation(const P& lookingPoint) {
+void RootPane::DotNavigation(const P& lookingPoint, const P& center) {
 	tb::Vector<2, float> p(lookingPoint - center);
 	const float norm(p.Norm());
 	if (norm <= nav.in) {
@@ -129,3 +140,9 @@ void Widget::DrawNavigation(const P& lookingPoint) {
 	const tb::Vector<2, float> pp(p * r / norm);
 	glVertex2f(pp[0], pp[1]); // glBegin/glEndは処理全体
 }
+
+
+/***** 引数なしPaneコンストラクタ(Widget専用)
+ * NOTE:rootPaneが見える必要があるのでPane.ccではなくここにある
+ */
+Pane::Pane() : Pane(rootPane) {}

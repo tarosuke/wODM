@@ -26,8 +26,8 @@
 
 // Abstract Model
 struct Model {
-	virtual void Draw() = 0;
-	virtual void Traw() = 0;
+	virtual void Draw() {};
+	virtual void Traw() {};
 
 
 	// Model有効判定
@@ -58,6 +58,8 @@ private:
 // 頂点とカラーバッファのみのModel
 class Model_C : public Model {
 public:
+	void Draw() override;
+
 protected:
 	using Params = Params<GL::VBO::V_UV>;
 
@@ -65,7 +67,6 @@ protected:
 		const Params&,
 		const tb::Image&,
 		const GL::Texture::Style& style = GL::Texture::defaultStyle);
-	void Draw() override;
 
 private:
 	const tb::Image& rawImage;

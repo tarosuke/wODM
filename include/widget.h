@@ -19,7 +19,7 @@
 #pragma once
 
 #include "model.h"
-#include "pane/pane.h"
+#include "pane/rootPane.h"
 #include <tb/canvas.h>
 #include <tb/image.h>
 #include <tb/prefs.h>
@@ -51,7 +51,9 @@ protected:
 
 private:
 	void Update(const tb::Timestamp&) final;
-	void DrawNavigation(const P& lookingPoint) final;
+	void DrawNavigation(const P& lookingPoint) final {
+		RootPane::DotNavigation(lookingPoint, center);
+	};
 
 
 	float NextStep() final {
