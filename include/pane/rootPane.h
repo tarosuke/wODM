@@ -26,27 +26,31 @@
 
 
 
-struct RootPane : BasePane {
+struct RootPane : Pane {
 	struct Nav {
 		float in;  // 内径
 		float out; // 外径
 		float th;  // 太さ
 	}; // ナビゲーションリングの諸元
 
-	static void UpdateAll(const A&, const tb::Timestamp&);
-	static void DrawAll(const A& eye2Head);
-	static void TrawAll(const A& eye2Head);
-	static void DotNavigation(const P& lookintPoint, const P& center);
+	void UpdateAll(const A&, const tb::Timestamp&);
+	void DrawAll(const A& eye2Head);
+	void TrawAll(const A& eye2Head);
+	void DotNavigation(const P& lookintPoint, const P& center);
 
 	RootPane();
 	static void UpdateNav();
 
 private:
-	struct I : tb::Image {
-		I();
-	};
-	static struct M : I, Model_C {
-		M() : Model_C(params, *this, textureStyle) { Update(); };
+	struct M : tb::BufferedImage, Model_C {
+		M() :
+			BufferedImage(
+				tb::Color::Format::Select(tb::Color::Format::XRGB0888),
+				512,
+				512),
+			Model_C(params, *this, textureStyle) {
+			Update();
+		};
 		static constexpr unsigned nVertex = 16;
 		static constexpr unsigned nIndex = 16;
 		static GL::VBO::V_UV vertexBuffer[nVertex];

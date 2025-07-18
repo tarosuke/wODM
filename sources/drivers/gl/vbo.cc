@@ -35,17 +35,11 @@ namespace GL {
 		unsigned size,
 		DrawType type) {
 		syslog(
-			LOG_DEBUG,
-			"VBO: i:%u/%p v:%u/%p size:%u",
-			noi,
-			index,
-			nov,
-			vertex,
+			LOG_DEBUG, "VBO: i:%u/%p v:%u/%p size:%u", noi, index, nov, vertex,
 			size);
 		if (64 < size) {
 			syslog(
-				LOG_WARNING,
-				"VBO: size of vertex element(%u) over 64bytes",
+				LOG_WARNING, "VBO: size of vertex element(%u) over 64bytes",
 				size);
 		}
 
@@ -73,7 +67,7 @@ namespace GL {
 		}
 
 		// 頂点バッファ確保と読み込み
-		unsigned vBuff(0);
+		unsigned vBuff;
 		glGenBuffers(1, &vBuff);
 		glBindBuffer(GL_ARRAY_BUFFER, vBuff);
 		glBufferData(GL_ARRAY_BUFFER, size * nov, vertex, GL_STATIC_DRAW);
@@ -84,10 +78,7 @@ namespace GL {
 		glGenBuffers(1, &iBuff);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuff);
 		glBufferData(
-			GL_ELEMENT_ARRAY_BUFFER,
-			sizeof(int) * noi,
-			index,
-			GL_STATIC_DRAW);
+			GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * noi, index, GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		if (glGetError() == GL_NO_ERROR) {
@@ -109,9 +100,11 @@ namespace GL {
 		return false;
 	}
 
-	VBO::VBO(const Init& i)
-		: indexBuffer(i.indexBuffer), vertexBuffer(i.vertexBuffer),
-		  numOfVertex(i.numOfVertex), drawType(i.drawType) {}
+	VBO::VBO(const Init& i) :
+		indexBuffer(i.indexBuffer),
+		vertexBuffer(i.vertexBuffer),
+		numOfVertex(i.numOfVertex),
+		drawType(i.drawType) {}
 
 	VBO::~VBO() {
 		glDeleteBuffers(1, &indexBuffer);

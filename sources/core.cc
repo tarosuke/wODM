@@ -20,7 +20,6 @@
 #include "gl/gl.h"
 #include "gl/glx.h"
 #include "gl/scenery.h"
-#include "pane/rootPane.h"
 #include <assert.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -34,6 +33,7 @@ template <> tb::Factory<Core>* tb::Factory<Core>::start(0);
 
 
 void Core::Run() {
+	RootPane root;
 	pose.Identity();
 	for (keep = true; keep;) {
 		timestamp.Update();
@@ -41,7 +41,7 @@ void Core::Run() {
 		UpdatePose();
 
 		// 各種Update
-		RootPane::UpdateAll(pose, timestamp);
+		root.UpdateAll(pose, timestamp);
 		// World::Update(timestamp);
 		GL::Scenery::UpdateAll();
 
@@ -61,7 +61,7 @@ void Core::Run() {
 			 * またデプスバッファへの書き込み設定を戻す
 			 * この領域はブレンドなし、デプス評価、書き換えあり
 			 */
-			RootPane::DrawAll(e.eye2Head);
+			root.DrawAll(e.eye2Head);
 
 			// opaque World
 			glLoadMatrixf(pose * e.eye2Head);
@@ -84,7 +84,7 @@ void Core::Run() {
 			// World::TrawAll();
 
 			// transparent GUI & Navigation
-			RootPane::TrawAll(e.eye2Head);
+			root.TrawAll(e.eye2Head);
 
 			Finish(e);
 		}

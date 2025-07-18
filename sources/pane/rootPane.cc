@@ -24,11 +24,6 @@
 
 
 
-namespace {
-	RootPane rootPane;
-}
-
-
 tb::Prefs<float> RootPane::pDistance(
 	"widget/paneDistance", 1.0f, "一番手前のWidgetが見える奥行き[m]");
 tb::Prefs<float> RootPane::vDistance(
@@ -47,7 +42,6 @@ tb::Prefs<float> RootPane::navigationThick(
 
 RootPane::P RootPane::lookingPoint;
 RootPane::Nav RootPane::nav;
-RootPane::M RootPane::navigationPanel;
 
 void RootPane::UpdateAll(
 	const tb::Matrix<4, 4, float>& pose, const tb::Timestamp& ts) {
@@ -57,6 +51,14 @@ void RootPane::UpdateAll(
 	lookingPoint = {
 		lv[0] * (float)vDistance / (lv[2] * scale),
 		lv[1] * (float)vDistance / (lv[2] * scale)};
+
+	// 子要素Update
+	lastNotified = lastPicked = 0;
+	Notify n(Update(ts));
+	if (n.bits.pick && lastPicked) {
+		// 再配置が必要な最も根に近いインスタンスから再配置
+		lastPicked->ReDepth();
+	}
 }
 void RootPane::DrawAll(const A& e2h) {
 	// Navigation描画
@@ -68,7 +70,7 @@ void RootPane::DrawAll(const A& e2h) {
 	glTranslatef(0, 0, -pDistance);
 
 	glBegin(GL_POINTS);
-	rootPane.DrawNavigation(lookingPoint);
+	DrawNavigation(lookingPoint);
 	// glVertex3f(0, 0, -pDistance);
 	glEnd();
 	glPopMatrix();
@@ -78,19 +80,19 @@ void RootPane::DrawAll(const A& e2h) {
 	glTranslatef(lookingPoint[0], lookingPoint[1], -pDistance);
 
 	// 窓はNevより遠いので輝点のあとに描画
-	rootPane.Draw();
+	Draw();
 }
 void RootPane::TrawAll(const A& e2h) {
 	glLoadMatrixf((const float*)e2h);
 	glTranslatef(0, 0, -pDistance);
 
 	// traw widgets
-	rootPane.Traw();
+	Traw();
 }
 
 void RootPane::Traw() {
 	// 窓はNavより遠いので先に描画(透過率なのであまり関係ないが)
-	BasePane::Traw();
+	Pane::Traw();
 
 	// TODO:traw navigationring
 	glColor3f(0.8, 0.9, 0.8);
@@ -106,7 +108,7 @@ void RootPane::Traw() {
 }
 
 
-RootPane::RootPane() : BasePane(-baseStep) {
+RootPane::RootPane() {
 	tb::Canvas c(512, 512);
 	{
 		tb::Canvas::GC gc(c);
@@ -140,9 +142,3 @@ void RootPane::DotNavigation(const P& lookingPoint, const P& center) {
 	const tb::Vector<2, float> pp(p * r / norm);
 	glVertex2f(pp[0], pp[1]); // glBegin/glEndは処理全体
 }
-
-
-/***** 引数なしPaneコンストラクタ(Widget専用)
- * NOTE:rootPaneが見える必要があるのでPane.ccではなくここにある
- */
-Pane::Pane() : Pane(rootPane) {}

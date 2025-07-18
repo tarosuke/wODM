@@ -18,50 +18,18 @@
  */
 #pragma once
 
-#include "model.h"
-#include "pane/rootPane.h"
-#include <tb/canvas.h>
-#include <tb/image.h>
-#include <tb/prefs.h>
-#include <tb/vector.h>
-
+#include "pane/pane.h"
 
 
 /***** Widget
- * 画面直下のPane兼制御のエントリ
- * 位置のみを持つ
- * Windowの各要素を子に持つ
- * その関係でstepは0でNextStepは親のNextStepを転送
+ * 奥行き自動制御機構のあるPane
  */
 struct Widget : Pane {
-
-protected:
-	/***** 位置、奥行
-	 */
-	P center;
-	P target;
-	float depth;
-	float targetDepth;
-
-
-
-	Widget() : center{0.0f, 0.0f}, target{0.0f, 0.0f}, depth(0.0f) {};
-
-
-
 private:
-	void Update(const tb::Timestamp&) final;
-	void DrawNavigation(const P& lookingPoint) final {
-		RootPane::DotNavigation(lookingPoint, center);
-	};
+	static tb::Prefs<float> baseThickness; // 根直下の要素間の奥行きの差
+	static tb::Prefs<float> thickRatio;	   // 奥行差の親要素との比
+	float thickness;					   // 奥行占有範囲
 
-
-	float NextStep() final {
-		return parent.NextStep();
-	}; // Widgetのstepは0なので代わりにrootのNextStepを返す
-
-
-
-	Widget(const Widget&) = delete;
-	void operator=(const Widget&) = delete;
+	void ReDepth();
+	Notify Update(const tb::Timestamp&) override;
 };

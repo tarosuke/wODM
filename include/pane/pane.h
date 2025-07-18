@@ -27,51 +27,75 @@
 #include <tb/vector.h>
 #include <wOLIB/message.h>
 
+#include "pane/position.h"
 
 
-struct BasePane {
+
+struct Pane : tb::List<Pane>::Node {
 	using P = tb::Vector<2, float>;
 	using S = tb::Spread<2, unsigned>;
 	using R = tb::Rect<2, float>;
 	using A = tb::Matrix<4, 4, float>;
 
-	/***** 奥行管理
+
+	virtual void SetDepth(float depth, float thickness) {};
+	virtual void ReDepth(); // 再帰的に子要素の奥行を再計算
+
+
+
+	/***** コンストラクタ、デストラクタ
+	 * NOTE:親要素への追加はコンストラクタから戻ってから
 	 */
-	virtual float NextStep(); // 子要素の奥行差を返す
-	virtual void UpdateDepth();
-	void AddHead(struct Pane&);
-	void AddTail(struct Pane&);
+protected:
+	Pane() = default;
+	Pane(const Pane&) = delete;
+	void operator=(const Pane&) = delete;
+	virtual ~Pane() {};
+
+
+	/***** 子要素管理
+	 * 子要素の追加、奥行管理
+	 * ※削除はデストラクタによる
+	 */
+public:
+	void AddHead(struct Pane&); // 引数のPaneを自身のchildrennの先頭に追加
+	void AddTail(struct Pane&); // 引数のPaneを自身のchildrennの末尾に追加
+	void Pick() { notify.bits.pick = 1; }; // Update死にpickUpしてもらう
 
 protected:
 	tb::List<struct Pane> children;
 
-	BasePane(float step) : step(step) {};
-	BasePane() = delete;
-	BasePane(const BasePane&) = delete;
-	void operator=(const BasePane&) = delete;
-	virtual ~BasePane() {};
-
-	/***** 設定
-	 */
-	static tb::Prefs<float> movingRatio;
-	static tb::Prefs<float> baseStep;  // 根直下の要素感の奥行きの差
-	static tb::Prefs<float> stepScale; // 子要素との奥行差の比
-
-	/***** 奥行、子要素
-	 */
-	float step; // 要素間の奥行きの差
-	virtual void SetDepth(float) {};
 
 	/***** 周期処理
 	 * デフォルトの、子要素全てを再帰で呼ぶハンドラ
+	 * TODO:Updateの戻り値でpickなどのリクエストを返すことでparentを廃止
 	 */
-	virtual void Update(const tb::Timestamp&);
+public:
+	union Notify {
+		// Updateの戻り値で親インスタンスに伝える通知
+		unsigned raw;
+		struct {
+			unsigned pick : 1;	 // 最前面へ
+			unsigned notify : 1; // 通知が必要
+		} bits;
+		void operator|=(const Notify& t) {
+			// rawをorする
+			raw |= t.raw;
+		};
+	};
+	virtual Notify Update(const tb::Timestamp&);
 	virtual void Draw();
 	virtual void Traw();
 	virtual void Draw(const R&);
 	virtual void Traw(const R&);
 	virtual void DrawNavigation(const P&);
 
+protected:
+	static Pane* lastPicked;
+	static Pane* lastNotified;
+	Notify notify;
+
+private:
 #if 0
 	// イベント仕分けハンドラ
 	struct Event {
@@ -112,18 +136,6 @@ protected:
 	};
 	virtual bool MouseEvent(const MouseEvent&);
 #endif
-};
-
-
-
-struct Pane : BasePane, tb::List<Pane>::Node {
-protected:
-	BasePane& parent;
-	Pane(); // 根直下
-	Pane(BasePane&);
-
-	void Pick() { parent.AddHead(*this); };
-	void Away() { parent.AddTail(*this); };
 
 private:
 	// つながってるリストがなくなったら一緒に消滅

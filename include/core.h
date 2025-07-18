@@ -18,6 +18,7 @@
  */
 #pragma once
 
+#include "pane/rootPane.h"
 #include <gl/framebuffer.h>
 #include <tb/factory.h>
 #include <tb/list.h>

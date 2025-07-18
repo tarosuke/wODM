@@ -24,46 +24,45 @@
 
 /***** 設定
  */
-tb::Prefs<float> BasePane::movingRatio(
+tb::Prefs<float> Position::movingRatio(
 	"pane/movingRatio", 0.25f, "単一フレーム移動距離のレート");
-tb::Prefs<float>
-	BasePane::baseStep("widget/baseStep", 0.01f, "root直下の窓の奥行差");
-tb::Prefs<float>
-	BasePane::stepScale("widget/stepScale", 10, "子要素の奥行差の比");
 
 
-float BasePane::NextStep() { return std::abs(step) / stepScale; }
-void BasePane::UpdateDepth() {
-	float d(0);
-	for (tb::List<Pane>::I i(children); ++i; d -= step) {
-		(*i).SetDepth(d);
-	}
-}
-void BasePane::AddHead(Pane& p) {
+
+/***** 子要素管理
+ */
+void Pane::AddHead(Pane& p) {
 	children.Insert(p);
-	UpdateDepth();
+	ReDepth();
 };
-void BasePane::AddTail(Pane& p) {
+void Pane::AddTail(Pane& p) {
 	children.Add(p);
-	UpdateDepth();
+	ReDepth();
 };
-void BasePane::Update(const tb::Timestamp& ts) {
+void Pane::ReDepth() {
+	// 子要素をReDepthするのみ
+	children.Foreach(&Pane::ReDepth);
+}
+
+
+/***** 周期処理
+ * Paneは奥行制御はしないので戻り値のNotifyは転送するのみ
+ * pickリクエストがあっても並び替えたりはしない(奥行ではなく平面の順番の場合、それらは奥行としては一つのものであり、並び替えてはいけない-並び替えるのはWidgetのみである)
+ */
+Pane::Notify Pane::Update(const tb::Timestamp& ts) {
+	Notify r(notify);
 	for (tb::List<Pane>::I i(children); ++i;) {
-		(*i).Update(ts);
+		r.raw |= (*i).Update(ts).raw;
 	}
+
+	return r;
 };
-void BasePane::Draw() { children.Foreach(&Pane::Draw); };
-void BasePane::Traw() { children.Foreach(&Pane::Traw); };
-void BasePane::Draw(const R& r) { children.Foreach(&Pane::Draw, r); };
-void BasePane::Traw(const R& r) { children.Foreach(&Pane::Traw, r); };
-void BasePane::DrawNavigation(const P& lp) {
+void Pane::Draw() { children.Foreach(&Pane::Draw); };
+void Pane::Traw() { children.Foreach(&Pane::Traw); };
+void Pane::Draw(const R& r) { children.Foreach(&Pane::Draw, r); };
+void Pane::Traw(const R& r) { children.Foreach(&Pane::Traw, r); };
+void Pane::DrawNavigation(const P& lp) {
 	for (tb::List<Pane>::I i(children); ++i;) {
 		(*i).DrawNavigation(lp);
 	}
 };
-
-
-
-Pane::Pane(BasePane& parent) : BasePane(parent.NextStep()), parent(parent) {
-	Pick();
-}
