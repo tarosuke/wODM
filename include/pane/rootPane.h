@@ -42,22 +42,18 @@ struct RootPane : Pane {
 	static void UpdateNav();
 
 private:
-	struct M : tb::BufferedImage, Model_C {
-		M() :
-			BufferedImage(
-				tb::Color::Format::Select(tb::Color::Format::XRGB0888),
-				512,
-				512),
-			Model_C(params, *this, textureStyle) {
-			Update();
-		};
+	struct I : tb::BufferedImage {
+		I();
+	};
+	struct M : I, Model_C {
+		M() : Model_C(PrepareParams(), *this, textureStyle) {};
 		static constexpr unsigned nVertex = 16;
-		static constexpr unsigned nIndex = 16;
+		static constexpr unsigned nTriangles = 18;
 		static GL::VBO::V_UV vertexBuffer[nVertex];
-		static const unsigned indexBuffer[nIndex][3];
+		static const unsigned indexBuffer[nTriangles][3];
 		static const Model_C::Params params;
 		static const GL::Texture::Style textureStyle;
-		static void Update(); // 頂点バッファのUVと後半を作る
+		static const Model_C::Params& PrepareParams();
 	} navigationPanel;
 
 	static tb::Prefs<float> pDistance;

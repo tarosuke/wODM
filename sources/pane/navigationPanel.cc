@@ -37,13 +37,13 @@ GL::VBO::V_UV RootPane::M::vertexBuffer[nVertex] = {
 	{{-1, -outP, 0}, {-1, -outP}}, // 7
 								   // 8以降は0-7の内側
 };
-const unsigned RootPane::M::indexBuffer[nIndex][3] = {
-	{0, 1, 8},	 {8, 1, 9},	  {1, 2, 9},   {9, 2, 10}, {2, 3, 10},
-	{10, 3, 11}, {3, 4, 11},  {11, 4, 12}, {4, 5, 12}, {12, 5, 13},
-	{5, 6, 13},	 {13, 6, 14}, {6, 7, 14},  {14, 7, 15}};
+const unsigned RootPane::M::indexBuffer[nTriangles][3] = {
+	{0, 1, 8},	{8, 1, 9},	 {1, 2, 9},	 {9, 2, 10},  {2, 3, 10}, {10, 3, 11},
+	{3, 4, 11}, {11, 4, 12}, {4, 5, 12}, {12, 5, 13}, {5, 6, 13}, {13, 6, 14},
+	{6, 7, 14}, {14, 7, 15}, {7, 0, 15}, {15, 0, 8}};
 
 const Model_C::Params RootPane::M::params = {
-	numOfIndex : nIndex * 3,
+	numOfIndex : nTriangles * 3,
 	index : &indexBuffer[0][0],
 	numOfVertex : nVertex,
 	vertex : vertexBuffer
@@ -59,7 +59,7 @@ const GL::Texture::Style RootPane::M::textureStyle = {
 };
 
 
-void RootPane::M::Update() {
+const Model_C::Params& RootPane::M::PrepareParams() {
 	// リングの内径の外形に対する割合
 	const float inr(RootPane::nav.in / RootPane::nav.out);
 
@@ -71,4 +71,12 @@ void RootPane::M::Update() {
 		in.texture.v = in.vertex.y = out.vertex.y * inR * inr;
 		in.vertex.z = out.vertex.z;
 	}
+	return params;
 }
+
+
+RootPane::I::I() :
+	BufferedImage(
+		tb::Color::Format::Select(tb::Color::Format::XRGB0888), 512, 512) {
+		// NavPanelの描画
+	};
