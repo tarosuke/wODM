@@ -60,7 +60,7 @@ const GL::Texture::Style RootPane::M::textureStyle = {
 
 
 const Model_C::Params& RootPane::M::PrepareParams() {
-	// リングの内径の外形に対する割合
+	// リングの内径の外径に対する割合
 	const float inr(RootPane::nav.in / RootPane::nav.out);
 
 	// 頂点の後半を作る
@@ -78,5 +78,16 @@ const Model_C::Params& RootPane::M::PrepareParams() {
 RootPane::I::I() :
 	BufferedImage(
 		tb::Color::Format::Select(tb::Color::Format::XRGB0888), 512, 512) {
-		// NavPanelの描画
-	};
+	// NavPanelの描画
+	const tb::Color cc(0x80ffffff);
+	const tb::Color gc(0x8080c080);
+	const unsigned r2(Width() * Width());
+	const unsigned i2(r2 * inR * inR);
+	const unsigned o2(r2);
+	for (unsigned y(0); y < Height(); ++y) {
+		for (unsigned x(0); x < Width(); ++x) {
+			const unsigned d2(x * x + y * y);
+			Set(x, y, i2 < d2 && d2 < o2 ? gc : cc);
+		}
+	}
+};

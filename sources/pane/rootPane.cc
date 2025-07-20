@@ -84,27 +84,21 @@ void RootPane::DrawAll(const A& e2h) {
 }
 void RootPane::TrawAll(const A& e2h) {
 	glLoadMatrixf((const float*)e2h);
+	glPushMatrix();
 	glTranslatef(0, 0, -pDistance);
 
 	// traw widgets
 	Traw();
+	glPopMatrix();
 }
 
 void RootPane::Traw() {
 	// 窓はNavより遠いので先に描画(透過率なのであまり関係ないが)
 	Pane::Traw();
 
-	// TODO:traw navigationring
-	glColor3f(0.8, 0.9, 0.8);
+	// ナビゲーションリングの描画
+	glColor3f(1, 1, 1);
 	navigationPanel.Draw();
-	// GL::Texture::Binder b(texture);
-	// glBegin(GL_TRIANGLE_FAN);
-	// glVertex2f(0, 0);
-	// glVertex2f(-nav.out, 0);
-	// glVertex2f(0, -nav.out);
-	// glVertex2f(nav.out, 0);
-	// glVertex2f(0, nav.out);
-	// glEnd();
 }
 
 
