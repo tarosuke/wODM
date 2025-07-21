@@ -70,8 +70,7 @@ void RootPane::DrawAll(const A& e2h) {
 	glTranslatef(0, 0, -pDistance);
 
 	glBegin(GL_POINTS);
-	DrawNavigation(lookingPoint);
-	// glVertex3f(0, 0, -pDistance);
+	DotNavigation(); // 直接の子全てのGetCenterで点を打つ
 	glEnd();
 	glPopMatrix();
 
@@ -118,21 +117,24 @@ RootPane::RootPane() {
 /***** 設定からnav経の変換
  */
 void RootPane::UpdateNav() {
-	nav.out = pDistance * 0.3 / scale;
+	nav.out = pDistance * navigationAngle / scale;
 	nav.th = navigationThick;
 	nav.in = nav.out - nav.th;
+	nav.ior = nav.in / nav.out;
 };
 
-void RootPane::DotNavigation(const P& lookingPoint, const P& center) {
-	tb::Vector<2, float> p(lookingPoint - center);
-	const float norm(p.Norm());
-	if (norm <= nav.in) {
-		// ナビゲーションサークル以内は輝点を表示しない
-		return;
-	}
+void RootPane::DotNavigation() {
+	for (tb::List<Pane>::I i(children); ++i;) {
+		tb::Vector<2, float> p(lookingPoint - (*i).GetCenter());
+		const float norm(p.Norm());
+		if (norm <= nav.in) {
+			// ナビゲーションサークル以内は輝点を表示しない
+			continue;
+		}
 
-	// リングの内外径に内径-無限遠が収まるよう極軸座標系で計算
-	const float r(nav.out - nav.th / (norm - nav.in));
-	const tb::Vector<2, float> pp(p * r / norm);
-	glVertex2f(pp[0], pp[1]); // glBegin/glEndは処理全体
+		// リングの内外径に内径-無限遠が収まるよう極軸座標系で計算
+		const float r(nav.out - nav.th / (norm - nav.in));
+		const tb::Vector<2, float> pp(p * r / norm);
+		glVertex2f(pp[0], pp[1]); // glBegin/glEndは処理全体
+	}
 }

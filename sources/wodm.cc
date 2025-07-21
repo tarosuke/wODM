@@ -22,19 +22,8 @@
 
 #include "core.h"
 #include "gl/scenery.h"
-#include "pane/rootPane.h"
-#include "widget.h"
 
 
-
-struct Login : Widget {
-	/*****
-	 * ログインを待ち、ログインされたら名前突きパイプを用意してChildをnew
-	 * 名前突きパイプに接続されたらaskpass的動作
-	 * forkしなかったプロセスでは有名パイプを待つ()
-	 * askpassの接続が逆で「画面へ繋ぐ」ことができないのでちょっと考える
-	 */
-};
 
 struct wODM : tb::App {
 	int Main(uint, const char**) {
@@ -43,7 +32,6 @@ struct wODM : tb::App {
 		Core* const core(Core::New());
 		if (core) {
 			GL::Scenery::New();
-			new Login; // TODO:登録されないので直す
 			core->Run();
 			delete core;
 		} else {

@@ -31,12 +31,12 @@ struct RootPane : Pane {
 		float in;  // 内径
 		float out; // 外径
 		float th;  // 太さ
+		float ior; // 内外比(in/out)
 	}; // ナビゲーションリングの諸元
 
 	void UpdateAll(const A&, const tb::Timestamp&);
 	void DrawAll(const A& eye2Head);
 	void TrawAll(const A& eye2Head);
-	void DotNavigation(const P& lookintPoint, const P& center);
 
 	RootPane();
 	static void UpdateNav();
@@ -66,4 +66,5 @@ private:
 	static Nav nav;
 
 	void Traw() final;
+	void DotNavigation();
 };

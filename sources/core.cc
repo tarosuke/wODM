@@ -20,6 +20,8 @@
 #include "gl/gl.h"
 #include "gl/glx.h"
 #include "gl/scenery.h"
+#include "pane/rootPane.h"
+#include "widget.h"
 #include <assert.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -32,8 +34,19 @@ bool Core::keep(false);
 template <> tb::Factory<Core>* tb::Factory<Core>::start(0);
 
 
+struct Login : Widget {
+	/*****
+	 * ログインを待ち、ログインされたら名前突きパイプを用意してChildをnew
+	 * 名前突きパイプに接続されたらaskpass的動作
+	 * forkしなかったプロセスでは有名パイプを待つ()
+	 * askpassの接続が逆で「画面へ繋ぐ」ことができないのでちょっと考える
+	 */
+};
+
+
 void Core::Run() {
 	RootPane root;
+	root.AddHead(*(new Login));
 	pose.Identity();
 	for (keep = true; keep;) {
 		timestamp.Update();

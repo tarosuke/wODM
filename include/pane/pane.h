@@ -60,7 +60,7 @@ protected:
 public:
 	void AddHead(struct Pane&); // 引数のPaneを自身のchildrennの先頭に追加
 	void AddTail(struct Pane&); // 引数のPaneを自身のchildrennの末尾に追加
-	void Pick() { notify.bits.pick = 1; }; // Update死にpickUpしてもらう
+	void Pick() { notify.bits.pick = 1; }; // Update時にpickUpしてもらう
 
 protected:
 	tb::List<struct Pane> children;
@@ -88,7 +88,7 @@ public:
 	virtual void Traw();
 	virtual void Draw(const R&);
 	virtual void Traw(const R&);
-	virtual void DrawNavigation(const P&);
+	virtual const P& GetCenter() { return dummyCenter; };
 
 protected:
 	static Pane* lastPicked;
@@ -140,4 +140,5 @@ private:
 private:
 	// つながってるリストがなくなったら一緒に消滅
 	void NotifyListDeleted() final { delete this; };
+	static const P dummyCenter;
 };

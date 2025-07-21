@@ -61,8 +61,6 @@ void Pane::Draw() { children.Foreach(&Pane::Draw); };
 void Pane::Traw() { children.Foreach(&Pane::Traw); };
 void Pane::Draw(const R& r) { children.Foreach(&Pane::Draw, r); };
 void Pane::Traw(const R& r) { children.Foreach(&Pane::Traw, r); };
-void Pane::DrawNavigation(const P& lp) {
-	for (tb::List<Pane>::I i(children); ++i;) {
-		(*i).DrawNavigation(lp);
-	}
-};
+
+
+const Pane::P Pane::dummyCenter;

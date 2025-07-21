@@ -60,15 +60,12 @@ const GL::Texture::Style RootPane::M::textureStyle = {
 
 
 const Model_C::Params& RootPane::M::PrepareParams() {
-	// リングの内径の外径に対する割合
-	const float inr(RootPane::nav.in / RootPane::nav.out);
-
 	// 頂点の後半を作る
 	for (unsigned n(0); n < 8; ++n) {
 		auto& out(vertexBuffer[n]);
 		auto& in(vertexBuffer[n + 8]);
-		in.texture.u = in.vertex.x = out.vertex.x * inR * inr;
-		in.texture.v = in.vertex.y = out.vertex.y * inR * inr;
+		in.texture.u = in.vertex.x = out.vertex.x * inR * nav.ior;
+		in.texture.v = in.vertex.y = out.vertex.y * inR * nav.ior;
 		in.vertex.z = out.vertex.z;
 	}
 	return params;
@@ -78,14 +75,11 @@ const Model_C::Params& RootPane::M::PrepareParams() {
 RootPane::I::I() :
 	BufferedImage(
 		tb::Color::Format::Select(tb::Color::Format::XRGB0888), 512, 512) {
-	// リングの内径の外径に対する割合
-	const float inr(RootPane::nav.in / RootPane::nav.out);
-
 	// NavPanelの描画
 	const tb::Color cc(0x80ffffff);
 	const tb::Color gc(0x8080c080);
 	const unsigned r2(Width() * Width());
-	const unsigned i2(r2 * inr * inr);
+	const unsigned i2(r2 * nav.ior * nav.ior);
 	const unsigned o2(r2);
 	for (unsigned y(0); y < Height(); ++y) {
 		for (unsigned x(0); x < Width(); ++x) {
