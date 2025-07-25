@@ -33,10 +33,10 @@ tb::Prefs<float> RootPane::vDistance(
 tb::Prefs<float> RootPane::scale("widget/scale", 0.001f, "1pxのサイズ[m]");
 tb::Prefs<float> RootPane::navigationAngle(
 	"widget/navigationAngle",
-	0.56f,
+	0.4f,
 	"ナビゲーションリングの外径視野角[対奥行比]");
 tb::Prefs<float> RootPane::navigationThick(
-	"widget/navigationAngle", 64.0f, "ナビゲーションリングの太さ[px]");
+	"widget/navigationAngle", 16.0f, "ナビゲーションリングの太さ[px]");
 
 
 
@@ -118,7 +118,7 @@ RootPane::RootPane() {
 /***** 設定からnav経の変換
  */
 void RootPane::UpdateNav() {
-	nav.out = vDistance * navigationAngle / scale;
+	nav.out = pDistance * 0.3 / scale;
 	nav.th = navigationThick;
 	nav.in = nav.out - nav.th;
 };

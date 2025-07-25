@@ -78,11 +78,14 @@ const Model_C::Params& RootPane::M::PrepareParams() {
 RootPane::I::I() :
 	BufferedImage(
 		tb::Color::Format::Select(tb::Color::Format::XRGB0888), 512, 512) {
+	// リングの内径の外径に対する割合
+	const float inr(RootPane::nav.in / RootPane::nav.out);
+
 	// NavPanelの描画
 	const tb::Color cc(0x80ffffff);
 	const tb::Color gc(0x8080c080);
 	const unsigned r2(Width() * Width());
-	const unsigned i2(r2 * inR * inR);
+	const unsigned i2(r2 * inr * inr);
 	const unsigned o2(r2);
 	for (unsigned y(0); y < Height(); ++y) {
 		for (unsigned x(0); x < Width(); ++x) {
