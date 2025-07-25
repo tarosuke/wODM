@@ -63,9 +63,9 @@ void RootPane::UpdateAll(
 void RootPane::DrawAll(const A& e2h) {
 	// Navigation描画
 	glLoadMatrixf((const float*)e2h);
-	glColor3f(1, 0, 0);
-	glPointSize(3);
-	glScalef(scale, scale, 1.0);
+	glColor3f(1, 1, 1);
+	glPointSize(16);
+	glScalef(1.0f / nav.out, 1.0f / nav.out, 1.0);
 	glPushMatrix();
 	glTranslatef(0, 0, -pDistance);
 
@@ -79,6 +79,7 @@ void RootPane::DrawAll(const A& e2h) {
 	glTranslatef(lookingPoint[0], lookingPoint[1], -pDistance);
 
 	// 窓はNevより遠いので輝点のあとに描画
+	glColor3f(1, 1, 1);
 	Draw();
 }
 void RootPane::TrawAll(const A& e2h) {
@@ -100,19 +101,6 @@ void RootPane::Traw() {
 	navigationPanel.Draw();
 }
 
-
-RootPane::RootPane() {
-	tb::Canvas c(512, 512);
-	{
-		tb::Canvas::GC gc(c);
-		gc.Clear(tb::Color(0xffffffff));
-		tb::Color c(0xfff0faf0);
-		gc.Set(tb::Canvas::GC::cap_round);
-		gc.SetFill(c);
-		gc.SetStroke(c);
-		gc.Arc(0.0, 0.0, 256, -std::numbers::pi, std::numbers::pi);
-	}
-}
 
 /***** 設定からnav経の変換
  */

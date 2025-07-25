@@ -38,7 +38,7 @@ struct RootPane : Pane {
 	void DrawAll(const A& eye2Head);
 	void TrawAll(const A& eye2Head);
 
-	RootPane();
+	RootPane() = default;
 	static void UpdateNav();
 
 private:
