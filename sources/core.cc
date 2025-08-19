@@ -20,8 +20,8 @@
 #include "gl/gl.h"
 #include "gl/glx.h"
 #include "gl/scenery.h"
-#include "pane/rootPane.h"
-#include "widget.h"
+#include "widget/root.h"
+#include "widget/window.h"
 #include <assert.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -34,18 +34,21 @@ bool Core::keep(false);
 template <> tb::Factory<Core>* tb::Factory<Core>::start(0);
 
 
-struct Login : Widget {
+struct Login : widget::Window {
 	/*****
 	 * ログインを待ち、ログインされたら名前突きパイプを用意してChildをnew
 	 * 名前突きパイプに接続されたらaskpass的動作
 	 * forkしなかったプロセスでは有名パイプを待つ()
 	 * askpassの接続が逆で「画面へ繋ぐ」ことができないのでちょっと考える
 	 */
+	Login() : Window(P{0.0f, 0.0f}, S{256U, 256U}) {};
 };
 
 
 void Core::Run() {
-	RootPane root;
+	widget::Root root;
+
+
 	root.AddHead(*(new Login));
 	pose.Identity();
 	for (keep = true; keep;) {
@@ -97,7 +100,7 @@ void Core::Run() {
 			// World::TrawAll();
 
 			// transparent GUI & Navigation
-			root.TrawAll(e.eye2Head);
+			root.TrawAll();
 
 			Finish(e);
 		}
