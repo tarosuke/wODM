@@ -27,7 +27,6 @@
 
 struct wODM : tb::App {
 	int Main(uint, const char**) {
-		RootPane::UpdateNav();
 		syslog(LOG_CRIT, "start wODM.");
 		Core* const core(Core::New());
 		if (core) {

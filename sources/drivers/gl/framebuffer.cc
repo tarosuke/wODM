@@ -52,9 +52,8 @@ namespace GL {
 		}
 
 		// カラーバッファ割り当て
-		glFramebufferTexture2D(
-			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, TextureID(),
-			0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			GL_TEXTURE_2D, TextureID(), 0);
 
 		// デプスバッファ割り当て
 		glFramebufferRenderbuffer(
@@ -85,11 +84,12 @@ namespace GL {
 
 
 	/** Key/CanKey
-	 * RAIIによるアクティベート管理
+	 * アクティビティ管理
 	 */
 	Framebuffer::Key::Key(Framebuffer& fb) {
 		glBindFramebuffer(GL_FRAMEBUFFER, fb.fbID);
 	}
 	Framebuffer::Key::~Key() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
-
+	void Framebuffer::Activate() { glBindFramebuffer(GL_FRAMEBUFFER, fbID); }
+	void Framebuffer::Deactivate() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 }

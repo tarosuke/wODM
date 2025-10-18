@@ -27,6 +27,7 @@
 #include <tb/linux/input.h>
 #include <tb/prefs.h>
 
+#include "gl/eye.h"
 #include "gl/glx.h"
 
 
@@ -38,17 +39,13 @@
 class DummyHMD : GLX, tb::linux::Input {
 	static const tb::Spread<2, unsigned> size;
 	const int screen;
-	Window window;
+	::Window window;
 	unsigned eIndex;
 	Atom wmDeleteNotify;
 
-	Eyes eyes;
-
 	DummyHMD() :
-		GLX(eyes),
 		screen(DefaultScreen(display)),
-		window(XCreateSimpleWindow(
-			display,
+		window(XCreateSimpleWindow(display,
 			RootWindow(display, screen),
 			0,
 			0,
@@ -76,23 +73,21 @@ class DummyHMD : GLX, tb::linux::Input {
 		static constexpr double w = width * near;
 		static const double h = w * size[1] / size[0];
 
-		Eye eye;
-		eye.width = size[0];
-		eye.height = size[1];
+		Eye* eye(new GL::Eye(size[0], size[1]));
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glFrustum(-w, w, -h, h, near, far);
-		glGetFloatv(GL_PROJECTION_MATRIX, eye.projection);
+		glGetFloatv(GL_PROJECTION_MATRIX, eye->projection);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
-		eye.eye2Head.Identity();
-		eyes.emplace_back(std::move(eye));
+		eye->eye2Head.Identity();
+		Register(*eye);
 	};
 
 	void UpdatePose() final { GetInput(); };
-	void Finish(Eye&) final {
+	void Finish(const Eye&) final {
 		eIndex = 0;
 
 		// Xのイベントを処理

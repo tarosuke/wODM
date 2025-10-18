@@ -18,21 +18,38 @@
  */
 #pragma once
 
-#include "widget.h"
+#include "eye.h"
+#include "frame.h"
+#include "model.h"
+#include <tb/list.h>
 
 
 
 namespace widget {
 
 	// ルート直下(NavRingに表示される)
-	struct Window : Widget {
-		Window() = delete;
-		Window(const Window&) = delete;
+	struct Window : Frame {
 
-		Window(const P&, const S&); // 与えた位置が中心になるよう配置される
+		Window(
+			const P& center, const S& spread, float depth = 0, float thick = 0);
+
+		static void PrepareNavPanel();
+
+		void Dot();
+		void Draw(const R&) override;
+		void Traw() override;
 
 	private:
-		P GetCenter() override;
-	};
+		// 上下左右のウインドウコントロールのサイズ
+		static P GetLeftTop(const P& center, const S& contentSpread);
+		static S GetWindowSpread(const S& contentSpread);
+		static P leftTopMergin; // content左上からWindow左上の差
+		static S spreadMergin;	// contentの右下分＋leftTopMerginの負値
 
+		tb::List<Frame> controls;
+		R contentRect;
+
+		Window() = delete;
+		Window(const Window&) = delete;
+	};
 }

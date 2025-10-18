@@ -23,12 +23,38 @@
 
 namespace widget {
 
-	Window::Window(const Base::P& p, const Base::S& s) :
-		Widget(p - s * 0.5, s) {}
+	Frame::P Window::leftTopMergin;
+	Frame::S Window::spreadMergin;
 
 
-	Base::P Window::GetCenter() {
-		return P{
-			position[0] + spread[0] * 0.5f, position[1] + spread[1] * 0.5f};
+	Window::Window(const P& p, const S& s, float depth, float thick) :
+		Frame(GetLeftTop(p, s), GetWindowSpread(s), depth, thick) {};
+
+	Frame::P Window::GetLeftTop(const P& center, const S& contentSpread) {
+		return center - contentSpread * 0.5 - leftTopMergin;
+	}
+
+	Frame::S Window::GetWindowSpread(const S& contentSpread) {
+		return contentSpread + spreadMergin;
+	}
+
+	void Window::Draw(const R& r) {
+		UpdateMask(r);
+		if (IsShown()) {
+			glPushMatrix();
+			glTranslatef(-position[0], -position[1], -depth);
+			controls.Foreach(&Frame::Draw, GetMask());
+			Frame::Draw(R(spread));
+			glPopMatrix();
+		}
+	}
+	void Window::Traw() {
+		if (IsShown()) {
+			glPushMatrix();
+			glTranslatef(-position[0], -position[1], -depth);
+			Frame::Traw();
+			controls.Foreach(&Frame::Traw);
+			glPopMatrix();
+		}
 	}
 }

@@ -33,6 +33,7 @@
 #include "model.h"
 
 
+
 namespace GL {
 
 	class Scenery : public Model_C {
@@ -43,6 +44,7 @@ namespace GL {
 	public:
 		using Factory = tb::Factory<Scenery, const tb::Image&>;
 		using NullFactory = tb::Factory<Scenery>;
+
 		static Scenery* New(const std::filesystem::path* path = 0);
 		static void DrawAll() {
 			if (stack) {

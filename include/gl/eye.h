@@ -1,5 +1,5 @@
-﻿/*****************************************************************************
- * Copyright (C) 2024,2025 tarosuke<webmaster@tarosuke.net>
+/*****************************************************************************
+ * Copyright (C) 2024 tarosuke<webmaster@tarosuke.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,18 +18,25 @@
  */
 #pragma once
 
-#include "pane/pane.h"
+#include "../eye.h"
+#include "gl/framebuffer.h"
 
 
-/***** Widget
- * 奥行き自動制御機構のあるPane
- */
-struct Widget : Pane {
-private:
-	static tb::Prefs<float> baseThickness; // 根直下の要素間の奥行きの差
-	static tb::Prefs<float> thickRatio;	   // 奥行差の親要素との比
-	float thickness;					   // 奥行占有範囲
 
-	void ReDepth();
-	Notify Update(const tb::Timestamp&) override;
-};
+namespace GL {
+
+	struct Eye : ::Eye {
+		Eye(unsigned width, unsigned height);
+		void Prepare() const override;
+		void Postdraw() const override {};
+
+		GL::Framebuffer framebuffer;
+		void Identity() const override;
+		void PixelByPixel() const override;
+		void Vertical11() const override;
+		void Horizontal11() const override;
+		void Short11() const override;
+		void Long11() const override;
+		void Pose(const tb::Matrix<4, 4, float>&) const override;
+	};
+}

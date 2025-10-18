@@ -18,57 +18,38 @@
  */
 #pragma once
 
-#include "base.h"
+#include "eye.h"
 #include "model.h"
+#include "window.h"
 
 
 
 namespace widget {
+	struct Root {
+		Root(const tb::List<Eye>&);
+		~Root();
 
-	// いわゆるルート
-	struct Root : Base {
-		Root() {
-			instance = this;
-			notify.pick = 0;
-		};
+		// 周期処理(navPanelだけでなくWidgetの管理もここが入口)
+		void Update();
+		void DrawAll(const Eye&, const Frame::M& eye2head);
+		void TrawAll(const Eye&, const Frame::M& eye2head);
 
-		void UpdateAll(const M&, const tb::Timestamp&);
-		void DrawAll(const M&);
-		void TrawAll();
-
-		struct Nav {
-			float in;  // 内径
-			float out; // 外径
-			float th;  // 太さ
-			float ior; // 内外比(in/out)
-		}; // ナビゲーションリングの諸元
-
+		// navPanel上に点を描画(Windowから呼ばれる)
+		static void Dot(const Frame::P& center);
 
 	private:
-		static tb::Prefs<float> pDistance;
-		static tb::Prefs<float> vDistance;
-		static tb::Prefs<float> scale;
-		static tb::Prefs<float> navigationAngle;
-		static tb::Prefs<float> navigationThick;
+		tb::List<Window> windows;
+		Model_C* navPanel;
+		static Frame::P lookingPoint;
+		static Frame::M viewMat;
 
-		static Root* instance;
-		static Nav nav;
-		static P lookingPoint;
+		static Model_C* PrepareNavPanel(const tb::List<Eye>&);
 
-		// NavPanel関連
-		struct I : tb::BufferedImage {
-			I();
-		};
-		struct M : I, Model_C {
-			M() : Model_C(PrepareParams(), *this, textureStyle) {};
-			static constexpr unsigned nVertex = 16;
-			static constexpr unsigned nTriangles = 18;
-			static GL::VBO::V_UV vertexBuffer[nVertex];
-			static const unsigned indexBuffer[nTriangles][3];
-			static const Model_C::Params params;
-			static const GL::Texture::Style textureStyle;
-			static const Model_C::Params& PrepareParams();
-		} navigationPanel;
-		void DotNavigation();
+		Root() = delete;
+		Root(const Root&) = delete;
+
+		Frame::R mask;
+		const Frame::R& GetMask() { return mask; };
+		void LookAt(const Frame::M&);
 	};
 }

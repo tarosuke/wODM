@@ -16,12 +16,11 @@
  * Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include "core.h"
 #include "gl/gl.h"
 #include "gl/glx.h"
 #include "gl/scenery.h"
 #include "widget/root.h"
-#include "widget/window.h"
+#include <algorithm>
 #include <assert.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -30,6 +29,7 @@
 
 
 tb::Timestamp Core::timestamp;
+tb::Matrix<4, 4, float> Core::pose;
 bool Core::keep(false);
 template <> tb::Factory<Core>* tb::Factory<Core>::start(0);
 
@@ -46,64 +46,52 @@ struct Login : widget::Window {
 
 
 void Core::Run() {
-	widget::Root root;
-
-
-	root.AddHead(*(new Login));
 	pose.Identity();
+	widget::Root root(eyes);
+	new Login;
 	for (keep = true; keep;) {
 		timestamp.Update();
 
 		UpdatePose();
 
-		// 各種Update
-		root.UpdateAll(pose, timestamp);
-		// World::Update(timestamp);
-		GL::Scenery::UpdateAll();
+		for (const Eye* const e : eyes) {
+			Eye::Key key(*e);
 
-		for (auto& e : eyes) {
-			GL::Framebuffer::Key fb(e.framebuffer);
-			glDisable(GL_BLEND);
-			glDepthMask(GL_TRUE);
-
-			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-			glViewport(0, 0, e.width, e.height);
-			glMatrixMode(GL_PROJECTION);
-			glLoadMatrixf(e.projection);
-			glMatrixMode(GL_MODELVIEW);
-
-			/***** 不透明物体
+			/***** 不透明物
 			 * オーバードロー避けでおよそ手前から描画される
 			 * またデプスバッファへの書き込み設定を戻す
 			 * この領域はブレンドなし、デプス評価、書き換えあり
 			 */
-			root.DrawAll(e.eye2Head);
+			glDisable(GL_BLEND);
+			glEnable(GL_DEPTH_TEST);
+			glDepthMask(GL_TRUE);
+			root.DrawAll(*e, e->eye2Head);
 
-			// opaque World
-			glLoadMatrixf(pose * e.eye2Head);
-			// World::DrawAll();
-
-			// Scenery
+			e->Pose(Pose());
+			// world::DrawAll(pose * e.eye2Head);
 			GL::Scenery::DrawAll();
 
-			/***** 以後透過
-			 * wODMにおいて透過は透過率による乗算で実現する。
-			 * なのでdepthは評価はされるが書き込まれない。
-			 * アルファブレンドが必要なら自分で設定して元に戻す。
-			 * 透明な物体は透過率、網などの穴はアルファブレンドを用いる
+			/***** 透過物
+			 * wODMにおいて透過は透過率による乗算が基本なので順不同ではあるが、
+			 * 一応およそ手前から描画される。なお、アルファブレンドを使う場合は
+			 * ブレンドモードを元の乗算に戻しておく必要がある。
 			 */
 			glEnable(GL_BLEND);
+			glEnable(GL_DEPTH_TEST);
 			glBlendFunc(GL_ZERO, GL_SRC_COLOR);
 			glDepthMask(GL_FALSE);
-
-			// transparent World
 			// World::TrawAll();
+			root.TrawAll(*e, e->eye2Head);
 
-			// transparent GUI & Navigation
-			root.TrawAll();
-
-			Finish(e);
+			e->Postdraw();
+			Finish(*e);
 		}
+
+		// 各種Update
+		root.Update();
+		// World::Update(timestamp);
+		GL::Scenery::UpdateAll();
+
 		Finish();
 	}
 }

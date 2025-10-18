@@ -16,50 +16,41 @@
  * Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include <widget/base.h>
+#include "widget/content.h"
+#include "gl/gl.h"
 
 
 
 namespace widget {
 
-	const Base::P Base::dummyCenter;
 
-
-	Base::Notify Base::Update(const tb::Timestamp& ts) {
-		Notify n(notify);
-		for (tb::List<Base>::I i(children); ++i;) {
-			const Notify nn((*i).Update(ts));
-			n |= nn;
-		}
-
-		if (n.pick) {
-			// pickされていたのでそれを先頭にする
-			if (children.Top() != n.pick) {
-				children.Insert(*n.pick);
-				n.pick = this; // 並べ替えたので再配置はthisから
-			}
-		}
-
-		return n;
-	}
-
-	void Base::ReDepth() {
-		children.Foreach(&Base::ReDepth);
-		notify.pick = 0;
-	}
-
-	void Base::Notify::operator|=(const Notify& n) {
-		notify |= n.notify;
-		if (n.pick) {
-			pick = n.pick;
-		}
+	/***** Content類
+	 */
+	const tb::Color PlaneContent::defaultColor(0x00ffffff);
+	PlaneContent::PlaneContent(tb::Color c) : color(c) {}
+	void PlaneContent::DrawContent(const Frame::R& r) {
+		glColor4fv(color);
+		glBegin(GL_TRIANGLE_STRIP);
+		Vertex(r.Left()[0], r.Left()[1]);
+		Vertex(r.Right()[0], r.Left()[1]);
+		Vertex(r.Right()[0], r.Right()[1]);
+		glEnd();
 	}
 
 
-	void Base::ReDepth(float d, float t) {
-		for (tb::List<Base>::I i(children); ++i;) {
-			// 子要素は同じ奥行
-			ReDepth(0, t);
-		}
+	TextureContent::TextureContent(
+		unsigned w, unsigned h, GL::Texture::Format f) :
+		Texture(w, h, f),
+		hpc(1.0f / w),
+		vpc(1.0f / h) {}
+
+	void TextureContent::DrawContent(const Frame::R& r) {
+		Binder b(*this);
+		glColor4fv(color);
+		glBegin(GL_TRIANGLE_STRIP);
+		Vertex(r.Left()[0], r.Left()[1]);
+		Vertex(r.Right()[0], r.Left()[1]);
+		Vertex(r.Right()[0], r.Right()[1]);
+		glEnd();
 	}
 }

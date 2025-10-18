@@ -35,7 +35,7 @@ namespace GL {
 		};
 
 		/** Key
-		 * RAIIによるアクティベート管理
+		 * アクティビティ管理
 		 */
 		class Key {
 			Key() = delete;
@@ -48,10 +48,13 @@ namespace GL {
 
 		private:
 		};
+		void Activate();
+		void Deactivate();
+
+
 
 		Framebuffer() : Texture(1, 1, Texture::RGB), fbID(0), dbID(0) {};
-		Framebuffer(
-			unsigned width,
+		Framebuffer(unsigned width,
 			unsigned height,
 			Format = Texture::RGB,
 			bool withDepth = true);
