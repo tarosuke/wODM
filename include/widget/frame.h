@@ -50,6 +50,7 @@ namespace widget {
 		 * Traw:透過-逆順で描画
 		 * NOTE:ここでは子要素へ制御を渡すのみ
 		 */
+		virtual void Dot() {};
 		virtual void Draw(const R&);
 		virtual void Traw();
 

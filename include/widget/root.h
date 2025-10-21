@@ -31,15 +31,18 @@ namespace widget {
 
 		// 周期処理(navPanelだけでなくWidgetの管理もここが入口)
 		void Update();
-		void DrawAll(const Eye&, const Frame::M& eye2head);
-		void TrawAll(const Eye&, const Frame::M& eye2head);
+		void DrawAll(const Eye&);
+		void TrawAll(const Eye&);
 
 		// navPanel上に点を描画(Windowから呼ばれる)
 		static void Dot(const Frame::P& center);
 
+		static void Register(Window&);
+
 	private:
-		tb::List<Window> windows;
+		tb::List<Frame> windows;
 		Model_C* navPanel;
+		static Root* instance;
 		static Frame::P lookingPoint;
 		static Frame::M viewMat;
 

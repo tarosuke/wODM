@@ -65,8 +65,11 @@ void Core::Run() {
 			glDisable(GL_BLEND);
 			glEnable(GL_DEPTH_TEST);
 			glDepthMask(GL_TRUE);
-			root.DrawAll(*e, e->eye2Head);
 
+			// GUI関連
+			root.DrawAll(*e);
+
+			// 通常の物体
 			e->Pose(Pose());
 			// world::DrawAll(pose * e.eye2Head);
 			GL::Scenery::DrawAll();
@@ -80,8 +83,13 @@ void Core::Run() {
 			glEnable(GL_DEPTH_TEST);
 			glBlendFunc(GL_ZERO, GL_SRC_COLOR);
 			glDepthMask(GL_FALSE);
+
+			// 通常の物体
+			e->Pose(Pose());
 			// World::TrawAll();
-			root.TrawAll(*e, e->eye2Head);
+
+			// GUI
+			root.TrawAll(*e);
 
 			e->Postdraw();
 			Finish(*e);
