@@ -42,8 +42,7 @@ namespace widget {
 	}
 
 	void Window::Draw(const R& r) {
-		UpdateMask(r);
-		if (IsShown()) {
+		if (UpdateMask(r)) {
 			glPushMatrix();
 			glTranslatef(-position[0], -position[1], -depth);
 			controls.Foreach(&Frame::Draw, GetMask());

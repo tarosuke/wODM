@@ -36,7 +36,7 @@ namespace {
 		"視野中心を決めるための視点の投影面までの距離[m]");
 	tb::Prefs<float> scale("widget/scale", 0.001f, "1pxのサイズ[m]");
 	tb::Prefs<float> navThick(
-		"widget/navigationAngle", 16.0f, "ナビゲーションリングの太さ[px]");
+		"widget/navigationAngle", 32.0f, "ナビゲーションリングの太さ[px]");
 	tb::Prefs<float> windowThick("widget/windowThick",
 		10.0f,
 		"Windowの奥行き(この値だけ基準面から屋に配置される)");
@@ -121,32 +121,32 @@ namespace widget {
 		lookingPoint = {lv[0] * (float)vDistance / (lv[2] * scale),
 			lv[1] * (float)vDistance / (lv[2] * scale)};
 
-		glColor3f(1, 0, 1);
-		glPointSize(16);
+		const unsigned w(eye.width / 2);
+		const unsigned h(eye.height / 2);
+		mask = Frame::R(Frame::P(lookingPoint[0] - w, lookingPoint[1] - h),
+			Frame::P(lookingPoint[0] + w, lookingPoint[1] + h));
+
+		glColor3f(1, 1, 1);
+		glPointSize(3);
 		eye.PixelByPixel();
 		glTranslatef(0, 0, -pDistance);
 		glBegin(GL_POINTS);
-		glVertex2f(0, 0);
-		glVertex2f(100, 0);
-		glVertex2f(200, 0);
-		glVertex2f(300, 0);
-		glVertex2f(0, 100);
-		glVertex2f(0, 200);
-		glVertex2f(0, 300);
-
 		windows.Foreach(&Frame::Dot);
 		glEnd();
 
-		eye.PixelByPixel();
 		LookAt(eye.eye2Head);
 		windows.Foreach(&Frame::Draw, GetMask());
 	}
 
 	void Root::TrawAll(const Eye& eye) {
+		glColor4f(1, 1, 1, 1);
 		eye.Short11();
+		glTranslatef(0, 0, -pDistance);
 		navPanel->Draw();
 
+
 		eye.PixelByPixel();
+		glTranslatef(0, 0, -pDistance);
 		LookAt(eye.eye2Head);
 		windows.Foreach(&Frame::Traw);
 	}
@@ -193,7 +193,7 @@ namespace widget {
 			i.vertex.z = o.vertex.z;
 		}
 
-		Model_C* np(new Model_C(params, *image));
+		Model_C* np(new Model_C(params, *image, textureStyle));
 		delete image;
 		return np;
 	}

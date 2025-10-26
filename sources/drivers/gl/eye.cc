@@ -45,9 +45,9 @@ namespace GL {
 
 
 	void Eye::Identity() const { glLoadIdentity(); };
-	void Eye::PixelByPixel() const {
+	void Eye::PixelByPixel(float depth) const {
 		glLoadIdentity();
-		glScalef(2.0f / width, 1.0f / height, 1);
+		glScalef(2.0f / max, 2.0f / max, 1);
 	};
 	void Eye::Vertical11() const {
 		glLoadIdentity();
@@ -58,12 +58,14 @@ namespace GL {
 		glScalef(1, width / height, 1);
 	};
 	void Eye::Short11() const {
+		const float r(min / max);
 		glLoadIdentity();
-		glScalef(min / width, min / height, 1);
+		glScalef(r, r, 1);
 	};
 	void Eye::Long11() const {
+		const float r(max / min);
 		glLoadIdentity();
-		glScalef(max / width, max / height, 1);
+		glScalef(r, r, 1);
 	};
 	void Eye::Pose(const tb::Matrix<4, 4, float>& m) const {
 		glLoadMatrixf(m);

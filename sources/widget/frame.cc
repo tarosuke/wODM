@@ -67,7 +67,9 @@ namespace widget {
 
 	// 引数をposition層体にした上で論理積ESDしたものとその可視判定を記録
 	bool Frame::UpdateMask(const R& r) {
-		shown = !(mask = (r - position) & R(spread)).IsEmpty();
+		mask = (r - position) & R(spread);
+		shown = !mask.IsEmpty();
+		// shown = !(mask = (r - position) & R(spread)).IsEmpty();
 		return shown;
 	}
 }
