@@ -36,7 +36,7 @@ namespace {
 		"視野中心を決めるための視点の投影面までの距離[m]");
 	tb::Prefs<float> scale("widget/scale", 0.001f, "1pxのサイズ[m]");
 	tb::Prefs<float> navThick(
-		"widget/navigationAngle", 16.0f, "ナビゲーションリングの太さ[px]");
+		"widget/navigationAngle", 32.0f, "ナビゲーションリングの太さ[px]");
 	tb::Prefs<float> windowThick("widget/windowThick",
 		10.0f,
 		"Windowの奥行き(この値だけ基準面から屋に配置される)");
@@ -81,32 +81,39 @@ namespace {
 
 namespace widget {
 
+	Root* Root::instance(0);
 	Frame::P Root::lookingPoint;
 
 
-	Root::Root(const tb::List<Eye>& eyes) : navPanel(PrepareNavPanel(eyes)) {};
+	Root::Root(const tb::List<Eye>& eyes) : navPanel(PrepareNavPanel(eyes)) {
+		instance = this;
+	};
 	Root::~Root() {
 		if (navPanel) {
 			delete navPanel;
 		}
 	}
 
+	void Root::Register(Window& w) {
+		instance->windows.Add(static_cast<Frame&>(w));
+	}
+
 	void Root::Update() {
 		// 必要なら順序を変更して奥行き再計算
 		Notify n;
-		for (tb::List<Window>::I i(windows); ++i;) {
+		for (tb::List<Frame>::I i(windows); ++i;) {
 			const Notify nn((*i).Update());
 			n.raw |= nn.raw;
 		}
 		if (n.thickUpdated) {
 			float d(0);
-			for (tb::List<Window>::I i(windows); ++i;) {
+			for (tb::List<Frame>::I i(windows); ++i;) {
 				d += (*i).GetDepth();
 			}
 		}
 	}
 
-	void Root::DrawAll(const Eye& eye, const Frame::M& e2h) {
+	void Root::DrawAll(const Eye& eye) {
 		// lookingPoint算出、適用
 		const tb::Vector<3, float> fv((const float[3]){0.0f, 0.0f, 1.0f});
 		const tb::Vector<3, float> lv(
@@ -114,14 +121,34 @@ namespace widget {
 		lookingPoint = {lv[0] * (float)vDistance / (lv[2] * scale),
 			lv[1] * (float)vDistance / (lv[2] * scale)};
 
+		const unsigned w(eye.width / 2);
+		const unsigned h(eye.height / 2);
+		mask = Frame::R(Frame::P(lookingPoint[0] - w, lookingPoint[1] - h),
+			Frame::P(lookingPoint[0] + w, lookingPoint[1] + h));
+
+		glColor3f(1, 1, 1);
+		glPointSize(3);
 		eye.PixelByPixel();
-		LookAt(e2h);
-		windows.Foreach(&Window::Draw, GetMask());
+		glTranslatef(0, 0, -pDistance);
+		glBegin(GL_POINTS);
+		windows.Foreach(&Frame::Dot);
+		glEnd();
+
+		LookAt(eye.eye2Head);
+		windows.Foreach(&Frame::Draw, GetMask());
 	}
 
-	void Root::TrawAll(const Eye& eye, const Frame::M& e2h) {
-		LookAt(e2h);
-		windows.Foreach(&Window::Traw);
+	void Root::TrawAll(const Eye& eye) {
+		glColor4f(1, 1, 1, 1);
+		eye.Short11();
+		glTranslatef(0, 0, -pDistance);
+		navPanel->Draw();
+
+
+		eye.PixelByPixel();
+		glTranslatef(0, 0, -pDistance);
+		LookAt(eye.eye2Head);
+		windows.Foreach(&Frame::Traw);
 	}
 
 	void Root::LookAt(const Frame::M& e2h) {
@@ -132,7 +159,7 @@ namespace widget {
 
 
 	Model_C* Root::PrepareNavPanel(const tb::List<Eye>& eyes) {
-		out = eyes.Top()->min;
+		out = (eyes.Top()->min) / 2;
 
 		in = out - navThick;
 		ior = in / out;
@@ -166,10 +193,22 @@ namespace widget {
 			i.vertex.z = o.vertex.z;
 		}
 
-		Model_C* np(new Model_C(params, *image));
+		Model_C* np(new Model_C(params, *image, textureStyle));
 		delete image;
 		return np;
 	}
 
+	void Root::Dot(const Frame::P& p) {
+		const Frame::P pp(lookingPoint - p);
+		const float n(pp.Norm());
+		if (n <= in) {
+			// ナビゲーションリングの内側なので表示しない
+			return;
+		}
 
+		const float rr(n - in + 1);
+		const float r(out - (navThick / rr));
+		const Frame::P ppp(pp * r / n);
+		glVertex2f(ppp[0], ppp[1]);
+	}
 }

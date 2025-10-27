@@ -45,11 +45,28 @@ namespace GL {
 
 
 	void Eye::Identity() const { glLoadIdentity(); };
-	void Eye::PixelByPixel() const { glScalef(0.5 / width, 0.5 / height, 1); };
-	void Eye::Vertical11() const { glScalef(height / width, 1, 1); };
-	void Eye::Horizontal11() const { glScalef(1, width / height, 1); };
-	void Eye::Short11() const { glScalef(min / width, min / height, 1); };
-	void Eye::Long11() const { glScalef(max / width, max / height, 1); };
+	void Eye::PixelByPixel(float depth) const {
+		glLoadIdentity();
+		glScalef(2.0f / max, 2.0f / max, 1);
+	};
+	void Eye::Vertical11() const {
+		glLoadIdentity();
+		glScalef(height / width, 1, 1);
+	};
+	void Eye::Horizontal11() const {
+		glLoadIdentity();
+		glScalef(1, width / height, 1);
+	};
+	void Eye::Short11() const {
+		const float r(min / max);
+		glLoadIdentity();
+		glScalef(r, r, 1);
+	};
+	void Eye::Long11() const {
+		const float r(max / min);
+		glLoadIdentity();
+		glScalef(r, r, 1);
+	};
 	void Eye::Pose(const tb::Matrix<4, 4, float>& m) const {
 		glLoadMatrixf(m);
 	};

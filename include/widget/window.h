@@ -35,7 +35,7 @@ namespace widget {
 
 		static void PrepareNavPanel();
 
-		void Dot();
+		void Dot() override;
 		void Draw(const R&) override;
 		void Traw() override;
 

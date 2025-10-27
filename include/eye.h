@@ -47,8 +47,8 @@ struct Eye : tb::List<Eye>::Node {
 	unsigned memo;
 	const unsigned width;
 	const unsigned height;
-	const unsigned min;
-	const unsigned max;
+	const float min;
+	const float max;
 
 	/***** 描画前後の処理
 	 * 投影行列の設定やフレームバッファのクリアなどの描画前処理
@@ -66,8 +66,9 @@ struct Eye : tb::List<Eye>::Node {
 	 * glScale2f(max/width, max/height)：長辺が-1〜1、アスペクト1
 	 * pose：実寸、頭の向き
 	 */
-	virtual void Identity() const = 0;	   // 画面の端が-1〜1、アスペクト無視
-	virtual void PixelByPixel() const = 0; // ピクセルbyピクセル、アスペクト無視
+	virtual void Identity() const = 0; // 画面の端が-1〜1、アスペクト無視
+	virtual void PixelByPixel(float depth = -1.0)
+		const = 0; // depthにおけるピクセルbyピクセル、アスペクト無視
 	virtual void Vertical11() const = 0;   // 高さが-1〜1、アスペクト1
 	virtual void Horizontal11() const = 0; // 幅が-1〜1、アスペクト1
 	virtual void Short11() const = 0;	   // 短辺が-1〜1、アスペクト1

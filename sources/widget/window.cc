@@ -18,6 +18,7 @@
  */
 #include "widget/window.h"
 #include "gl/gl.h"
+#include "widget/root.h"
 
 
 
@@ -28,7 +29,9 @@ namespace widget {
 
 
 	Window::Window(const P& p, const S& s, float depth, float thick) :
-		Frame(GetLeftTop(p, s), GetWindowSpread(s), depth, thick) {};
+		Frame(GetLeftTop(p, s), GetWindowSpread(s), depth, thick) {
+		Root::Register(*this);
+	};
 
 	Frame::P Window::GetLeftTop(const P& center, const S& contentSpread) {
 		return center - contentSpread * 0.5 - leftTopMergin;
@@ -39,8 +42,7 @@ namespace widget {
 	}
 
 	void Window::Draw(const R& r) {
-		UpdateMask(r);
-		if (IsShown()) {
+		if (UpdateMask(r)) {
 			glPushMatrix();
 			glTranslatef(-position[0], -position[1], -depth);
 			controls.Foreach(&Frame::Draw, GetMask());
@@ -57,4 +59,7 @@ namespace widget {
 			glPopMatrix();
 		}
 	}
+
+	void Window::Dot() { Root::Dot(GetCenter()); }
+
 }
