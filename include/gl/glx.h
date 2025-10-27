@@ -28,11 +28,10 @@
  * 構築したらMakeCurrentでカレントに設定できる
  */
 struct GLX : Core {
-	GLX() = delete;
 	void operator=(const GLX&) = delete;
 
 protected:
-	GLX(Eyes& e) : Core(e), display(XOpenDisplay(0)) {};
+	GLX() : display(XOpenDisplay(0)) {};
 
 	~GLX() {
 		glXMakeCurrent(display, None, 0);

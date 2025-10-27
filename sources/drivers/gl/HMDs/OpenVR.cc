@@ -19,9 +19,11 @@
 #include <X11/X.h>
 #include <openvr/openvr.h>
 
+#include <tb/list.h>
 #include <tb/matrix.h>
 #include <tb/prefs.h>
 
+#include "gl/eye.h"
 #include "gl/framebuffer.h"
 #include "gl/gl.h"
 #include "gl/glx.h"
@@ -51,7 +53,6 @@ private:
 
 	// フレームバッファ他
 	GL::Framebuffer::Size renderSize;
-	Eyes eyes;
 	static constexpr vr::EVREye eyeIndex[2] = {vr::Eye_Right, vr::Eye_Left};
 	vr::Texture_t fbFeatures[2];
 
@@ -61,7 +62,7 @@ private:
 
 	// 姿勢取得
 	void UpdatePose() final;
-	void Finish(Eye& e) final {
+	void Finish(const Eye& e) final {
 		vr::VRCompositor()->Submit(eyeIndex[e.memo], &fbFeatures[e.memo]);
 	};
 	void Finish() final {
@@ -71,10 +72,7 @@ private:
 };
 
 
-OpenVR::OpenVR() :
-	GLX(eyes),
-	openVR(GetOpenVR()),
-	renderSize(GetRenderSize(openVR)) {
+OpenVR::OpenVR() : openVR(GetOpenVR()), renderSize(GetRenderSize(openVR)) {
 
 	Setup(DefaultRootWindow(display));
 
@@ -84,18 +82,18 @@ OpenVR::OpenVR() :
 		vr::HmdMatrix44_t pm(openVR.GetProjectionMatrix(ei, nearClip, farClip));
 		vr::HmdMatrix34_t eh(openVR.GetEyeToHeadTransform(ei));
 
-		Eye eye(renderSize.width, renderSize.height);
-		eye.projection.Transpose(pm.m);
-		eye.eye2Head.TransposeAffine(eh.m);
-		eye.eye2Head.InvertAffine();
-		eye.memo = n;
+		GL::Eye* eye(new GL::Eye(renderSize.width, renderSize.height));
+		eye->projection.Transpose(pm.m);
+		eye->eye2Head.TransposeAffine(eh.m);
+		eye->eye2Head.InvertAffine();
+		eye->memo = n;
 
 		fbFeatures[n].handle =
-			(void*)(uintptr_t)eye.framebuffer.GetColorBufferID();
+			(void*)(uintptr_t)eye->framebuffer.GetColorBufferID();
 		fbFeatures[n].eType = vr::TextureType_OpenGL;
 		fbFeatures[n].eColorSpace = vr::ColorSpace_Gamma;
 
-		eyes.emplace_back(std::move(eye));
+		Register(*eye);
 	}
 }
 OpenVR::~OpenVR() { vr::VR_Shutdown(); }

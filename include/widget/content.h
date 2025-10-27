@@ -18,37 +18,47 @@
  */
 #pragma once
 
+#include "frame.h"
 #include "gl/gl.h"
-#include "pane/rectPane.h"
-#include "pane/tabPane.h"
+#include "gl/texture.h"
+#include <tb/color.h>
 
 
+namespace widget {
 
-/***** Window
- * DrawNavigationで自らの中心に対応した点を打つ
- * コンテントはtabかセパレートパネルで持つ
- * 基本的にユーザがWidgetをまとめて操作するためのもの
- */
-struct Window : RectPane {
-	Window(
-		const tb::Vector<2, int>& center, const tb::Spread<2, unsigned>& size);
-
-private:
-	tb::Vector<2, float> center;
-
-	void DrawNavigation() final {
-		tb::Vector<2, float> p(center - lookingPoint);
-		const float norm(p.Norm());
-		if (norm < navigator.innerRadious) {
-			// ナビゲーションサークルより内側なので輝点は表示しない
-			return;
-		}
-
-		const float r(
-			navigator.innerRadious
-			+ navigator.thickness / (norm - navigator.innerRadious));
-		const tb::Vector<2, float> pp(p * r / norm);
-
-		glVertex2f(pp[0], pp[1]); // glBegin/glEndは処理全体
+	// 空のコンテント
+	struct Content {
+		Content() = default;
+		virtual void DrawContent(const Frame::R&) {};
+		virtual void TrawContent(const Frame::R&) {};
 	};
-};
+
+	struct PlaneContent : Content {
+		PlaneContent(tb::Color = defaultColor);
+		void DrawContent(const Frame::R&) override;
+
+	protected:
+		static const tb::Color defaultColor;
+		tb::Color color;
+
+	private:
+		void Vertex(float x, float y) { glVertex2f(x, y); };
+	};
+
+	struct TextureContent : PlaneContent, GL::Texture {
+		TextureContent(unsigned width,
+			unsigned height,
+			GL::Texture::Format format = GL::Texture::RGB);
+		void DrawContent(const Frame::R&) override;
+
+	protected:
+		// サイズの逆数
+		const float hpc;
+		const float vpc;
+
+		void Vertex(float x, float y) {
+			glTexCoord2f(x * hpc, y * vpc);
+			glVertex2f(x, y);
+		};
+	};
+}

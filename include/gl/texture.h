@@ -19,8 +19,11 @@
 #pragma once
 
 #include <tb/image.h>
+#include <tb/list.h>
 #include <tb/rect.h>
 #include <tb/spread.h>
+
+
 
 namespace GL {
 
@@ -59,13 +62,11 @@ namespace GL {
 		};
 
 		Texture() : tid(0) {};
-		Texture(
-			unsigned width,
+		Texture(unsigned width,
 			unsigned height,
 			Format = RGB,
 			const Style& = defaultStyle);
-		Texture(
-			const void*,
+		Texture(const void*,
 			unsigned width,
 			unsigned height,
 			Format = RGB,
@@ -78,8 +79,7 @@ namespace GL {
 
 		~Texture();
 
-		void Update(
-			const void*,
+		void Update(const void*,
 			int x,
 			int y,
 			unsigned width,
@@ -87,6 +87,8 @@ namespace GL {
 			Format format);
 
 		void Update(const tb::Image&, const tb::Vector<2, int>&);
+
+		void Update(); // upqから拾って順次更新
 
 		//
 		// フォーマットが透過ならtrue
@@ -100,10 +102,18 @@ namespace GL {
 		unsigned TextureID() const { return tid; };
 
 	private:
+		struct Updater : tb::List<Updater>::Node {};
+
+		/***** Image内臓のUpdater
+		 * Updaterが指す画像が消えてしまうと機に使う
+		 */
+		struct BufferedUpdater : Updater {};
+
 		static unsigned NewID();
 		static int ToGLFormat(Format);
 		static void SetupAttributes(const Style&);
 
+		tb::List<Updater> upq; // 更新キュー
 		unsigned tid;
 		bool transparent;
 	};

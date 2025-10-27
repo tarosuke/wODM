@@ -16,4 +16,41 @@
  * Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#pragma once
+#include "widget/content.h"
+#include "gl/gl.h"
+
+
+
+namespace widget {
+
+
+	/***** Content類
+	 */
+	const tb::Color PlaneContent::defaultColor(0x00ffffff);
+	PlaneContent::PlaneContent(tb::Color c) : color(c) {}
+	void PlaneContent::DrawContent(const Frame::R& r) {
+		glColor4fv(color);
+		glBegin(GL_TRIANGLE_STRIP);
+		Vertex(r.Left()[0], r.Left()[1]);
+		Vertex(r.Right()[0], r.Left()[1]);
+		Vertex(r.Right()[0], r.Right()[1]);
+		glEnd();
+	}
+
+
+	TextureContent::TextureContent(
+		unsigned w, unsigned h, GL::Texture::Format f) :
+		Texture(w, h, f),
+		hpc(1.0f / w),
+		vpc(1.0f / h) {}
+
+	void TextureContent::DrawContent(const Frame::R& r) {
+		Binder b(*this);
+		glColor4fv(color);
+		glBegin(GL_TRIANGLE_STRIP);
+		Vertex(r.Left()[0], r.Left()[1]);
+		Vertex(r.Right()[0], r.Left()[1]);
+		Vertex(r.Right()[0], r.Right()[1]);
+		glEnd();
+	}
+}

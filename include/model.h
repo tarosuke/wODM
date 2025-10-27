@@ -26,8 +26,16 @@
 
 // Abstract Model
 struct Model {
-	virtual void Draw() = 0;
-	virtual void Traw() = 0;
+	// Model用パラメタ
+	template <typename T> struct Params {
+		unsigned numOfIndex;
+		const unsigned* index;
+		unsigned numOfVertex;
+		const T* vertex;
+	};
+
+	virtual void Draw() {};
+	virtual void Mraw() {};
 
 
 	// Model有効判定
@@ -37,14 +45,6 @@ struct Model {
 	virtual ~Model();
 
 protected:
-	// Model用パラメタ
-	template <typename T> struct Params {
-		unsigned numOfIndex;
-		const unsigned* index;
-		unsigned numOfVertex;
-		const T* vertex;
-	};
-
 	// バッファタイプ別に作るとキリがないので
 	template <typename T>
 	Model(const T& p) :
@@ -56,16 +56,13 @@ private:
 };
 
 // 頂点とカラーバッファのみのModel
-class Model_C : public Model {
-public:
-protected:
+struct Model_C : public Model {
 	using Params = Params<GL::VBO::V_UV>;
+	void Draw() override;
 
-	Model_C(
-		const Params&,
+	Model_C(const Params&,
 		const tb::Image&,
 		const GL::Texture::Style& style = GL::Texture::defaultStyle);
-	void Draw() override;
 
 private:
 	const tb::Image& rawImage;

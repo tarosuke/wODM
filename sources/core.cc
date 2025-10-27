@@ -16,11 +16,11 @@
  * Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include "core.h"
 #include "gl/gl.h"
 #include "gl/glx.h"
 #include "gl/scenery.h"
-#include "widget.h"
+#include "widget/root.h"
+#include <algorithm>
 #include <assert.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -29,55 +29,77 @@
 
 
 tb::Timestamp Core::timestamp;
+tb::Matrix<4, 4, float> Core::pose;
 bool Core::keep(false);
 template <> tb::Factory<Core>* tb::Factory<Core>::start(0);
 
 
+struct Login : widget::Window {
+	/*****
+	 * ログインを待ち、ログインされたら名前突きパイプを用意してChildをnew
+	 * 名前突きパイプに接続されたらaskpass的動作
+	 * forkしなかったプロセスでは有名パイプを待つ()
+	 * askpassの接続が逆で「画面へ繋ぐ」ことができないのでちょっと考える
+	 */
+	Login() : Window(P{0.0f, 0.0f}, S{256U, 256U}) {};
+};
+
+
 void Core::Run() {
 	pose.Identity();
+	widget::Root root(eyes);
+	new Login;
 	for (keep = true; keep;) {
 		timestamp.Update();
 
 		UpdatePose();
 
-		// 各種Update
-		Widget::UpdateAll(pose, timestamp);
-		// World::Update();
-		GL::Scenery::UpdateAll();
+		for (const Eye* const e : eyes) {
+			Eye::Key key(*e);
 
-		for (auto& e : eyes) {
-			GL::Framebuffer::Key fb(e.framebuffer);
-			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+			/***** 不透明物
+			 * オーバードロー避けでおよそ手前から描画される
+			 * またデプスバッファへの書き込み設定を戻す
+			 * この領域はブレンドなし、デプス評価、書き換えあり
+			 */
+			glDisable(GL_BLEND);
+			glEnable(GL_DEPTH_TEST);
+			glDepthMask(GL_TRUE);
 
-			glViewport(0, 0, e.width, e.height);
+			// GUI関連
+			root.DrawAll(*e);
 
-			glMatrixMode(GL_PROJECTION);
-			glLoadMatrixf(e.projection);
-
-			glMatrixMode(GL_MODELVIEW);
-
-			// opaque stickies
-			glLoadMatrixf(e.eye2Head);
-			Widget::DrawNavigationAll();
-
-			// opaque GUI
-			Widget::DrawAll(e.eye2Head);
-
-			// opaque World
-			glLoadMatrixf(pose * e.eye2Head);
-			// World::DrawAll();
-
-			// Scenery
+			// 通常の物体
+			e->Pose(Pose());
+			// world::DrawAll(pose * e.eye2Head);
 			GL::Scenery::DrawAll();
 
-			// transparent World
+			/***** 透過物
+			 * wODMにおいて透過は透過率による乗算が基本なので順不同ではあるが、
+			 * 一応およそ手前から描画される。なお、アルファブレンドを使う場合は
+			 * ブレンドモードを元の乗算に戻しておく必要がある。
+			 */
+			glEnable(GL_BLEND);
+			glEnable(GL_DEPTH_TEST);
+			glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+			glDepthMask(GL_FALSE);
+
+			// 通常の物体
+			e->Pose(Pose());
 			// World::TrawAll();
 
-			// transparent GUI & Navigation
-			Widget::TrawAll();
+			// GUI
+			root.TrawAll(*e);
 
-			Finish(e);
+			e->Postdraw();
+			Finish(*e);
 		}
+
+		// 各種Update
+		root.Update();
+		// World::Update(timestamp);
+		GL::Scenery::UpdateAll();
+
 		Finish();
 	}
 }

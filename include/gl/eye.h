@@ -1,4 +1,4 @@
-﻿/*****************************************************************************
+/*****************************************************************************
  * Copyright (C) 2024 tarosuke<webmaster@tarosuke.net>
  *
  * This program is free software; you can redistribute it and/or
@@ -16,26 +16,27 @@
  * Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include <openvr/openvr.h>
-#include <syslog.h>
-#include <tb/app.h>
+#pragma once
 
-#include "core.h"
-#include "gl/scenery.h"
+#include "../eye.h"
+#include "gl/framebuffer.h"
 
 
 
-struct wODM : tb::App {
-	int Main(uint, const char**) {
-		syslog(LOG_CRIT, "start wODM.");
-		Core* const core(Core::New());
-		if (core) {
-			GL::Scenery::New();
-			core->Run();
-			delete core;
-		} else {
-			syslog(LOG_CRIT, "no VRHMD found.");
-		}
-		return 0;
+namespace GL {
+
+	struct Eye : ::Eye {
+		Eye(unsigned width, unsigned height);
+		void Prepare() const override;
+		void Postdraw() const override {};
+
+		GL::Framebuffer framebuffer;
+		void Identity() const override;
+		void PixelByPixel(float) const override;
+		void Vertical11() const override;
+		void Horizontal11() const override;
+		void Short11() const override;
+		void Long11() const override;
+		void Pose(const tb::Matrix<4, 4, float>&) const override;
 	};
-} wodm;
+}

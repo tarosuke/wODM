@@ -18,13 +18,13 @@
  */
 #pragma once
 
+#include "eye.h"
 #include <gl/framebuffer.h>
 #include <tb/factory.h>
 #include <tb/list.h>
 #include <tb/matrix.h>
 #include <tb/spread.h>
 #include <tb/time.h>
-#include <vector>
 
 
 
@@ -33,48 +33,27 @@ struct Core {
 	virtual ~Core() {};
 
 	void Run();
+
+	// 周回処理へ引数として渡すオーバーヘッド避けのアクセサ
 	static const tb::Timestamp& Timestamp() { return timestamp; };
+	static const tb::Matrix<4, 4, float>& Pose() { return pose; };
 
 protected:
 	static constexpr float nearClip = 0.01;
 	static constexpr float farClip = 10000;
 
-	struct Eye {
-		Eye() {};
-		Eye(Eye&& o) { *this = std::move(o); };
-		Eye(unsigned width, unsigned height) :
-			framebuffer(width, height),
-			width(width),
-			height(height) {};
-		void operator=(Eye&& o) {
-			projection = o.projection;
-			eye2Head = o.eye2Head;
-			memo = o.memo;
-			width = o.width;
-			height = o.height;
-			framebuffer = std::move(o.framebuffer);
-		};
-		tb::Matrix<4, 4, float> projection; // Transpose(GetProjectionMatrix)
-		tb::Matrix<4, 4, float>
-			eye2Head; // Transpose(GetEyeToHeadTransform()).InvertAffine()
-		GL::Framebuffer framebuffer;
-		unsigned memo;
-		unsigned width;
-		unsigned height;
-	};
-	using Eyes = std::vector<Eye>;
-	Eyes& eyes;
+	Core() = default;
 
-	Core(Eyes& e) : eyes(e) {};
+	void Register(Eye& e) { eyes.Add(e); };
 
-	/***** 姿勢を取得 */
-	tb::Matrix<4, 4, float> pose;
+	/***** 頭の姿勢 */
+	static tb::Matrix<4, 4, float> pose;
 	virtual void UpdatePose() = 0;
 
 	/***** フレームバッファを画面へ出力
 	 * NextEyeで返す行列の視点番号を最初に戻す
 	 */
-	virtual void Finish(Eye&) {};
+	virtual void Finish(const Eye&) {};
 	virtual void Finish() = 0;
 
 	/***** 繰り返しから抜ける */
@@ -85,7 +64,7 @@ private:
 	static bool keep;
 	static tb::Timestamp timestamp;
 	const tb::Matrix<4, 4, float>* projection; // 投影(左右の目はこっちで分ける)
+	tb::List<Eye> eyes;
 
 	Core(const Core&) = delete;
-	Core() = delete;
 };

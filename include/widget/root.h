@@ -16,27 +16,43 @@
  * Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+#pragma once
 
-#include "pane/rectPane.h"
-
-
-
-// Geometry
-tb::Prefs<float>
-	Geometry::moveRatio("RectPane/MoveRatio", 0.25, "Widget移動速度の係数");
+#include "eye.h"
+#include "model.h"
+#include "window.h"
 
 
-// RectPane
 
-void RectPane::Draw(const R& r) {
-	const R rr(r & Rect());
-	if (!rr.IsEmpty()) {
-		Widget::Draw(rr - LeftTop());
-	}
-}
-void RectPane::Traw(const R& r) {
-	const R rr(r & Rect());
-	if (!rr.IsEmpty()) {
-		Widget::Traw(rr - LeftTop());
-	}
+namespace widget {
+	struct Root {
+		Root(const tb::List<Eye>&);
+		~Root();
+
+		// 周期処理(navPanelだけでなくWidgetの管理もここが入口)
+		void Update();
+		void DrawAll(const Eye&);
+		void TrawAll(const Eye&);
+
+		// navPanel上に点を描画(Windowから呼ばれる)
+		static void Dot(const Frame::P& center);
+
+		static void Register(Window&);
+
+	private:
+		tb::List<Frame> windows;
+		Model_C* navPanel;
+		static Root* instance;
+		static Frame::P lookingPoint;
+		static Frame::M viewMat;
+
+		static Model_C* PrepareNavPanel(const tb::List<Eye>&);
+
+		Root() = delete;
+		Root(const Root&) = delete;
+
+		Frame::R mask;
+		const Frame::R& GetMask() { return mask; };
+		void LookAt(const Frame::M&);
+	};
 }
