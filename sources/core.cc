@@ -19,6 +19,7 @@
 #include "gl/gl.h"
 #include "gl/glx.h"
 #include "gl/scenery.h"
+#include "widget/pane.h"
 #include "widget/root.h"
 #include <algorithm>
 #include <assert.h>
@@ -34,15 +35,24 @@ bool Core::keep(false);
 template <> tb::Factory<Core>* tb::Factory<Core>::start(0);
 
 
-struct Login : widget::Window {
+struct Login : widget::Pane {
 	/*****
 	 * ログインを待ち、ログインされたら名前突きパイプを用意してChildをnew
 	 * 名前突きパイプに接続されたらaskpass的動作
 	 * forkしなかったプロセスでは有名パイプを待つ()
 	 * askpassの接続が逆で「画面へ繋ぐ」ことができないのでちょっと考える
 	 */
-	Login() : Window(P{0.0f, 0.0f}, S{256U, 256U}) {};
+	Login() : Pane(tb::Color(0x808080), position, spread, 0, 0) {};
+
+
+
+	static const P position;
+	static const S spread;
 };
+
+const widget::Frame::P Login::position(0.0f, 0.0f);
+const widget::Frame::S Login::spread(256U, 256U);
+
 
 
 void Core::Run() {

@@ -72,8 +72,8 @@ namespace widget {
 		/***** 可視判定
 		 */
 		bool UpdateMask(const R&);
-		const R& GetMask() { return mask; };
-		bool IsShown() { return shown; };
+		const R& GetMask() const { return mask; };
+		bool IsShown() const { return shown; };
 
 		/***** 位置、範囲
 		 * Rで持つと加算誤差が複数要素で蓄積するためPとSで持つ
@@ -92,10 +92,45 @@ namespace widget {
 			spread(spread),
 			depth(depth),
 			thick(thick) {};
+		Frame(Frame* const parent,
+			const P& position,
+			const S& spread,
+			float depth,
+			float thick) :
+			target(position),
+			position(position),
+			spread(spread),
+			depth(depth),
+			thick(thick) {
+			if (parent) {
+				parent->children.Insert(*this);
+			} else {
+				throw -1;
+			}
+		};
 		void AccualMove(); // 実際の移動
 
 	private:
 		R mask;
 		bool shown; // maskがEmptyでないなら真、またContent更新を優先
+	};
+
+
+	struct HorizontalList : Frame {
+		void Sort() override; // 子要素を横に整列して自身のサイズを更新
+		Notify Update() override;
+	};
+
+	struct VerticalList : Frame {
+		void Sort() override; // 子要素を縦に整列して自身のサイズを更新
+		Notify Update() override;
+	};
+
+	struct SelectedList : Frame {
+		Notify Update() override;
+
+		// 先頭の子だけを描画
+		void Draw(const R&) override;
+		void Traw() override;
 	};
 }

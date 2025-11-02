@@ -57,17 +57,10 @@ struct Eye : tb::List<Eye>::Node {
 	virtual void Prepare() const = 0;
 	virtual void Postdraw() const = 0;
 
-	/***** Model-VIewと内容
-	 * glLoadIdentity：画面の端が-1〜1
-	 * glscale2f(0.5/width, 0.5/height)：ピクセルbyピクセル
-	 * glScale2f(height/width, 1)：高さが-1〜1、アスペクト1
-	 * glScale2f(1, width/height)：幅が-1〜1、アスペクト1
-	 * glScale2f(min/width, min/height)：短辺が-1〜1、アスペクト1
-	 * glScale2f(max/width, max/height)：長辺が-1〜1、アスペクト1
-	 * pose：実寸、頭の向き
+	/***** Model-View行列設定
 	 */
 	virtual void Identity() const = 0; // 画面の端が-1〜1、アスペクト無視
-	virtual void PixelByPixel(float depth = -1.0)
+	virtual void PixelByPixel(float depth = 1.0)
 		const = 0; // depthにおけるピクセルbyピクセル、アスペクト無視
 	virtual void Vertical11() const = 0;   // 高さが-1〜1、アスペクト1
 	virtual void Horizontal11() const = 0; // 幅が-1〜1、アスペクト1

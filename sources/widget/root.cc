@@ -153,7 +153,7 @@ namespace widget {
 
 	void Root::LookAt(const Frame::M& e2h) {
 		glMultMatrixf(e2h);
-		glTranslatef(-lookingPoint[0], -lookingPoint[1], -pDistance);
+		glTranslatef(lookingPoint[0], lookingPoint[1], -pDistance);
 	}
 
 

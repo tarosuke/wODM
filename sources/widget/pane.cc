@@ -16,41 +16,44 @@
  * Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include "widget/content.h"
+#include "widget/pane.h"
 #include "gl/gl.h"
+#include "widget/window.h"
 
 
 
 namespace widget {
 
+	Pane::Pane(tb::Color c,
+		const P& position,
+		const S& spread,
+		float depth,
+		float thick) :
+		Frame(new Window(position, spread), position, spread, depth, thick),
+		color(c) {}
 
-	/***** Content類
-	 */
-	const tb::Color PlaneContent::defaultColor(0x00ffffff);
-	PlaneContent::PlaneContent(tb::Color c) : color(c) {}
-	void PlaneContent::DrawContent(const Frame::R& r) {
-		glColor4fv(color);
-		glBegin(GL_TRIANGLE_STRIP);
-		Vertex(r.Left()[0], r.Left()[1]);
-		Vertex(r.Right()[0], r.Left()[1]);
-		Vertex(r.Right()[0], r.Right()[1]);
-		glEnd();
-	}
-
-
-	TextureContent::TextureContent(
-		unsigned w, unsigned h, GL::Texture::Format f) :
-		Texture(w, h, f),
-		hpc(1.0f / w),
-		vpc(1.0f / h) {}
-
-	void TextureContent::DrawContent(const Frame::R& r) {
-		Binder b(*this);
-		glColor4fv(color);
-		glBegin(GL_TRIANGLE_STRIP);
-		Vertex(r.Left()[0], r.Left()[1]);
-		Vertex(r.Right()[0], r.Left()[1]);
-		Vertex(r.Right()[0], r.Right()[1]);
-		glEnd();
-	}
+	void Pane::Draw(const R& r) {
+		if (UpdateMask(r)) {
+			const auto& m(GetMask());
+			Frame::Draw(m);
+			glColor4fv(color);
+			glBegin(GL_TRIANGLE_STRIP);
+			Vertex(m.Left()[0], m.Left()[1]);
+			Vertex(m.Right()[0], m.Left()[1]);
+			Vertex(m.Right()[0], m.Right()[1]);
+			glEnd();
+		}
+	};
+	void Pane::Traw() {
+		if (IsShown()) {
+			const auto& m(GetMask());
+			glColor4fv(color);
+			glBegin(GL_TRIANGLE_STRIP);
+			Vertex(m.Left()[0], m.Left()[1]);
+			Vertex(m.Right()[0], m.Left()[1]);
+			Vertex(m.Right()[0], m.Right()[1]);
+			glEnd();
+			Frame::Traw();
+		}
+	};
 }
