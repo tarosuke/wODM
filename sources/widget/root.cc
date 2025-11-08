@@ -121,8 +121,10 @@ namespace widget {
 		const tb::Vector<3, float> fv((const float[3]){0.0f, 0.0f, 1.0f});
 		const tb::Vector<3, float> lv(
 			Core::Pose() * fv + fv); // 正面と頭の向きの中間
-		lookingPoint = {-lv[0] * (float)vDistance / (lv[2] * scale),
+		const Frame::P lpTarget = {-lv[0] * (float)vDistance / (lv[2] * scale),
 			-lv[1] * (float)vDistance / (lv[2] * scale)};
+
+		lookingPoint += (lpTarget - lookingPoint) / (lpTarget.Norm() + 1);
 
 		mask = Frame::R(
 			Frame::P(lookingPoint[0] - eye.width, lookingPoint[1] - eye.height),
@@ -211,7 +213,7 @@ namespace widget {
 			return;
 		}
 
-		const Frame::P ppp(pp * (out - (navThick - (n - in + 1))) / n);
+		const Frame::P ppp(pp * (out - (navThick / (n - in + 1))) / n);
 		glVertex2f(ppp[0], ppp[1]);
 	}
 }
