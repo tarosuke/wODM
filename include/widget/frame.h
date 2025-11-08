@@ -46,13 +46,13 @@ namespace widget {
 		virtual void Sort() {};	 // 子要素を整列
 
 		/***** 描画
-		 * Draw:不透過-リストの純(近い順)に描画
-		 * Traw:透過-逆順で描画
-		 * NOTE:ここでは子要素へ制御を渡すのみ
+		 * マスクを計算して移動、描画ハンドラ呼び出しと子要素の描画
 		 */
 		virtual void Dot() {};
-		virtual void Draw(const R&);
-		virtual void Traw();
+		void DrawEntity(const R&);
+		void TrawEntity();
+		virtual void Draw(const R&) {};
+		virtual void Traw() {};
 
 		// 移動、リサイズ
 		void Move(const P&);   // 引数を差分として移動
@@ -71,7 +71,6 @@ namespace widget {
 
 		/***** 可視判定
 		 */
-		bool UpdateMask(const R&);
 		const R& GetMask() const { return mask; };
 		bool IsShown() const { return shown; };
 

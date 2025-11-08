@@ -53,6 +53,5 @@ namespace widget {
 
 		Frame::R mask;
 		const Frame::R& GetMask() { return mask; };
-		void LookAt(const Frame::M&);
 	};
 }

@@ -36,15 +36,24 @@ namespace widget {
 		}
 		return n;
 	};
-	void Frame::Draw(const R& r) {
-		UpdateMask(r);
+	void Frame::DrawEntity(const R& r) {
+		mask = (r - position) & R(spread);
+		shown = !mask.IsEmpty();
 		if (IsShown()) {
-			children.Foreach(&Frame::Draw, GetMask());
+			glPushMatrix();
+			glTranslatef(position[0], position[1], -depth);
+			children.Foreach(&Frame::DrawEntity, GetMask());
+			Draw(GetMask());
+			glPopMatrix();
 		}
 	};
-	void Frame::Traw() {
+	void Frame::TrawEntity() {
 		if (IsShown()) {
-			children.Reveach(&Frame::Traw);
+			glPushMatrix();
+			glTranslatef(position[0], position[1], -depth);
+			Traw();
+			children.Reveach(&Frame::TrawEntity);
+			glPopMatrix();
 		}
 	};
 
@@ -65,11 +74,4 @@ namespace widget {
 	// 中心を計算
 	Frame::P Frame::GetCenter() const { return position + (spread * 0.5); }
 
-	// 引数をposition層体にした上で論理積ESDしたものとその可視判定を記録
-	bool Frame::UpdateMask(const R& r) {
-		mask = (r - position) & R(spread);
-		shown = !mask.IsEmpty();
-		// shown = !(mask = (r - position) & R(spread)).IsEmpty();
-		return shown;
-	}
 }

@@ -46,7 +46,6 @@ namespace widget {
 		static P leftTopMergin; // content左上からWindow左上の差
 		static S spreadMergin;	// contentの右下分＋leftTopMerginの負値
 
-		tb::List<Frame> controls;
 		R contentRect;
 
 		Window() = delete;

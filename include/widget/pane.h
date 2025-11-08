@@ -45,9 +45,15 @@ namespace widget {
 
 	protected:
 		tb::Color color;
-		void Draw(const R& r) override;
-		void Traw() override;
+		void Draw(const R& r) override { (this->*draw)(r); };
+		void Traw() override { (this->*traw)(); };
 		void Vertex(float x, float y) { glVertex2f(x, y); };
+		void (Pane::*draw)(const R&);
+		void (Pane::*traw)();
+		void DrawHandler(const R&);
+		void TrawHandler();
+		void DummyDraw(const R&) {};
+		void DummyTraw() {};
 	};
 
 	// テクスチャ

@@ -30,30 +30,27 @@ namespace widget {
 		float depth,
 		float thick) :
 		Frame(new Window(position, spread), position, spread, depth, thick),
-		color(c) {}
-
-	void Pane::Draw(const R& r) {
-		if (UpdateMask(r)) {
-			const auto& m(GetMask());
-			Frame::Draw(m);
-			glColor4fv(color);
-			glBegin(GL_TRIANGLE_STRIP);
-			Vertex(m.Left()[0], m.Left()[1]);
-			Vertex(m.Right()[0], m.Left()[1]);
-			Vertex(m.Right()[0], m.Right()[1]);
-			glEnd();
-		}
-	};
-	void Pane::Traw() {
-		if (IsShown()) {
-			const auto& m(GetMask());
-			glColor4fv(color);
-			glBegin(GL_TRIANGLE_STRIP);
-			Vertex(m.Left()[0], m.Left()[1]);
-			Vertex(m.Right()[0], m.Left()[1]);
-			Vertex(m.Right()[0], m.Right()[1]);
-			glEnd();
-			Frame::Traw();
-		}
-	};
+		color(c),
+		draw(c.IsTranslucent() ? &Pane::DrawHandler : &Pane::DummyDraw),
+		traw(c.IsTranslucent() ? &Pane::DummyTraw : &Pane::TrawHandler) {}
+	void Pane::DrawHandler(const R& r) {
+		const auto& m(GetMask());
+		glColor4fv(color);
+		glBegin(GL_TRIANGLE_STRIP);
+		Vertex(m.Left()[0], m.Left()[1]);
+		Vertex(m.Right()[0], m.Left()[1]);
+		Vertex(m.Left()[0], m.Right()[1]);
+		Vertex(m.Right()[0], m.Right()[1]);
+		glEnd();
+	}
+	void Pane::TrawHandler() {
+		const auto& m(GetMask());
+		glColor4fv(color);
+		glBegin(GL_TRIANGLE_STRIP);
+		Vertex(m.Left()[0], m.Left()[1]);
+		Vertex(m.Right()[0], m.Left()[1]);
+		Vertex(m.Left()[0], m.Right()[1]);
+		Vertex(m.Right()[0], m.Right()[1]);
+		glEnd();
+	}
 }

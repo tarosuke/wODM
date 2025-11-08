@@ -118,13 +118,13 @@ namespace widget {
 		const tb::Vector<3, float> fv((const float[3]){0.0f, 0.0f, 1.0f});
 		const tb::Vector<3, float> lv(
 			Core::Pose() * fv + fv); // 正面と頭の向きの中間
-		lookingPoint = {lv[0] * (float)vDistance / (lv[2] * scale),
-			lv[1] * (float)vDistance / (lv[2] * scale)};
+		lookingPoint = {-lv[0] * (float)vDistance / (lv[2] * scale),
+			-lv[1] * (float)vDistance / (lv[2] * scale)};
 
-		const unsigned w(eye.width / 2);
-		const unsigned h(eye.height / 2);
-		mask = Frame::R(Frame::P(lookingPoint[0] - w, lookingPoint[1] - h),
-			Frame::P(lookingPoint[0] + w, lookingPoint[1] + h));
+		mask = Frame::R(
+			Frame::P(lookingPoint[0] - eye.width, lookingPoint[1] - eye.height),
+			Frame::P(
+				lookingPoint[0] + eye.width, lookingPoint[1] + eye.height));
 
 		glColor3f(1, 1, 1);
 		glPointSize(3);
@@ -134,8 +134,8 @@ namespace widget {
 		windows.Foreach(&Frame::Dot);
 		glEnd();
 
-		LookAt(eye.eye2Head);
-		windows.Foreach(&Frame::Draw, GetMask());
+		glTranslatef(-lookingPoint[0], -lookingPoint[1], 0);
+		windows.Foreach(&Frame::DrawEntity, GetMask());
 	}
 
 	void Root::TrawAll(const Eye& eye) {
@@ -146,16 +146,9 @@ namespace widget {
 
 
 		eye.PixelByPixel();
-		glTranslatef(0, 0, -pDistance);
-		LookAt(eye.eye2Head);
-		windows.Foreach(&Frame::Traw);
+		glTranslatef(-lookingPoint[0], -lookingPoint[1], -pDistance);
+		windows.Foreach(&Frame::TrawEntity);
 	}
-
-	void Root::LookAt(const Frame::M& e2h) {
-		glMultMatrixf(e2h);
-		glTranslatef(lookingPoint[0], lookingPoint[1], -pDistance);
-	}
-
 
 
 	Model_C* Root::PrepareNavPanel(const tb::List<Eye>& eyes) {
@@ -199,7 +192,7 @@ namespace widget {
 	}
 
 	void Root::Dot(const Frame::P& p) {
-		const Frame::P pp(lookingPoint - p);
+		const Frame::P pp(p - lookingPoint);
 		const float n(pp.Norm());
 		if (n <= in) {
 			// ナビゲーションリングの内側なので表示しない

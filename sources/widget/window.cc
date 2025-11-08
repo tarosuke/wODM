@@ -34,7 +34,7 @@ namespace widget {
 	};
 
 	Frame::P Window::GetLeftTop(const P& center, const S& contentSpread) {
-		return center - contentSpread * 0.5 - leftTopMergin;
+		return center - (contentSpread * 0.5f) - leftTopMergin;
 	}
 
 	Frame::S Window::GetWindowSpread(const S& contentSpread) {
@@ -42,24 +42,11 @@ namespace widget {
 	}
 
 	void Window::Draw(const R& r) {
-		if (UpdateMask(r)) {
-			glPushMatrix();
-			glTranslatef(-position[0], -position[1], -depth);
-			controls.Foreach(&Frame::Draw, GetMask());
-			Frame::Draw(R(spread));
-			glPopMatrix();
-		}
+		// TODO:窓コントロールの描画
 	}
 	void Window::Traw() {
-		if (IsShown()) {
-			glPushMatrix();
-			glTranslatef(-position[0], -position[1], -depth);
-			Frame::Traw();
-			controls.Foreach(&Frame::Traw);
-			glPopMatrix();
-		}
+		// TODO:窓コントロールの描画(透過)
 	}
 
 	void Window::Dot() { Root::Dot(GetCenter()); }
-
 }
