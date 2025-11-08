@@ -122,9 +122,9 @@ class DummyHMD : GLX, tb::linux::Input {
 
 	void OnAbsMoved(const tb::Timestamp&, const AxisReport& a) final {
 		if (a.moved & 0x18) {
-			// 右スティッが動かされた
+			// 右スティックが動かされた
 			const float angle[3] = {(float)a.value[4], (float)a.value[3], 0};
-			tb::Complex<4, float> qon(angle, M_PI / 32769);
+			tb::Complex<4, float> qon(angle, M_PI / 32800);
 			pose = qon;
 
 #if 0
