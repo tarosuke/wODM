@@ -67,6 +67,11 @@ namespace GL {
 		glEnd();
 #endif
 	};
+	void Eye::GUI(float depth) const {
+		glLoadIdentity();
+		glScalef(2.0f / max, -2.0f / max, 1);
+		glMultMatrixf(eye2Head);
+	};
 	void Eye::Vertical11() const {
 		glLoadIdentity();
 		glScalef(height / width, 1, 1);

@@ -33,6 +33,7 @@ namespace GL {
 		GL::Framebuffer framebuffer;
 		void Identity() const override;
 		void PixelByPixel(float) const override;
+		void GUI(float) const override;
 		void Vertical11() const override;
 		void Horizontal11() const override;
 		void Short11() const override;

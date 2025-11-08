@@ -34,6 +34,8 @@ namespace {
 	tb::Prefs<float> vDistance("widget/virtualDistance",
 		1.0f,
 		"視野中心を決めるための視点の投影面までの距離[m]");
+	tb::Prefs<float> nDistance(
+		"widget/navDistance", 0.6f, "ナビゲーションリングの奥行き[m]");
 	tb::Prefs<float> scale("widget/scale", 0.001f, "1pxのサイズ[m]");
 	tb::Prefs<float> navThick(
 		"widget/navigationAngle", 32.0f, "ナビゲーションリングの太さ[px]");
@@ -74,8 +76,9 @@ namespace {
 	};
 
 	unsigned out;
-	float in;  // 内径
-	float ior; // 内外比(in/out)
+	float in;	  // 内径
+	float ior;	  // 内外比(in/out)
+	float nScale; // ナビゲーションリングの実際の大きさ
 
 }
 
@@ -126,26 +129,34 @@ namespace widget {
 			Frame::P(
 				lookingPoint[0] + eye.width, lookingPoint[1] + eye.height));
 
+		glDisable(GL_CULL_FACE);
+
 		glColor3f(1, 1, 1);
 		glPointSize(3);
-		eye.PixelByPixel();
-		glTranslatef(0, 0, -pDistance);
+		eye.GUI();
+		glPushMatrix();
+		glTranslatef(0, 0, -nDistance);
+		glScalef(nScale, nScale, 1);
 		glBegin(GL_POINTS);
 		windows.Foreach(&Frame::Dot);
 		glEnd();
+		glPopMatrix();
 
-		glTranslatef(-lookingPoint[0], -lookingPoint[1], 0);
+		glTranslatef(-lookingPoint[0], -lookingPoint[1], -pDistance);
 		windows.Foreach(&Frame::DrawEntity, GetMask());
 	}
 
 	void Root::TrawAll(const Eye& eye) {
+		glDisable(GL_CULL_FACE);
+
 		glColor4f(1, 1, 1, 1);
 		eye.Short11();
-		glTranslatef(0, 0, -pDistance);
+		glTranslatef(0, 0, -nDistance);
+		glScalef(nScale, nScale, 1);
 		navPanel->Draw();
 
 
-		eye.PixelByPixel();
+		eye.GUI();
 		glTranslatef(-lookingPoint[0], -lookingPoint[1], -pDistance);
 		windows.Foreach(&Frame::TrawEntity);
 	}
@@ -156,6 +167,7 @@ namespace widget {
 
 		in = out - navThick;
 		ior = in / out;
+		nScale = nDistance / pDistance;
 
 		/***** パネル画像生成
 		 */
@@ -199,9 +211,7 @@ namespace widget {
 			return;
 		}
 
-		const float rr(n - in + 1);
-		const float r(out - (navThick / rr));
-		const Frame::P ppp(pp * r / n);
+		const Frame::P ppp(pp * (out - (navThick - (n - in + 1))) / n);
 		glVertex2f(ppp[0], ppp[1]);
 	}
 }

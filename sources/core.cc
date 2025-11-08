@@ -80,6 +80,7 @@ void Core::Run() {
 			root.DrawAll(*e);
 
 			// 通常の物体
+			glEnable(GL_CULL_FACE);
 			e->Pose(Pose());
 			// world::DrawAll(pose * e.eye2Head);
 			GL::Scenery::DrawAll();

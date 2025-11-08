@@ -62,10 +62,11 @@ struct Eye : tb::List<Eye>::Node {
 	virtual void Identity() const = 0; // 画面の端が-1〜1、アスペクト無視
 	virtual void PixelByPixel(float depth = 1.0)
 		const = 0; // depthにおけるピクセルbyピクセル、アスペクト無視
-	virtual void Vertical11() const = 0;   // 高さが-1〜1、アスペクト1
-	virtual void Horizontal11() const = 0; // 幅が-1〜1、アスペクト1
-	virtual void Short11() const = 0;	   // 短辺が-1〜1、アスペクト1
-	virtual void Long11() const = 0;	   // 長辺が-1〜1、アスペクト1
+	virtual void GUI(float depth = 1.0) const = 0; // PixelByPielの上下逆
+	virtual void Vertical11() const = 0;		   // 高さが-1〜1、アスペクト1
+	virtual void Horizontal11() const = 0;		   // 幅が-1〜1、アスペクト1
+	virtual void Short11() const = 0;			   // 短辺が-1〜1、アスペクト1
+	virtual void Long11() const = 0;			   // 長辺が-1〜1、アスペクト1
 	virtual void Pose(const tb::Matrix<4, 4, float>&) const = 0;
 
 private:
