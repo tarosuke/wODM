@@ -213,7 +213,7 @@ namespace widget {
 			return;
 		}
 
-		const Frame::P ppp(pp * (out - (navThick / (n - in + 1))) / n);
+		const Frame::P ppp(pp * (out - ((navThick * in) / n)) / n);
 		glVertex2f(ppp[0], ppp[1]);
 	}
 }
