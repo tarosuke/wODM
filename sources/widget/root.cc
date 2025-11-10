@@ -122,7 +122,7 @@ namespace widget {
 		const tb::Vector<3, float> lv(
 			Core::Pose() * fv + fv); // 正面と頭の向きの中間
 		const Frame::P lpTarget = {-lv[0] * (float)vDistance / (lv[2] * scale),
-			-lv[1] * (float)vDistance / (lv[2] * scale)};
+			lv[1] * (float)vDistance / (lv[2] * scale)};
 
 		lookingPoint += (lpTarget - lookingPoint) / (lpTarget.Norm() + 1);
 
