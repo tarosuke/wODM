@@ -37,7 +37,6 @@ namespace widget {
 
 		void Dot() override;
 		void Draw(const R&) override;
-		void Traw() override;
 
 	private:
 		// 上下左右のウインドウコントロールのサイズ
@@ -50,5 +49,17 @@ namespace widget {
 
 		Window() = delete;
 		Window(const Window&) = delete;
+	};
+
+	struct ResizeableWindow : Window {
+		ResizeableWindow(const P& center,
+			const S& spread,
+			float depth = 0,
+			float thick = 0) :
+			Window(center, spread, depth, thick) {};
+		;
+
+	protected:
+		void Draw(const R&) override;
 	};
 }

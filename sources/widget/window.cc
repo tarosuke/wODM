@@ -42,11 +42,70 @@ namespace widget {
 	}
 
 	void Window::Draw(const R& r) {
-		// TODO:窓コントロールの描画
-	}
-	void Window::Traw() {
-		// TODO:窓コントロールの描画(透過)
+		// 窓コントロールの描画
+		glBegin(GL_QUADS);
+		glColor3f(1, 1, 1);
+		glVertex2f(-1, spread[1] + 1);
+		glVertex2f(-1, -1);
+		glColor3f(0.5f, 0.5f, 0.5f);
+		glVertex2f(0, 0);
+		glVertex2f(0, spread[1]);
+
+		glColor3f(1, 1, 1);
+		glVertex2f(-1, -1);
+		glVertex2f(spread[0] + 1, -1);
+		glColor3f(0.5f, 0.5f, 0.5f);
+		glVertex2f(spread[0], 0);
+		glVertex2f(0, 0);
+
+		glColor3f(0.5f, 0.5f, 0.5f);
+		glVertex2f(0, spread[1]);
+		glVertex2f(spread[0], spread[1]);
+		glColor3f(0, 0, 0);
+		glVertex2f(spread[0] + 1, spread[1] + 1);
+		glVertex2f(-1, spread[1] + 1);
+
+		glColor3f(0.5f, 0.5f, 0.5f);
+		glVertex2f(spread[0], spread[1]);
+		glVertex2f(spread[0], 0);
+		glColor3f(0, 0, 0);
+		glVertex2f(spread[0] + 1, -1);
+		glVertex2f(spread[0] + 1, spread[1] + 1);
+		glEnd();
 	}
 
 	void Window::Dot() { Root::Dot(GetCenter()); }
+
+	void ResizeableWindow::Draw(const R& r) {
+		// 窓コントロールの描画
+		glBegin(GL_QUADS);
+		glColor3f(1, 1, 1);
+		glVertex2f(-2, spread[1] + 2);
+		glVertex2f(-2, -2);
+		glColor3f(0, 0, 0);
+		glVertex2f(0, 0);
+		glVertex2f(0, spread[1]);
+
+		glColor3f(1, 1, 1);
+		glVertex2f(-2, -2);
+		glVertex2f(spread[0] + 2, -2);
+		glColor3f(0, 0, 0);
+		glVertex2f(spread[0], 0);
+		glVertex2f(0, 0);
+
+		glColor3f(1, 1, 1);
+		glVertex2f(0, spread[1]);
+		glVertex2f(spread[0], spread[1]);
+		glColor3f(0, 0, 0);
+		glVertex2f(spread[0] + 2, spread[1] + 2);
+		glVertex2f(-2, spread[1] + 2);
+
+		glColor3f(1, 1, 1);
+		glVertex2f(spread[0], spread[1]);
+		glVertex2f(spread[0], 0);
+		glColor3f(0, 0, 0);
+		glVertex2f(spread[0] + 2, -2);
+		glVertex2f(spread[0] + 2, spread[1] + 2);
+		glEnd();
+	}
 }
