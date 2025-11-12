@@ -124,7 +124,14 @@ namespace widget {
 		const Frame::P lpTarget = {-lv[0] * (float)vDistance / (lv[2] * scale),
 			lv[1] * (float)vDistance / (lv[2] * scale)};
 
+#if 0
 		lookingPoint += (lpTarget - lookingPoint) / (lpTarget.Norm() + 1);
+#else
+		lookingPoint[0] +=
+			(lpTarget[0] - lookingPoint[0]) / (fabsf(lpTarget[0]) + 1);
+		lookingPoint[1] +=
+			(lpTarget[1] - lookingPoint[1]) / (fabsf(lpTarget[1]) + 1);
+#endif
 
 		mask = Frame::R(
 			Frame::P(lookingPoint[0] - eye.width, lookingPoint[1] - eye.height),
