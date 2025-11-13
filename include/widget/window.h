@@ -21,6 +21,8 @@
 #include "eye.h"
 #include "frame.h"
 #include "model.h"
+#include "prefs.h"
+#include <tb/color.h>
 #include <tb/list.h>
 
 
@@ -30,22 +32,37 @@ namespace widget {
 	// ルート直下(NavRingに表示される)
 	struct Window : Frame {
 
-		Window(
-			const P& center, const S& spread, float depth = 0, float thick = 0);
+		Window(const P& center,
+			const S& spread,
+			float depth = 0,
+			float thick = 0,
+			const tb::Color& leftTopColor = tb::Color(Prefs::foreColor),
+			const tb::Color& rightBottomColor = tb::Color(Prefs::backColor),
+			unsigned leftMergin = 2,
+			unsigned topMergin = 10,
+			unsigned rightMergin = 2,
+			unsigned bottomMergin = 2);
 
 		static void PrepareNavPanel();
 
 		void Dot() override;
 		void Draw(const R&) override;
 
+	protected:
+		struct {
+			float left;
+			float top;
+			float right;
+			float bottom;
+		} mergin, in, out;
+		tb::Color leftTopColor;
+		tb::Color rightBottomColor;
+
 	private:
 		// 上下左右のウインドウコントロールのサイズ
-		static P GetLeftTop(const P& center, const S& contentSpread);
-		static S GetWindowSpread(const S& contentSpread);
-		static P leftTopMergin; // content左上からWindow左上の差
-		static S spreadMergin;	// contentの右下分＋leftTopMerginの負値
-
-		R contentRect;
+		static P defaultLeftTopMergin; // content左上からWindow左上の差
+		static S defaultSpreadMergin;  // contentの右下分＋leftTopMerginの負値
+		void UpdateBorder();
 
 		Window() = delete;
 		Window(const Window&) = delete;
@@ -55,11 +72,24 @@ namespace widget {
 		ResizeableWindow(const P& center,
 			const S& spread,
 			float depth = 0,
-			float thick = 0) :
-			Window(center, spread, depth, thick) {};
-		;
+			float thick = 0,
+			unsigned leftMergin = 4,
+			unsigned topMergin = 12,
+			unsigned rightMergin = 4,
+			unsigned bottomMergin = 4) :
+			Window(center,
+				spread,
+				depth,
+				thick,
+				defaultLeftTopColor,
+				defaultRightBottomColor,
+				leftMergin,
+				topMergin,
+				rightMergin,
+				bottomMergin) {};
 
-	protected:
-		void Draw(const R&) override;
+	private:
+		static const tb::Color defaultLeftTopColor;
+		static const tb::Color defaultRightBottomColor;
 	};
 }

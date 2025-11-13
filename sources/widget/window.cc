@@ -24,88 +24,73 @@
 
 namespace widget {
 
-	Frame::P Window::leftTopMergin;
-	Frame::S Window::spreadMergin;
-
-
-	Window::Window(const P& p, const S& s, float depth, float thick) :
-		Frame(GetLeftTop(p, s), GetWindowSpread(s), depth, thick) {
+	Window::Window(const P& p,
+		const S& s,
+		float depth,
+		float thick,
+		const tb::Color& ltc,
+		const tb::Color& rbc,
+		unsigned lm,
+		unsigned tm,
+		unsigned rm,
+		unsigned bm) :
+		Frame(p - s * 0.5, s, depth, thick),
+		mergin{.left = (float)lm,
+			.top = (float)tm,
+			.right = (float)rm,
+			.bottom = (float)bm},
+		leftTopColor(ltc),
+		rightBottomColor(rbc) {
+		UpdateBorder();
 		Root::Register(*this);
 	};
 
-	Frame::P Window::GetLeftTop(const P& center, const S& contentSpread) {
-		return center - (contentSpread * 0.5f) - leftTopMergin;
-	}
-
-	Frame::S Window::GetWindowSpread(const S& contentSpread) {
-		return contentSpread + spreadMergin;
+	void Window::UpdateBorder() {
+		in.left = 0;
+		in.top = 0;
+		in.right = (float)spread[0];
+		in.bottom = (float)spread[1];
+		out.left = -mergin.left;
+		out.top = -mergin.top;
+		out.right = in.right + mergin.right;
+		out.bottom = in.bottom + mergin.bottom;
 	}
 
 	void Window::Draw(const R& r) {
 		// 窓コントロールの描画
 		glBegin(GL_QUADS);
 		glColor3f(1, 1, 1);
-		glVertex2f(-1, spread[1] + 1);
-		glVertex2f(-1, -1);
-		glColor3f(0.5f, 0.5f, 0.5f);
-		glVertex2f(0, 0);
-		glVertex2f(0, spread[1]);
+		glVertex2f(out.left, out.bottom);
+		glVertex2f(out.left, out.top);
+		glColor3fv(leftTopColor);
+		glVertex2f(in.left, in.top);
+		glVertex2f(in.left, in.bottom);
 
 		glColor3f(1, 1, 1);
-		glVertex2f(-1, -1);
-		glVertex2f(spread[0] + 1, -1);
-		glColor3f(0.5f, 0.5f, 0.5f);
-		glVertex2f(spread[0], 0);
-		glVertex2f(0, 0);
+		glVertex2f(out.left, out.top);
+		glVertex2f(out.right, out.top);
+		glColor3fv(leftTopColor);
+		glVertex2f(in.right, in.top);
+		glVertex2f(in.left, in.top);
 
-		glColor3f(0.5f, 0.5f, 0.5f);
-		glVertex2f(0, spread[1]);
-		glVertex2f(spread[0], spread[1]);
+		glColor3fv(rightBottomColor);
+		glVertex2f(in.left, in.bottom);
+		glVertex2f(in.right, in.bottom);
 		glColor3f(0, 0, 0);
-		glVertex2f(spread[0] + 1, spread[1] + 1);
-		glVertex2f(-1, spread[1] + 1);
+		glVertex2f(out.right, out.bottom);
+		glVertex2f(out.left, out.bottom);
 
-		glColor3f(0.5f, 0.5f, 0.5f);
-		glVertex2f(spread[0], spread[1]);
-		glVertex2f(spread[0], 0);
+		glColor3fv(rightBottomColor);
+		glVertex2f(in.right, in.bottom);
+		glVertex2f(in.right, in.top);
 		glColor3f(0, 0, 0);
-		glVertex2f(spread[0] + 1, -1);
-		glVertex2f(spread[0] + 1, spread[1] + 1);
+		glVertex2f(out.right, out.top);
+		glVertex2f(out.right, out.bottom);
 		glEnd();
 	}
 
 	void Window::Dot() { Root::Dot(GetCenter()); }
 
-	void ResizeableWindow::Draw(const R& r) {
-		// 窓コントロールの描画
-		glBegin(GL_QUADS);
-		glColor3f(1, 1, 1);
-		glVertex2f(-2, spread[1] + 2);
-		glVertex2f(-2, -2);
-		glColor3f(0, 0, 0);
-		glVertex2f(0, 0);
-		glVertex2f(0, spread[1]);
-
-		glColor3f(1, 1, 1);
-		glVertex2f(-2, -2);
-		glVertex2f(spread[0] + 2, -2);
-		glColor3f(0, 0, 0);
-		glVertex2f(spread[0], 0);
-		glVertex2f(0, 0);
-
-		glColor3f(1, 1, 1);
-		glVertex2f(0, spread[1]);
-		glVertex2f(spread[0], spread[1]);
-		glColor3f(0, 0, 0);
-		glVertex2f(spread[0] + 2, spread[1] + 2);
-		glVertex2f(-2, spread[1] + 2);
-
-		glColor3f(1, 1, 1);
-		glVertex2f(spread[0], spread[1]);
-		glVertex2f(spread[0], 0);
-		glColor3f(0, 0, 0);
-		glVertex2f(spread[0] + 2, -2);
-		glVertex2f(spread[0] + 2, spread[1] + 2);
-		glEnd();
-	}
+	const tb::Color ResizeableWindow::defaultLeftTopColor(0);
+	const tb::Color ResizeableWindow::defaultRightBottomColor(0xffffff);
 }
