@@ -62,6 +62,7 @@ namespace widget {
 	// 移動、リサイズ
 	void Frame::Move(const P& p) { target += p; }
 	void Frame::MoveTo(const P& p) { target = p; }
+	void Frame::JumpTo(const P& p) { target = position = p; }
 	void Frame::ReSize(const S& s) { spread = s; }
 	void Frame::SetDepth(float d) { depthTarget = d; }
 

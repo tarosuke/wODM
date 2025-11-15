@@ -29,10 +29,12 @@ namespace widget {
 		const S& spread,
 		float depth,
 		float thick) :
-		Frame(new Window(position, spread), position, spread, depth, thick),
+		Frame(position, spread, depth, thick),
 		color(c),
 		draw(c.IsTranslucent() ? &Pane::DrawHandler : &Pane::DummyDraw),
-		traw(c.IsTranslucent() ? &Pane::DummyTraw : &Pane::TrawHandler) {}
+		traw(c.IsTranslucent() ? &Pane::DummyTraw : &Pane::TrawHandler) {
+		new Window(*this, depth, thick);
+	}
 	void Pane::DrawHandler(const R& r) {
 		const auto& m(GetMask());
 		glColor4fv(color);

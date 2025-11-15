@@ -32,10 +32,10 @@ namespace widget {
 	// ルート直下(NavRingに表示される)
 	struct Window : Frame {
 
-		Window(const P& center,
-			const S& spread,
-			float depth = 0,
-			float thick = 0,
+		// childを子要素として生成
+		Window(Frame& child,
+			float depth,
+			float thick,
 			const tb::Color& leftTopColor = tb::Color(Prefs::foreColor),
 			const tb::Color& rightBottomColor = tb::Color(Prefs::backColor),
 			unsigned leftMergin = 2,
@@ -66,19 +66,22 @@ namespace widget {
 
 		Window() = delete;
 		Window(const Window&) = delete;
+
+		static P MakeLeftTop(
+			const Frame&, unsigned leftMergin, unsigned topMergin);
+		static S MakeSpread(
+			const Frame&, unsigned rightMergin, unsigned bottomMergin);
 	};
 
 	struct ResizeableWindow : Window {
-		ResizeableWindow(const P& center,
-			const S& spread,
+		ResizeableWindow(Frame& child,
 			float depth = 0,
 			float thick = 0,
 			unsigned leftMergin = 4,
 			unsigned topMergin = 12,
 			unsigned rightMergin = 4,
 			unsigned bottomMergin = 4) :
-			Window(center,
-				spread,
+			Window(child,
 				depth,
 				thick,
 				defaultLeftTopColor,

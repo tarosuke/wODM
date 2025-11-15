@@ -57,6 +57,7 @@ namespace widget {
 		// 移動、リサイズ
 		void Move(const P&);   // 引数を差分として移動
 		void MoveTo(const P&); // 引数位置へ移動
+		void JumpTo(const P&); // 引数位置へ即時移動
 		void ReSize(const S&); // リサイズ(即時)
 		void SetDepth(float);  // 奥行だけ設定
 

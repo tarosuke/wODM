@@ -24,36 +24,49 @@
 
 namespace widget {
 
-	Window::Window(const P& p,
-		const S& s,
+	// childを子要素として生成
+	Window::Window(Frame& c,
 		float depth,
 		float thick,
-		const tb::Color& ltc,
-		const tb::Color& rbc,
-		unsigned lm,
-		unsigned tm,
-		unsigned rm,
-		unsigned bm) :
-		Frame(p - s * 0.5, s, depth, thick),
-		mergin{.left = (float)lm,
-			.top = (float)tm,
-			.right = (float)rm,
-			.bottom = (float)bm},
-		leftTopColor(ltc),
-		rightBottomColor(rbc) {
+		const tb::Color& leftTopColor,
+		const tb::Color& rightBottomColor,
+		unsigned leftMergin,
+		unsigned topMergin,
+		unsigned rightMergin,
+		unsigned bottomMergin) :
+		Frame(MakeLeftTop(c, leftMergin, topMergin),
+			MakeSpread(c, leftMergin + rightMergin, topMergin + bottomMergin),
+			depth,
+			thick),
+		mergin{.left = (float)leftMergin,
+			.top = (float)topMergin,
+			.right = (float)rightMergin,
+			.bottom = (float)bottomMergin},
+		leftTopColor(leftTopColor),
+		rightBottomColor(rightBottomColor) {
+		c.JumpTo(P((float)leftMergin, (float)topMergin));
+		children.Insert(c);
 		UpdateBorder();
 		Root::Register(*this);
-	};
+	}
+
+	Frame::P Window::MakeLeftTop(const Frame& c, unsigned l, unsigned t) {
+		return c.GetCenter() - c.GetSpread() - P((float)l, (float)t);
+	}
+
+	Frame::S Window::MakeSpread(const Frame& c, unsigned h, unsigned v) {
+		return c.GetSpread() + S(h, v);
+	}
 
 	void Window::UpdateBorder() {
-		in.left = 0;
-		in.top = 0;
-		in.right = (float)spread[0];
-		in.bottom = (float)spread[1];
-		out.left = -mergin.left;
-		out.top = -mergin.top;
-		out.right = in.right + mergin.right;
-		out.bottom = in.bottom + mergin.bottom;
+		in.left = mergin.left;
+		in.top = mergin.top;
+		in.right = (float)spread[0] - mergin.right;
+		in.bottom = (float)spread[1] - mergin.bottom;
+		out.left = 0;
+		out.top = 0;
+		out.right = (float)spread[0];
+		out.bottom = (float)spread[1];
 	}
 
 	void Window::Draw(const R& r) {
