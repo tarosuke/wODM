@@ -47,6 +47,7 @@ namespace widget {
 
 		void Dot() override;
 		void Draw(const R&) override;
+		Notify Update() override;
 
 	protected:
 		struct {

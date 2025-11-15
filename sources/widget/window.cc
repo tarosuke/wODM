@@ -58,6 +58,14 @@ namespace widget {
 		return c.GetSpread() + S(h, v);
 	}
 
+	Notify Window::Update() {
+		if (children.Top()) {
+			return Frame::Update();
+		}
+		delete this;
+		return Notify(); // NOTE:この場合の戻り値が未定
+	};
+
 	void Window::UpdateBorder() {
 		in.left = mergin.left;
 		in.top = mergin.top;
