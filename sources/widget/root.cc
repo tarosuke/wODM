@@ -19,6 +19,7 @@
 #include "widget/root.h"
 #include "core.h"
 #include "gl/gl.h"
+#include "widget/prefs.h"
 #include <functional>
 
 
@@ -29,19 +30,6 @@ namespace {
 	static constexpr unsigned nVertex = 16;
 	static constexpr unsigned nTriangles = 18;
 
-	tb::Prefs<float> pDistance(
-		"widget/paneDistance", 1.0f, "一番手前のWidgetが見える奥行き[m]");
-	tb::Prefs<float> vDistance("widget/virtualDistance",
-		1.0f,
-		"視野中心を決めるための視点の投影面までの距離[m]");
-	tb::Prefs<float> nDistance(
-		"widget/navDistance", 0.6f, "ナビゲーションリングの奥行き[m]");
-	tb::Prefs<float> scale("widget/scale", 0.001f, "1pxのサイズ[m]");
-	tb::Prefs<float> navThick(
-		"widget/navigationAngle", 32.0f, "ナビゲーションリングの太さ[px]");
-	tb::Prefs<float> windowThick("widget/windowThick",
-		10.0f,
-		"Windowの奥行き(この値だけ基準面から屋に配置される)");
 
 	// VBOのためのデータ
 	GL::VBO::V_UV vertexBuffer[nVertex] = {
@@ -121,8 +109,9 @@ namespace widget {
 		const tb::Vector<3, float> fv((const float[3]){0.0f, 0.0f, 1.0f});
 		const tb::Vector<3, float> lv(
 			Core::Pose() * fv + fv); // 正面と頭の向きの中間
-		const Frame::P lpTarget = {-lv[0] * (float)vDistance / (lv[2] * scale),
-			lv[1] * (float)vDistance / (lv[2] * scale)};
+		const Frame::P lpTarget = {
+			-lv[0] * (float)Prefs::vDistance / (lv[2] * Prefs::scale),
+			lv[1] * (float)Prefs::vDistance / (lv[2] * Prefs::scale)};
 
 #if 0
 		lookingPoint += (lpTarget - lookingPoint) / (lpTarget.Norm() + 1);
@@ -144,14 +133,14 @@ namespace widget {
 		glPointSize(3);
 		eye.GUI();
 		glPushMatrix();
-		glTranslatef(0, 0, -nDistance);
+		glTranslatef(0, 0, -Prefs::nDistance);
 		glScalef(nScale, nScale, 1);
 		glBegin(GL_POINTS);
 		windows.Foreach(&Frame::Dot);
 		glEnd();
 		glPopMatrix();
 
-		glTranslatef(-lookingPoint[0], -lookingPoint[1], -pDistance);
+		glTranslatef(-lookingPoint[0], -lookingPoint[1], -Prefs::pDistance);
 		windows.Foreach(&Frame::DrawEntity, GetMask());
 	}
 
@@ -160,13 +149,13 @@ namespace widget {
 
 		glColor4f(1, 1, 1, 1);
 		eye.Short11();
-		glTranslatef(0, 0, -nDistance);
+		glTranslatef(0, 0, -Prefs::nDistance);
 		glScalef(nScale, nScale, 1);
 		navPanel->Draw();
 
 
 		eye.GUI();
-		glTranslatef(-lookingPoint[0], -lookingPoint[1], -pDistance);
+		glTranslatef(-lookingPoint[0], -lookingPoint[1], -Prefs::pDistance);
 		windows.Foreach(&Frame::TrawEntity);
 	}
 
@@ -174,9 +163,9 @@ namespace widget {
 	Model_C* Root::PrepareNavPanel(const tb::List<Eye>& eyes) {
 		out = (eyes.Top()->min) / 2;
 
-		in = out - navThick;
+		in = out - Prefs::navThick;
 		ior = in / out;
-		nScale = nDistance / pDistance;
+		nScale = Prefs::nDistance / Prefs::pDistance;
 
 		/***** パネル画像生成
 		 */
@@ -184,8 +173,8 @@ namespace widget {
 			tb::Color::Format::Select(tb::Color::Format::XRGB0888), out, out));
 
 		// NavPanelの描画
-		const tb::Color cc(0x80ffffff);
-		const tb::Color gc(0x8080c080);
+		const tb::Color cc(0xffffff);
+		const tb::Color gc(Prefs::navRingColor);
 		const unsigned r2(out * out);
 		const unsigned i2(r2 * ior * ior);
 		const unsigned o2(r2);
@@ -220,7 +209,7 @@ namespace widget {
 			return;
 		}
 
-		const Frame::P ppp(pp * (out - ((navThick * in) / n)) / n);
+		const Frame::P ppp(pp * (out - ((Prefs::navThick * in) / n)) / n);
 		glVertex2f(ppp[0], ppp[1]);
 	}
 }

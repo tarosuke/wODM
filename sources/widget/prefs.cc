@@ -28,4 +28,20 @@ namespace widget {
 		"widget/backColor", 0x403030, "背景色");
 	tb::Prefs<unsigned> Prefs::backColor2(
 		"widget/backColor2", 0x304030, "背景色2");
+
+	tb::Prefs<unsigned> Prefs::navRingColor(
+		"widget/navRingColor", 0x80c080, "ナビゲーションリングの色(透過率)");
+	tb::Prefs<float> Prefs::pDistance(
+		"widget/paneDistance", 1.0f, "一番手前のWidgetが見える奥行き[m]");
+	tb::Prefs<float> Prefs::vDistance("widget/virtualDistance",
+		1.0f,
+		"視野中心を決めるための視点の投影面までの距離[m]");
+	tb::Prefs<float> Prefs::nDistance(
+		"widget/navDistance", 0.6f, "ナビゲーションリングの奥行き[m]");
+	tb::Prefs<float> Prefs::scale("widget/scale", 0.001f, "1pxのサイズ[m]");
+	tb::Prefs<float> Prefs::navThick(
+		"widget/navigationAngle", 16.0f, "ナビゲーションリングの太さ[px]");
+	tb::Prefs<float> Prefs::windowThick("widget/windowThick",
+		10.0f,
+		"Windowの奥行き(この値だけ基準面から屋に配置される)");
 }

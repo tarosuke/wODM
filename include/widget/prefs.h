@@ -28,5 +28,14 @@ namespace widget {
 		static tb::Prefs<unsigned> foreColor;
 		static tb::Prefs<unsigned> backColor;
 		static tb::Prefs<unsigned> backColor2;
+
+		static tb::Prefs<unsigned> navRingColor;
+		static tb::Prefs<float> navThick;
+		static tb::Prefs<float> nDistance;
+
+		static tb::Prefs<float> pDistance;
+		static tb::Prefs<float> vDistance;
+		static tb::Prefs<float> scale;
+		static tb::Prefs<float> windowThick;
 	};
 }
