@@ -55,4 +55,29 @@ namespace widget {
 		Vertex(m.Right()[0], m.Right()[1]);
 		glEnd();
 	}
+
+
+	TexturePane::TexturePane(
+		const P& position, const tb::Image& image, float depth, float thick) :
+		Pane(tb::Color(0xffffff), position, image.Spread(), depth, thick),
+		Texture(image),
+		hpc(1.0f / spread[0]),
+		vpc(1.0f / spread[1]) {
+		Binder b(*this);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.Spread()[0],
+			image.Spread()[1], 0, GL_RGBA, GL_BYTE, image.Data());
+	};
+
+
+
+	void CanvasPane::OnCanvasUpdated(const tb::Rect<2, double>& r) {
+		// TODO:rが大きすぎるとヒッチングの原因になるし、タイミングが悪いと更新されないので直接には更新せず変更を分解してキューイングしたいところ
+		const unsigned w(r.GetSpread()[0]);
+		const unsigned h(r.GetSpread()[1]);
+		tb::BufferedImage image(
+			tb::Canvas::Image(*this), r.Left()[0], r.Left()[1], w, h);
+		Binder b(*this);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, r.Left()[0], r.Left()[1], w, h,
+			GL_RGBA, GL_BYTE, image.Data());
+	}
 }

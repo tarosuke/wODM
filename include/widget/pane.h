@@ -21,6 +21,7 @@
 #include "frame.h"
 #include "gl/gl.h"
 #include "gl/texture.h"
+#include <tb/canvas.h>
 #include <tb/color.h>
 
 
@@ -47,7 +48,7 @@ namespace widget {
 		tb::Color color;
 		void Draw(const R& r) override { (this->*draw)(r); };
 		void Traw() override { (this->*traw)(); };
-		void Vertex(float x, float y) { glVertex2f(x, y); };
+		virtual void Vertex(float x, float y) { glVertex2f(x, y); };
 		void (Pane::*draw)(const R&);
 		void (Pane::*traw)();
 		void DrawHandler(const R&);
@@ -56,28 +57,44 @@ namespace widget {
 		void DummyTraw() {};
 	};
 
-	// テクスチャ
-	struct TexturePane : Frame, GL::Texture {
+	/***** テクスチャ付き
+	 * Imageの参照を与えてテクスチャを作ってそれを表示
+	 */
+	struct TexturePane : Pane, GL::Texture {
 		TexturePane(const P& position,
 			const tb::Image& image,
 			float depth,
-			float thick) :
-			Frame(position, image.Spread(), depth, thick),
-			Texture(image),
-			hpc(1.0f / spread[0]),
-			vpc(1.0f / spread[1]) {};
+			float thick);
 
 	protected:
-		void Draw(const R& r) override;
-		void Traw() override;
-
 		// サイズの逆数
 		const float hpc;
 		const float vpc;
 
-		void Vertex(float x, float y) {
+		void Vertex(float x, float y) override {
 			glTexCoord2f(x * hpc, y * vpc);
 			glVertex2f(x, y);
 		};
+	};
+
+	/****** Canvas付き
+	 * tb::CanvasとしてGCを作って描画できる
+	 */
+	struct CanvasPane : tb::Canvas, TexturePane {
+		CanvasPane(
+			const P& position, const S& spread, float depth, float thick);
+
+	private:
+		void OnCanvasUpdated(const tb::Rect<2, double>&) override;
+	};
+
+
+	/***** 一行入力
+	 * IMなしの一行入力コントロール
+	 */
+	struct NOIMInputPane : CanvasPane {
+		enum Style { normal, password, visibleLastPassword };
+		NOIMInputPane(
+			const P& position, const S& spread, float depth, float thick);
 	};
 }

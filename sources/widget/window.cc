@@ -63,7 +63,7 @@ namespace widget {
 			return Frame::Update();
 		}
 		delete this;
-		return Notify(); // NOTE:この場合の戻り値が未定
+		return Notify(); // TODO:この場合の戻り値を決める
 	};
 
 	void Window::UpdateBorder() {
