@@ -105,7 +105,7 @@ namespace GL {
 		struct Updater : tb::List<Updater>::Node {};
 
 		/***** Image内臓のUpdater
-		 * Updaterが指す画像が消えてしまうと機に使う
+		 * Updaterが指す画像が消えてしまう時に使う
 		 */
 		struct BufferedUpdater : Updater {};
 
