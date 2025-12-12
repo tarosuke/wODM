@@ -30,18 +30,9 @@ namespace widget {
 
 	// 平面
 	struct Pane : Frame {
-		Pane(tb::Color c,
-			const P& position,
-			const S& spread,
-			float depth,
-			float thick);
-		Pane(Frame& parent,
-			tb::Color c,
-			const P& position,
-			const S& spread,
-			float depth,
-			float thick) :
-			Frame(position, spread, depth, thick),
+		Pane(tb::Color c, const P& position, const S& spread);
+		Pane(Frame& parent, tb::Color c, const P& position, const S& spread) :
+			Frame(position, spread),
 			color(c) {};
 
 	protected:
@@ -61,10 +52,7 @@ namespace widget {
 	 * Imageの参照を与えてテクスチャを作ってそれを表示
 	 */
 	struct TexturePane : Pane, GL::Texture {
-		TexturePane(const P& position,
-			const tb::Image& image,
-			float depth,
-			float thick);
+		TexturePane(const P& position, const tb::Image& image);
 
 	protected:
 		// サイズの逆数
@@ -81,8 +69,7 @@ namespace widget {
 	 * tb::CanvasとしてGCを作って描画できる
 	 */
 	struct CanvasPane : tb::Canvas, TexturePane {
-		CanvasPane(
-			const P& position, const S& spread, float depth, float thick);
+		CanvasPane(const P& position, const S& spread);
 
 	private:
 		void OnCanvasUpdated(const tb::Rect<2, double>&) override;
@@ -94,7 +81,6 @@ namespace widget {
 	 */
 	struct NOIMInputPane : CanvasPane {
 		enum Style { normal, password, visibleLastPassword };
-		NOIMInputPane(
-			const P& position, const S& spread, float depth, float thick);
+		NOIMInputPane(const P& position, const S& spread);
 	};
 }

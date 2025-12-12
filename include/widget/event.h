@@ -38,12 +38,33 @@ namespace widget {
 		static const unsigned altMask = 0x30;
 		static const unsigned caps = 0x40;
 	};
-	struct MouseEvent {
-		const tb::Timestamp time;
+	struct PtEvent {
+		using P = tb::Vector<3, float>;
+		using T = tb::Timestamp;
+		using P2 = tb::Vector<2, float>;
 
-		// マウスカーソルの画面内での位置をvDistanceで割ったもの
-		// 奥行きがあるので座標だと斜めのときに齟齬が出る
-		tb::Vector<2, float> dir;
+		/***** インスタンス生成
+		 * ①イベント発生時のインスタンス生成
+		 * ②originを元にpositionでローカル座標に変換したインスタンスを生成
+		 * どちらも対象面の奥行きをz = 0とする
+		 */
+		PtEvent(const P& position, unsigned button, unsigned modifiers); // ①
+		PtEvent(const PtEvent& origin, const P& position);				 // ②
+
+		// 座標系に沿った平面との媒介変数値、交点を求める(0 <= d <= 2)
+		float Tee(unsigned d, float v) const {
+			return (origin[d] - v) / dir[d];
+		};
+		P2 ZCrossPoint(float t) {
+			return P2{origin[0] + dir[0] * t, origin[1] + dir[1] * t};
+		};
+
+
+		const T time;
+
+		// 原点と向き
+		P origin;
+		P dir;
 
 		// この３つはマウスボタンの状態とその変化
 		unsigned state;

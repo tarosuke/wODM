@@ -24,16 +24,12 @@
 
 namespace widget {
 
-	Pane::Pane(tb::Color c,
-		const P& position,
-		const S& spread,
-		float depth,
-		float thick) :
-		Frame(position, spread, depth, thick),
+	Pane::Pane(tb::Color c, const P& position, const S& spread) :
+		Frame(position, spread),
 		color(c),
 		draw(c.IsTranslucent() ? &Pane::DrawHandler : &Pane::DummyDraw),
 		traw(c.IsTranslucent() ? &Pane::DummyTraw : &Pane::TrawHandler) {
-		new Window(*this, depth, thick);
+		new Window(*this);
 	}
 	void Pane::DrawHandler(const R& r) {
 		const auto& m(GetMask());
@@ -57,9 +53,10 @@ namespace widget {
 	}
 
 
-	TexturePane::TexturePane(
-		const P& position, const tb::Image& image, float depth, float thick) :
-		Pane(tb::Color(0xffffff), position, image.Spread(), depth, thick),
+	TexturePane::TexturePane(const P& position, const tb::Image& image) :
+		Pane(tb::Color(0xffffff),
+			position,
+			S{image.Spread()[0], image.Spread()[1], 0U}),
 		Texture(image),
 		hpc(1.0f / spread[0]),
 		vpc(1.0f / spread[1]) {

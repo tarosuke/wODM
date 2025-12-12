@@ -34,8 +34,6 @@ namespace widget {
 
 		// childを子要素として生成
 		Window(Frame& child,
-			float depth,
-			float thick,
 			const tb::Color& leftTopColor = tb::Color(Prefs::foreColor),
 			const tb::Color& rightBottomColor = tb::Color(Prefs::backColor),
 			unsigned leftMergin = 2,
@@ -83,8 +81,6 @@ namespace widget {
 			unsigned rightMergin = 4,
 			unsigned bottomMergin = 4) :
 			Window(child,
-				depth,
-				thick,
 				defaultLeftTopColor,
 				defaultRightBottomColor,
 				leftMergin,

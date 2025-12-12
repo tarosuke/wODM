@@ -42,8 +42,7 @@ struct Login : widget::Pane {
 	 * forkしなかったプロセスでは有名パイプを待つ()
 	 * askpassの接続が逆で「画面へ繋ぐ」ことができないのでちょっと考える
 	 */
-	Login() :
-		Pane(tb::Color(widget::Prefs::backColor), position, spread, 0, 0) {};
+	Login() : Pane(tb::Color(widget::Prefs::backColor), position, spread) {};
 
 
 

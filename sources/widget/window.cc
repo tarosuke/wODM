@@ -26,8 +26,6 @@ namespace widget {
 
 	// childを子要素として生成
 	Window::Window(Frame& c,
-		float depth,
-		float thick,
 		const tb::Color& leftTopColor,
 		const tb::Color& rightBottomColor,
 		unsigned leftMergin,
@@ -35,9 +33,7 @@ namespace widget {
 		unsigned rightMergin,
 		unsigned bottomMergin) :
 		Frame(MakeLeftTop(c, leftMergin, topMergin),
-			MakeSpread(c, leftMergin + rightMergin, topMergin + bottomMergin),
-			depth,
-			thick),
+			MakeSpread(c, leftMergin + rightMergin, topMergin + bottomMergin)),
 		mergin{.left = (float)leftMergin,
 			.top = (float)topMergin,
 			.right = (float)rightMergin,

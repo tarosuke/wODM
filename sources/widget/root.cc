@@ -98,9 +98,7 @@ namespace widget {
 		}
 		if (n.thickUpdated) {
 			float d(0);
-			for (tb::List<Frame>::I i(windows); ++i;) {
-				d += (*i).GetDepth();
-			}
+			for (tb::List<Frame>::I i(windows); ++i;) { d += (*i).GetDepth(); }
 		}
 	}
 
@@ -122,9 +120,9 @@ namespace widget {
 			(lpTarget[1] - lookingPoint[1]) / (fabsf(lpTarget[1]) + 1);
 #endif
 
-		mask = Frame::R(
-			Frame::P(lookingPoint[0] - eye.width, lookingPoint[1] - eye.height),
-			Frame::P(
+		mask = Frame::R(Frame::P2(lookingPoint[0] - eye.width,
+							lookingPoint[1] - eye.height),
+			Frame::P2(
 				lookingPoint[0] + eye.width, lookingPoint[1] + eye.height));
 
 		glDisable(GL_CULL_FACE);

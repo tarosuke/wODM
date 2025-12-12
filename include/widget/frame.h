@@ -34,10 +34,12 @@ namespace widget {
 	/***** 位置と大きさのみを持つ
 	 */
 	struct Frame : tb::List<Frame>::Node {
-		using P = tb::Vector<2, float>;
-		using S = tb::Spread<2, unsigned>;
+		using P = tb::Vector<3, float>;
+		using S = tb::Spread<3, unsigned>;
 		using R = tb::Rect<2, float>;
 		using M = tb::Matrix<4, 4, float>;
+		using P2 = tb::Vector<2, float>;
+		using S2 = tb::Spread<2, unsigned>;
 
 		/***** 周期処理、奥行き再計算のインターフェイス
 		 */
@@ -62,9 +64,9 @@ namespace widget {
 		void SetDepth(float);  // 奥行だけ設定
 
 		P GetCenter() const;
-		R GetRect() const { return R(position, spread); };
+		R GetRect() const;
 		const S GetSpread() const { return spread; };
-		float GetDepth() const { return depth; };
+		float GetDepth() const { return position[2]; };
 
 	protected:
 		static tb::Prefs<float> movingRatio;
@@ -82,16 +84,11 @@ namespace widget {
 		P position;
 		S spread;
 
-		float depth;
-		float depthTarget;
-		float thick; // 使える奥行:ReDepthではこれを子要素に分配する
 
-		Frame(const P& position, const S& spread, float depth, float thick) :
+		Frame(const P& position, const S& spread) :
 			target(position),
 			position(position),
-			spread(spread),
-			depth(depth),
-			thick(thick) {};
+			spread(spread) {};
 		Frame(Frame* const parent,
 			const P& position,
 			const S& spread,
@@ -99,16 +96,45 @@ namespace widget {
 			float thick) :
 			target(position),
 			position(position),
-			spread(spread),
-			depth(depth),
-			thick(thick) {
+			spread(spread) {
 			if (parent) {
 				parent->children.Insert(*this);
 			} else {
 				throw -1;
 			}
 		};
+		virtual ~Frame() {
+			if (ptOn == this) {
+				// TODO:カーソルをデフォルトに戻す
+				ptOn = 0;
+			}
+			if (focused == this) {
+				focused = 0;
+			}
+		};
 		void AccualMove(); // 実際の移動
+
+		/***** イベントハンドラ
+		 */
+		static Frame* ptOn;
+		static Frame* focused;
+		struct {
+			tb::Timestamp time; // 最後のボタン操作時刻
+			P2 pt;			  // 最後にdown / upした場所(動いていなければclick)
+			unsigned buttons; // クリック計測中のボタン
+			unsigned n;		  // クリック数(移動したりup & maskが0ならリセット)
+		} click;
+		bool OnEvent(const PtEvent&);
+		virtual void OnEnter(const PtEvent&) {};
+		virtual void OnMove(const PtEvent&) {};
+		virtual void OnLeave(const PtEvent&) {};
+		virtual void OnDown(const PtEvent&) {};
+		virtual void OnUp(const PtEvent&) {};
+		virtual void OnClick(const PtEvent&) {};
+		bool OnEvent(const KeyEvent&);
+		virtual void OnKeyDown(const KeyEvent&) {};
+		virtual void OnKeyUp(const KeyEvent&) {};
+		virtual void OnKeyRepeat(const KeyEvent&) {};
 
 	private:
 		R mask;
