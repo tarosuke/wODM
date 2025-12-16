@@ -69,7 +69,9 @@ namespace widget {
 	 * tb::CanvasとしてGCを作って描画できる
 	 */
 	struct CanvasPane : tb::Canvas, TexturePane {
-		CanvasPane(const P& position, const S& spread);
+		CanvasPane(const P& position, const S& spread) :
+			Canvas(spread[0], spread[1]),
+			TexturePane(position, Canvas::Image(*this)) {};
 
 	private:
 		void OnCanvasUpdated(const tb::Rect<2, double>&) override;
@@ -79,8 +81,9 @@ namespace widget {
 	/***** 一行入力
 	 * IMなしの一行入力コントロール
 	 */
-	struct NOIMInputPane : CanvasPane {
+	struct LineInputPane : CanvasPane {
 		enum Style { normal, password, visibleLastPassword };
-		NOIMInputPane(const P& position, const S& spread);
+		LineInputPane(const P& position, const S& spread) :
+			CanvasPane(position, spread) {};
 	};
 }
