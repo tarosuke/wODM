@@ -44,10 +44,12 @@ struct Login : widget::Pane {
 	 */
 	Login() :
 		Pane(tb::Color(widget::Prefs::backColor), position, spread),
+		list(position, spread),
 		user(userLayout.position, userLayout.spread),
 		password(passwordLayout.position, passwordLayout.spread) {
-		children.Add(user);
-		children.Add(password);
+		children.Add(list);
+		list += user;
+		list += password;
 	};
 
 
@@ -59,6 +61,7 @@ struct Login : widget::Pane {
 		S spread;
 	} userLayout, passwordLayout;
 
+	widget::DownList list;
 	widget::LineInputPane user;
 	widget::LineInputPane password;
 };

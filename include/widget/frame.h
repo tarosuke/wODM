@@ -84,24 +84,16 @@ namespace widget {
 		P position;
 		S spread;
 
-
+		// TODO:※parent非指定の時Windowを作るのは誰か決める
 		Frame(const P& position, const S& spread) :
 			target(position),
 			position(position),
 			spread(spread) {};
-		Frame(Frame* const parent,
-			const P& position,
-			const S& spread,
-			float depth,
-			float thick) :
+		Frame(Frame& parent, const P& position, const S& spread) :
 			target(position),
 			position(position),
 			spread(spread) {
-			if (parent) {
-				parent->children.Insert(*this);
-			} else {
-				throw -1;
-			}
+			parent.children.Insert(*this);
 		};
 		virtual ~Frame() {
 			if (ptOn == this) {
@@ -137,9 +129,15 @@ namespace widget {
 		virtual void OnKeyRepeat(const KeyEvent&) {};
 
 	private:
-		R mask;
-		bool shown; // maskがEmptyでないなら真、またContent更新を優先
+		R mask;		// 親要素との論理積
+		bool shown; // UpdateにてmaskがEmptyでないなら真になる
 	};
+
+
+	struct Container : Frame {
+		Container(const P& position, const S& spread);
+	};
+
 
 
 	struct HorizontalList : Frame {
@@ -147,9 +145,20 @@ namespace widget {
 		Notify Update() override;
 	};
 
-	struct VerticalList : Frame {
+	// 下方向に伸びるリスト
+	struct DownList : Frame {
+		DownList(Frame& parent,
+			const P& position,
+			const S& spread,
+			float spacing = 4);
+		DownList(const P& position, const S& spread, float spacing = 4);
+
+		void operator+=(Frame& f);
 		void Sort() override; // 子要素を縦に整列して自身のサイズを更新
-		Notify Update() override;
+							  // Notify Update() override;
+
+	private:
+		const float spacing;
 	};
 
 	struct SelectedList : Frame {

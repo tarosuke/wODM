@@ -175,4 +175,28 @@ namespace widget {
 		}
 		return false;
 	}
+
+
+
+	DownList::DownList(
+		Frame& parent, const P& position, const S& spread, float spacing) :
+		Frame(parent, position, spread),
+		spacing(spacing) {}
+	DownList::DownList(const P& position, const S& spread, float spacing) :
+		Frame(position, spread),
+		spacing(spacing) {}
+
+	void DownList::operator+=(Frame& f) {
+		children.Add(f);
+		Sort();
+	};
+	void DownList::Sort() {
+		float p(spacing);
+		for (tb::List<Frame>::I i(children); ++i;) {
+			const P pt{spacing, p, 0.0f};
+			(*i).JumpTo(pt);
+			p += (*i).GetSpread()[1] + spacing;
+		}
+	}
+	// Notify DownList::Update() {}
 }
