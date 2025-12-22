@@ -43,35 +43,23 @@ struct Login : widget::Pane {
 	 * askpassの接続が逆で「画面へ繋ぐ」ことができないのでちょっと考える
 	 */
 	Login() :
-		Pane(tb::Color(widget::Prefs::backColor), position, spread),
+		Pane(tb::Color(widget::Prefs::backColor), spread),
 		list(position, spread),
-		user(userLayout.position, userLayout.spread),
-		password(passwordLayout.position, passwordLayout.spread) {
+		user(list, 12),
+		password(list, 12) {
 		children.Add(list);
-		list += user;
-		list += password;
 	};
 
 
 
-	static const P position;
 	static const S spread;
-	static const struct Layout {
-		P position;
-		S spread;
-	} userLayout, passwordLayout;
 
 	widget::DownList list;
-	widget::LineInputPane user;
-	widget::LineInputPane password;
+	widget::DownList::Item<widget::LineInputPane> user;
+	widget::DownList::Item<widget::LineInputPane> password;
 };
 
-const widget::Frame::P Login::position(0.0f, 0.0f);
 const widget::Frame::S Login::spread(256U, 256U);
-const Login::Layout Login::userLayout{
-	.position = {12.0f, 16.0f}, .spread{128U, 12U}};
-const Login::Layout Login::passwordLayout{
-	.position = {12.0f, 32.0f}, .spread{128U, 12U}};
 
 
 

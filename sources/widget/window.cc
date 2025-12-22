@@ -32,7 +32,7 @@ namespace widget {
 		unsigned topMergin,
 		unsigned rightMergin,
 		unsigned bottomMergin) :
-		Frame(MakeLeftTop(c, leftMergin, topMergin),
+		Frame(
 			MakeSpread(c, leftMergin + rightMergin, topMergin + bottomMergin)),
 		mergin{.left = (float)leftMergin,
 			.top = (float)topMergin,

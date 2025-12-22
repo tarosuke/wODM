@@ -84,17 +84,16 @@ namespace widget {
 		P position;
 		S spread;
 
-		// TODO:※parent非指定の時Windowを作るのは誰か決める
-		Frame(const P& position, const S& spread) :
-			target(position),
-			position(position),
-			spread(spread) {};
 		Frame(Frame& parent, const P& position, const S& spread) :
 			target(position),
 			position(position),
 			spread(spread) {
 			parent.children.Insert(*this);
 		};
+		// parent非指定の場合はWindowをnewしてその子にする
+		Frame(const P& position, const S& spread);
+		// 位置指定がない場合はWindow
+		Frame(const S& spread);
 		virtual ~Frame() {
 			if (ptOn == this) {
 				// TODO:カーソルをデフォルトに戻す
@@ -130,12 +129,7 @@ namespace widget {
 
 	private:
 		R mask;		// 親要素との論理積
-		bool shown; // UpdateにてmaskがEmptyでないなら真になる
-	};
-
-
-	struct Container : Frame {
-		Container(const P& position, const S& spread);
+		bool shown; // UpdateにてmaskがEmptyでないなら真に設定される
 	};
 
 
@@ -150,15 +144,27 @@ namespace widget {
 		DownList(Frame& parent,
 			const P& position,
 			const S& spread,
-			float spacing = 4);
-		DownList(const P& position, const S& spread, float spacing = 4);
+			unsigned spacing = 4);
+		DownList(const P& position, const S& spread, unsigned spacing = 4);
 
-		void operator+=(Frame& f);
 		void Sort() override; // 子要素を縦に整列して自身のサイズを更新
 							  // Notify Update() override;
 
+		template <class T> struct Item : T {
+			template <typename... ARGS>
+			Item(DownList& parent, unsigned height, ARGS... args) :
+				T(parent,
+					P{(float)parent.spacing, parent.tail + parent.spacing,
+						0.0f},
+					S{parent.spread[0] - parent.spacing * 2, height},
+					args...) {
+				parent.tail += height + parent.spacing;
+			}
+		};
+
 	private:
-		const float spacing;
+		const unsigned spacing;
+		float tail; // 子要素の末尾位置
 	};
 
 	struct SelectedList : Frame {

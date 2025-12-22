@@ -42,7 +42,6 @@ bool OnEvent(const PtEvent&,const tb::Vector<3,float>& origin);
 
 
 
-TODO:マージンの作り方が未解決
 
 
 ## コントロール

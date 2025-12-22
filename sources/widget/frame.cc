@@ -19,6 +19,7 @@
 #include "widget/frame.h"
 #include "core.h"
 #include "gl/gl.h"
+#include "widget/window.h"
 #include <algorithm>
 #include <functional>
 #include <limits>
@@ -32,7 +33,22 @@ namespace widget {
 		"単一フレーム移動距離のレート：単一フレームの間に目標位置との差にこの値"
 		"を乗じた分だけ移動する");
 
+
+	Frame::Frame(const P& position, const S& spread) :
+		target(position),
+		position(position),
+		spread(spread) {
+		new Window(*this);
+	}
+	Frame::Frame(const S& s) :
+		target(P{-0.5f * s[0], -0.5f * s[1], 0.0f}),
+		position(P{0.0f, 0.0f, 0.0f}),
+		spread(s) {}
+
+
 	Notify Frame::Update() {
+		AccualMove();
+
 		Notify n;
 		for (tb::List<Frame>::I i(children); ++i;) {
 			n.raw |= (*i).Update().raw;
@@ -179,21 +195,19 @@ namespace widget {
 
 
 	DownList::DownList(
-		Frame& parent, const P& position, const S& spread, float spacing) :
+		Frame& parent, const P& position, const S& spread, unsigned spacing) :
 		Frame(parent, position, spread),
-		spacing(spacing) {}
-	DownList::DownList(const P& position, const S& spread, float spacing) :
+		spacing(spacing),
+		tail(0.0f) {}
+	DownList::DownList(const P& position, const S& spread, unsigned spacing) :
 		Frame(position, spread),
-		spacing(spacing) {}
+		spacing(spacing),
+		tail(0.0f) {}
 
-	void DownList::operator+=(Frame& f) {
-		children.Add(f);
-		Sort();
-	};
 	void DownList::Sort() {
 		float p(spacing);
 		for (tb::List<Frame>::I i(children); ++i;) {
-			const P pt{spacing, p, 0.0f};
+			const P pt{(float)spacing, p, 0.0f};
 			(*i).JumpTo(pt);
 			p += (*i).GetSpread()[1] + spacing;
 		}

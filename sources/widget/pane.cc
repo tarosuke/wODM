@@ -24,13 +24,16 @@
 
 namespace widget {
 
-	Pane::Pane(tb::Color c, const P& position, const S& spread) :
-		Frame(position, spread),
+	Pane::Pane(Frame& parent, tb::Color c, const P& position, const S& spread) :
+		Frame(parent, position, spread),
 		color(c),
 		draw(c.IsTranslucent() ? &Pane::DrawHandler : &Pane::DummyDraw),
-		traw(c.IsTranslucent() ? &Pane::DummyTraw : &Pane::TrawHandler) {
-		new Window(*this);
-	}
+		traw(c.IsTranslucent() ? &Pane::DummyTraw : &Pane::TrawHandler) {}
+	Pane::Pane(tb::Color c, const S& spread) :
+		Frame(P{0.0f, 0.0f}, spread),
+		color(c),
+		draw(c.IsTranslucent() ? &Pane::DrawHandler : &Pane::DummyDraw),
+		traw(c.IsTranslucent() ? &Pane::DummyTraw : &Pane::TrawHandler) {}
 	void Pane::DrawHandler(const R& r) {
 		const auto& m(GetMask());
 		glColor4fv(color);
@@ -53,8 +56,10 @@ namespace widget {
 	}
 
 
-	TexturePane::TexturePane(const P& position, const tb::Image& image) :
-		Pane(tb::Color(0xffffff),
+	TexturePane::TexturePane(
+		Frame& parent, const P& position, const tb::Image& image) :
+		Pane(parent,
+			tb::Color(0xffffff),
 			position,
 			S{image.Spread()[0], image.Spread()[1], 0U}),
 		Texture(image),
