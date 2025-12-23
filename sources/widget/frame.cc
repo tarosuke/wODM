@@ -193,24 +193,29 @@ namespace widget {
 	}
 
 
-
-	DownList::DownList(
+	HorizontalList::HorizontalList(
 		Frame& parent, const P& position, const S& spread, unsigned spacing) :
 		Frame(parent, position, spread),
 		spacing(spacing),
-		tail(0.0f) {}
-	DownList::DownList(const P& position, const S& spread, unsigned spacing) :
+		head(0.0f),
+		tail((float)spread[0]) {}
+	HorizontalList::HorizontalList(
+		const P& position, const S& spread, unsigned spacing) :
 		Frame(position, spread),
 		spacing(spacing),
-		tail(0.0f) {}
+		head(0.0f),
+		tail((float)spread[0]) {}
 
-	void DownList::Sort() {
-		float p(spacing);
-		for (tb::List<Frame>::I i(children); ++i;) {
-			const P pt{(float)spacing, p, 0.0f};
-			(*i).JumpTo(pt);
-			p += (*i).GetSpread()[1] + spacing;
-		}
-	}
-	// Notify DownList::Update() {}
+	VerticalList::VerticalList(
+		Frame& parent, const P& position, const S& spread, unsigned spacing) :
+		Frame(parent, position, spread),
+		spacing(spacing),
+		head(0.0f),
+		tail((float)spread[1]) {}
+	VerticalList::VerticalList(
+		const P& position, const S& spread, unsigned spacing) :
+		Frame(position, spread),
+		spacing(spacing),
+		head(0.0f),
+		tail((float)spread[1]) {}
 }

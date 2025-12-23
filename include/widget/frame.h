@@ -40,6 +40,10 @@ namespace widget {
 		using M = tb::Matrix<4, 4, float>;
 		using P2 = tb::Vector<2, float>;
 		using S2 = tb::Spread<2, unsigned>;
+		struct RR {
+			P position;
+			S spread;
+		};
 
 		/***** 周期処理、奥行き再計算のインターフェイス
 		 */
@@ -90,8 +94,11 @@ namespace widget {
 			spread(spread) {
 			parent.children.Insert(*this);
 		};
+		Frame(Frame& parent, const RR& rect) :
+			Frame(parent, rect.position, rect.spread) {};
 		// parent非指定の場合はWindowをnewしてその子にする
 		Frame(const P& position, const S& spread);
+		Frame(const RR& rect) : Frame(rect.position, rect.spread) {};
 		// 位置指定がない場合はWindow
 		Frame(const S& spread);
 		virtual ~Frame() {
@@ -134,44 +141,91 @@ namespace widget {
 
 
 
+	// 横方向リスト
 	struct HorizontalList : Frame {
-		void Sort() override; // 子要素を横に整列して自身のサイズを更新
-		Notify Update() override;
-	};
-
-	// 下方向に伸びるリスト
-	struct DownList : Frame {
-		DownList(Frame& parent,
+		HorizontalList(Frame& parent,
 			const P& position,
 			const S& spread,
 			unsigned spacing = 4);
-		DownList(const P& position, const S& spread, unsigned spacing = 4);
-
-		void Sort() override; // 子要素を縦に整列して自身のサイズを更新
-							  // Notify Update() override;
+		HorizontalList(
+			const P& position, const S& spread, unsigned spacing = 4);
 
 		template <class T> struct Item : T {
 			template <typename... ARGS>
-			Item(DownList& parent, unsigned height, ARGS... args) :
-				T(parent,
-					P{(float)parent.spacing, parent.tail + parent.spacing,
-						0.0f},
-					S{parent.spread[0] - parent.spacing * 2, height},
-					args...) {
-				parent.tail += height + parent.spacing;
-			}
+			Item(HorizontalList& parent, float width, ARGS... args) :
+				T(parent, parent.Assign(width), args...),
+				width(width) {}
+
+		private:
+			const float width; // 指定された幅を保存
 		};
 
 	private:
-		const unsigned spacing;
-		float tail; // 子要素の末尾位置
+		const unsigned spacing; // 子要素の上下左右に確保する隙間
+		float head;
+		float tail;
+
+		RR Assign(float width) { // 配置
+			RR r{.position = {(float)spacing, 0.0f, 0.0f},
+				.spread = {spread[1] - spacing * 2U, 0U, 0U}};
+			if (0.0 <= width) {
+				// 左寄せ
+				const float w(1.0 < width ? width : (tail - head) * width);
+				r.position[1] = head + spacing;
+				r.spread[1] = w;
+				head += spacing + w;
+			} else {
+				// 右寄せ
+				const float w(width < -1.0 ? width : (tail - head) * width);
+				r.position[1] = tail + w - spacing;
+				r.spread[1] = -w;
+				tail += spacing + w;
+			}
+			return r;
+		};
 	};
 
-	struct SelectedList : Frame {
-		Notify Update() override;
+	// 縦方向リスト
+	struct VerticalList : Frame {
+		VerticalList(Frame& parent,
+			const P& position,
+			const S& spread,
+			unsigned spacing = 4);
+		VerticalList(const P& position, const S& spread, unsigned spacing = 4);
 
-		// 先頭の子だけを描画
-		void Draw(const R&) override;
-		void Traw() override;
+		template <class T> struct Item : T {
+			template <typename... ARGS>
+			Item(VerticalList& parent, float height, ARGS... args) :
+				T(parent, parent.Assign(height), args...),
+				height(height) {}
+
+		private:
+			const float height; // 指定された高さを保存
+		};
+
+	private:
+		const unsigned spacing; // 子要素の上下左右に確保する隙間
+		float head;
+		float tail;
+
+		RR Assign(float height) { // 配置
+			RR r{.position = {(float)spacing, 0.0f, 0.0f},
+				.spread = {spread[1] - spacing * 2U, 0U, 0U}};
+			if (0.0 <= height) {
+				// 上寄せ
+				const float h(1.0 < height ? height : (tail - head) * height);
+				r.position[1] = head + spacing;
+				r.spread[1] = h;
+				head += spacing + h;
+			} else {
+				// 下寄せ
+				const float h(height < -1.0 ? height : (tail - head) * height);
+				r.position[1] = tail + h - spacing;
+				r.spread[1] = -h;
+				tail += spacing + h;
+			}
+			return r;
+		};
 	};
+
 }

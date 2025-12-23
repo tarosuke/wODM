@@ -44,7 +44,7 @@ struct Login : widget::Pane {
 	 */
 	Login() :
 		Pane(tb::Color(widget::Prefs::backColor), spread),
-		list(position, spread),
+		list(P{0.0f, 0.0f, 0.0f}, spread),
 		user(list, 12),
 		password(list, 12) {
 		children.Add(list);
@@ -54,9 +54,9 @@ struct Login : widget::Pane {
 
 	static const S spread;
 
-	widget::DownList list;
-	widget::DownList::Item<widget::LineInputPane> user;
-	widget::DownList::Item<widget::LineInputPane> password;
+	widget::VerticalList list;
+	widget::VerticalList::Item<widget::LineInputPane> user;
+	widget::VerticalList::Item<widget::LineInputPane> password;
 };
 
 const widget::Frame::S Login::spread(256U, 256U);

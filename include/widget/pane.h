@@ -70,6 +70,8 @@ namespace widget {
 		CanvasPane(Frame& parent, const P& position, const S& spread) :
 			Canvas(spread[0], spread[1]),
 			TexturePane(parent, position, Canvas::Image(*this)) {};
+		CanvasPane(Frame& parent, const RR rect) :
+			CanvasPane(parent, rect.position, rect.spread) {};
 
 	private:
 		void OnCanvasUpdated(const tb::Rect<2, double>&) override;
@@ -83,5 +85,7 @@ namespace widget {
 		enum Style { normal, password, visibleLastPassword };
 		LineInputPane(Frame& parent, const P& position, const S& spread) :
 			CanvasPane(parent, position, spread) {};
+		LineInputPane(Frame& parent, const RR rect) :
+			LineInputPane(parent, rect.position, rect.spread) {};
 	};
 }
