@@ -23,11 +23,11 @@
 namespace widget {
 
 	tb::Prefs<unsigned> Prefs::foreColor(
-		"widget/foreColor", 0xffffff, "前景色");
+		"widget/foreColor", 0xffffffff, "前景色");
 	tb::Prefs<unsigned> Prefs::backColor(
-		"widget/backColor", 0x403030, "背景色");
+		"widget/backColor", 0xff403030, "背景色");
 	tb::Prefs<unsigned> Prefs::backColor2(
-		"widget/backColor2", 0x304030, "背景色2");
+		"widget/backColor2", 0xff304030, "背景色2");
 
 	tb::Prefs<unsigned> Prefs::navRingColor(
 		"widget/navRingColor", 0x80c080, "ナビゲーションリングの色(透過率)");
