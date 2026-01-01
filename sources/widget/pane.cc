@@ -28,13 +28,13 @@ namespace widget {
 	Pane::Pane(Frame& parent, tb::Color c, const P& position, const S& spread) :
 		Frame(parent, position, spread),
 		color(c),
-		draw(c.IsTranslucent() ? &Pane::DrawHandler : &Pane::DummyDraw),
-		traw(c.IsTranslucent() ? &Pane::DummyTraw : &Pane::TrawHandler) {}
+		draw(c.IsTranslucent() ? &Pane::DummyDraw : &Pane::DrawHandler),
+		traw(c.IsTranslucent() ? &Pane::TrawHandler : &Pane::DummyTraw) {}
 	Pane::Pane(tb::Color c, const S& spread) :
 		Frame(P{0.0f, 0.0f}, spread),
 		color(c),
-		draw(c.IsTranslucent() ? &Pane::DrawHandler : &Pane::DummyDraw),
-		traw(c.IsTranslucent() ? &Pane::DummyTraw : &Pane::TrawHandler) {}
+		draw(c.IsTranslucent() ? &Pane::DummyDraw : &Pane::DrawHandler),
+		traw(c.IsTranslucent() ? &Pane::TrawHandler : &Pane::DummyTraw) {}
 	void Pane::DrawHandler(const R& r) {
 		const auto& m(GetMask());
 		glColor4fv(color);
@@ -105,7 +105,12 @@ namespace widget {
 		carret(0) {
 		// 初期敵内容の描画
 		Canvas::GC gc(*this);
+#if 1
 		gc.Clear(tb::Color(Prefs::backColor));
+#else
+		gc.Set(tb::Color(Prefs::backColor), tb::Color(Prefs::backColor));
+		gc.Rectangle(0.5, 0.5, spread[0] - 0.5, spread[1] - 0.5);
+#endif
 		// TODO:下線などの装飾、promptを描画＆カーソルの設定
 	}
 	void LineInputPane::OnKeyDown(const KeyEvent& e) {}
