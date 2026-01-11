@@ -20,6 +20,7 @@
 #include "gl/glx.h"
 #include "gl/scenery.h"
 #include "widget/pane.h"
+#include "widget/prefs.h"
 #include "widget/root.h"
 #include <algorithm>
 #include <assert.h>
@@ -44,7 +45,7 @@ struct Login : widget::Pane {
 	 */
 	Login() :
 		Pane(tb::Color(widget::Prefs::backColor), spread),
-		list(P{0.0f, 0.0f, 0.0f}, spread),
+		list(spread),
 		user(list, 14, 12, "username"),
 		password(list, 14, 12, "password") {
 		children.Add(list);
@@ -59,7 +60,7 @@ struct Login : widget::Pane {
 	widget::VerticalList::Item<widget::LineInputPane> password;
 };
 
-const widget::Frame::S Login::spread(256U, 256U);
+const widget::Frame::S Login::spread({256.0f, 256.0f});
 
 
 

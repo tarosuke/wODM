@@ -21,7 +21,6 @@
 #include "eye.h"
 #include "frame.h"
 #include "model.h"
-#include "prefs.h"
 #include <tb/color.h>
 #include <tb/list.h>
 
@@ -31,15 +30,25 @@ namespace widget {
 
 	// ルート直下(NavRingに表示される)
 	struct Window : Frame {
+		struct Mergin {
+			float left;
+			float top;
+			float right;
+			float bottom;
+		};
+		struct Params {
+			tb::Color leftTopColor;
+			tb::Color rightBottomColor;
+			Mergin mergin;
+		};
 
-		// childを子要素として生成
-		Window(Frame& child,
-			const tb::Color& leftTopColor = tb::Color(Prefs::foreColor),
-			const tb::Color& rightBottomColor = tb::Color(Prefs::backColor),
-			unsigned leftMergin = 2,
-			unsigned topMergin = 10,
-			unsigned rightMergin = 2,
-			unsigned bottomMergin = 2);
+
+		/***** 構築
+		 */
+		Window(const R&, const Params& params = defaultParams); // Rの諸元で生成
+		Window(Frame&,
+			const Params& params = defaultParams); // Frameを子要素として生成
+
 
 		static void PrepareNavPanel();
 
@@ -48,45 +57,28 @@ namespace widget {
 		Notify Update() override;
 
 	protected:
-		struct {
-			float left;
-			float top;
-			float right;
-			float bottom;
-		} mergin, in, out;
+		// 規定の設定
+		static const Params defaultParams;
+
+		Mergin mergin, in, out;
 		tb::Color leftTopColor;
 		tb::Color rightBottomColor;
 
 	private:
-		// 上下左右のウインドウコントロールのサイズ
-		static P defaultLeftTopMergin; // content左上からWindow左上の差
-		static S defaultSpreadMergin;  // contentの右下分＋leftTopMerginの負値
 		void UpdateBorder();
 
 		Window() = delete;
 		Window(const Window&) = delete;
 
-		static P MakeLeftTop(
-			const Frame&, unsigned leftMergin, unsigned topMergin);
-		static S MakeSpread(
-			const Frame&, unsigned rightMergin, unsigned bottomMergin);
+		static R3 MakeRect(const Frame&, const Params&);
 	};
 
 	struct ResizeableWindow : Window {
 		ResizeableWindow(Frame& child,
 			float depth = 0,
 			float thick = 0,
-			unsigned leftMergin = 4,
-			unsigned topMergin = 12,
-			unsigned rightMergin = 4,
-			unsigned bottomMergin = 4) :
-			Window(child,
-				defaultLeftTopColor,
-				defaultRightBottomColor,
-				leftMergin,
-				topMergin,
-				rightMergin,
-				bottomMergin) {};
+			const Params& params = defaultParams) :
+			Window(child, defaultParams) {};
 
 	private:
 		static const tb::Color defaultLeftTopColor;

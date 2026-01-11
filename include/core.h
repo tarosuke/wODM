@@ -21,9 +21,9 @@
 #include "eye.h"
 #include <gl/framebuffer.h>
 #include <tb/factory.h>
+#include <tb/geometry/spread.h>
 #include <tb/list.h>
 #include <tb/matrix.h>
-#include <tb/spread.h>
 #include <tb/time.h>
 
 

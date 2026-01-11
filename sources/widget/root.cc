@@ -30,7 +30,6 @@ namespace {
 	static constexpr unsigned nVertex = 16;
 	static constexpr unsigned nTriangles = 18;
 
-
 	// VBOのためのデータ
 	GL::VBO::V_UV vertexBuffer[nVertex] = {
 		// U/V座標が頂点と一致しているのは頂点が割合でテクスチャ境界がミラー故
@@ -72,22 +71,19 @@ namespace {
 
 namespace widget {
 
-	Root* Root::instance(0);
 	Frame::P Root::lookingPoint;
+	tb::List<Frame> Root::windows;
 
 
-	Root::Root(const tb::List<Eye>& eyes) : navPanel(PrepareNavPanel(eyes)) {
-		instance = this;
-	};
+
+	Root::Root(const tb::List<Eye>& eyes) : navPanel(PrepareNavPanel(eyes)) {};
 	Root::~Root() {
 		if (navPanel) {
 			delete navPanel;
 		}
 	}
 
-	void Root::Register(Window& w) {
-		instance->windows.Add(static_cast<Frame&>(w));
-	}
+	void Root::Register(Window& w) { windows.Add(static_cast<Frame&>(w)); }
 
 	void Root::Update() {
 		// 必要なら順序を変更して奥行き再計算
@@ -96,20 +92,18 @@ namespace widget {
 			const Notify nn((*i).Update());
 			n.raw |= nn.raw;
 		}
-		if (n.thickUpdated) {
-			float d(0);
-			for (tb::List<Frame>::I i(windows); ++i;) { d += (*i).GetDepth(); }
-		}
+		// TODO:nのフラグに応じた処理
 	}
 
 	void Root::DrawAll(const Eye& eye) {
 		// lookingPoint算出、適用
-		const tb::Vector<3, float> fv((const float[3]){0.0f, 0.0f, 1.0f});
-		const tb::Vector<3, float> lv(
+		const tb::geometry::Vector<3, float> fv(
+			(const float[3]){0.0f, 0.0f, 1.0f});
+		const tb::geometry::Vector<3, float> lv(
 			Core::Pose() * fv + fv); // 正面と頭の向きの中間
-		const Frame::P lpTarget = {
-			-lv[0] * (float)Prefs::vDistance / (lv[2] * Prefs::scale),
-			lv[1] * (float)Prefs::vDistance / (lv[2] * Prefs::scale)};
+		const Frame::P lpTarget(
+			{-lv[0] * (float)Prefs::vDistance / (lv[2] * Prefs::scale),
+				lv[1] * (float)Prefs::vDistance / (lv[2] * Prefs::scale)});
 
 #if 0
 		lookingPoint += (lpTarget - lookingPoint) / (lpTarget.Norm() + 1);
@@ -120,10 +114,10 @@ namespace widget {
 			(lpTarget[1] - lookingPoint[1]) / (fabsf(lpTarget[1]) + 1);
 #endif
 
-		mask = Frame::R(Frame::P2(lookingPoint[0] - eye.width,
-							lookingPoint[1] - eye.height),
-			Frame::P2(
-				lookingPoint[0] + eye.width, lookingPoint[1] + eye.height));
+		mask = Frame::R(Frame::P({lookingPoint[0] - eye.width,
+							lookingPoint[1] - eye.height}),
+			Frame::P(
+				{lookingPoint[0] + eye.width, lookingPoint[1] + eye.height}));
 
 		glDisable(GL_CULL_FACE);
 
@@ -155,6 +149,14 @@ namespace widget {
 		eye.GUI();
 		glTranslatef(-lookingPoint[0], -lookingPoint[1], -Prefs::pDistance);
 		windows.Foreach(&Frame::TrawEntity);
+	}
+
+	void Root::ReDepthAll() {
+		const float dd(Prefs::windowThick);
+		float d(Prefs::pDistance);
+		for (tb::List<Frame>::I i(windows); ++i; d += dd) {
+			(*i).ReDepth(d, dd);
+		}
 	}
 
 

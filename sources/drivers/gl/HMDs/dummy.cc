@@ -37,7 +37,7 @@
  * 開発が進むと使わなくなるんだろうが、VRHMDの脱着を繰り返す面倒を回避する。
  */
 class DummyHMD : GLX, tb::linux::Input {
-	static const tb::Spread<2, unsigned> size;
+	static const tb::geometry::Spread<2, unsigned> size;
 	const int screen;
 	::Window window;
 	unsigned eIndex;
@@ -149,4 +149,4 @@ class DummyHMD : GLX, tb::linux::Input {
 tb::Prefs<bool> DummyHMD::useDummyHMD(
 	"--GLDummyHMD", false, "ダミーのHMDを使う", tb::CommonPrefs::nosave);
 DummyHMD::Factory DummyHMD::factory;
-const tb::Spread<2, unsigned> DummyHMD::size(1280u, 720u);
+const tb::geometry::Spread<2, unsigned> DummyHMD::size({1280u, 720u});

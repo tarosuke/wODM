@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (C) 2025 tarosuke<webmaster@tarosuke.net>
+ * Copyright (C) 2025, 2026 tarosuke<webmaster@tarosuke.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,13 +19,13 @@
 #pragma once
 
 #include "event.h"
+#include <tb/geometry/rect.h>
+#include <tb/geometry/spread.h>
+#include <tb/geometry/vector.h>
 #include <tb/list.h>
 #include <tb/matrix.h>
 #include <tb/prefs.h>
-#include <tb/rect.h>
-#include <tb/spread.h>
 #include <tb/time.h>
-#include <tb/vector.h>
 
 
 
@@ -34,16 +34,13 @@ namespace widget {
 	/***** 位置と大きさのみを持つ
 	 */
 	struct Frame : tb::List<Frame>::Node {
-		using P = tb::Vector<3, float>;
-		using S = tb::Spread<3, unsigned>;
-		using R = tb::Rect<2, float>;
+		using P = tb::geometry::Vector<2, float>;
+		using S = tb::geometry::Spread<2, float>;
+		using R = tb::geometry::Rect<2, float>;
+		using P3 = tb::geometry::Vector<3, float>;
+		using S3 = tb::geometry::Spread<3, float>;
+		using R3 = tb::geometry::Rect<3, float>;
 		using M = tb::Matrix<4, 4, float>;
-		using P2 = tb::Vector<2, float>;
-		using S2 = tb::Spread<2, unsigned>;
-		struct RR {
-			P position;
-			S spread;
-		};
 
 		/***** 周期処理、奥行き再計算のインターフェイス
 		 */
@@ -66,15 +63,20 @@ namespace widget {
 		void JumpTo(const P&); // 引数位置へ即時移動
 		void ReSize(const S&); // リサイズ(即時)
 		void SetDepth(float);  // 奥行だけ設定
+		virtual void ReDepth(float depth, float thick);
 
 		P GetCenter() const;
-		R GetRect() const;
-		const S GetSpread() const { return spread; };
-		float GetDepth() const { return position[2]; };
+		const P3& Origin3() const { return rect.Origin(); };
+		const S3& Spread3() const { return rect.Spread(); };
+		const P Origin() const { return ToP(rect.Origin()); };
+		const S Spread() const { return ToS(rect.Spread()); };
 
 	protected:
 		static tb::Prefs<float> movingRatio;
 		tb::List<Frame> children;
+		virtual void Add(Frame& child) {
+			children.Add(child);
+		}; // 継承先で配置など
 
 		/***** 可視判定
 		 */
@@ -82,25 +84,45 @@ namespace widget {
 		bool IsShown() const { return shown; };
 
 		/***** 位置、範囲
-		 * Rで持つと加算誤差が複数要素で蓄積するためPとSで持つ
 		 */
-		P target;
-		P position;
-		S spread;
-
-		Frame(Frame& parent, const P& position, const S& spread) :
-			target(position),
-			position(position),
-			spread(spread) {
-			parent.children.Insert(*this);
+		R3 rect;					 // 現在の範囲
+		P3 target;					 // 目標点(左上)
+		static R3 ToR3(const R& o) { // RからR3(奥行きは0)
+			return R3(P3({o.Origin()[0], o.Origin()[1], 0.0f}),
+				S3{{o.Spread()[0], o.Spread()[1], 0.0f}});
 		};
-		Frame(Frame& parent, const RR& rect) :
-			Frame(parent, rect.position, rect.spread) {};
-		// parent非指定の場合はWindowをnewしてその子にする
-		Frame(const P& position, const S& spread);
-		Frame(const RR& rect) : Frame(rect.position, rect.spread) {};
-		// 位置指定がない場合はWindow
-		Frame(const S& spread);
+		static R ToR(const R3& o) { // R3の平面分
+			return R(P{{o.Origin()[0], o.Origin()[1]}},
+				S{{o.Spread()[0], o.Spread()[1]}});
+		};
+		static P3 ToP3(const P& o) { // PからP3へ(奥行きは0)
+			return P3({o[0], o[1], 0.0f});
+		};
+		static P ToP(const P3& o) { // P3の平面分
+			return P({o[0], o[1]});
+		};
+		static S3 ToS3(const S& o) { // PからP3へ(奥行きは0)
+			return S3({o[0], o[1], 0.0f});
+		};
+		static S ToS(const P3& o) { // P3の平面分
+			return S({o[0], o[1]});
+		};
+		static tb::geometry::Spread<2, unsigned> ToUS(const R3& o) {
+			return tb::geometry::Spread<2, unsigned>(
+				{o.Spread(0), o.Spread(1)});
+		};
+		void AccualMove(); // 実際の移動
+
+		/***** 構築、破壊
+		 */
+		Frame(Frame& parent, const R3&); // 親ありフル指定
+		Frame(const R3&);				 // フル指定Window用
+		Frame(const S&);				 // Windowの中身用
+
+
+		Frame(Frame& parent, const R& rect) : Frame(parent, ToR3(rect)) {};
+		Frame(Frame& parent, const P& origin, const S& spread) :
+			Frame(parent, R(origin, spread)) {};
 		virtual ~Frame() {
 			if (ptOn == this) {
 				// TODO:カーソルをデフォルトに戻す
@@ -110,7 +132,8 @@ namespace widget {
 				focused = 0;
 			}
 		};
-		void AccualMove(); // 実際の移動
+
+
 
 		/***** イベントハンドラ
 		 */
@@ -118,7 +141,7 @@ namespace widget {
 		static Frame* focused;
 		struct {
 			tb::Timestamp time; // 最後のボタン操作時刻
-			P2 pt;			  // 最後にdown / upした場所(動いていなければclick)
+			P pt;			  // 最後にdown / upした場所(動いていなければclick)
 			unsigned buttons; // クリック計測中のボタン
 			unsigned n;		  // クリック数(移動したりup & maskが0ならリセット)
 		} click;
@@ -135,6 +158,7 @@ namespace widget {
 		virtual void OnKeyRepeat(const KeyEvent&) {};
 
 	private:
+		// 下の二つは都度生成されるので初期化不要
 		R mask;		// 親要素との論理積
 		bool shown; // UpdateにてmaskがEmptyでないなら真に設定される
 	};
@@ -143,12 +167,8 @@ namespace widget {
 
 	// 横方向リスト
 	struct HorizontalList : Frame {
-		HorizontalList(Frame& parent,
-			const P& position,
-			const S& spread,
-			unsigned spacing = 4);
-		HorizontalList(
-			const P& position, const S& spread, unsigned spacing = 4);
+		HorizontalList(Frame& parent, const R& rect, unsigned spacing = 4);
+		HorizontalList(const R& rect, unsigned spacing = 4);
 
 		template <class T> struct Item : T {
 			template <typename... ARGS>
@@ -165,25 +185,25 @@ namespace widget {
 		float head;
 		float tail;
 
-		RR Assign(float width);
+		R3 Assign(float width);
 	};
 
 	// 縦方向リスト
 	struct VerticalList : Frame {
-		VerticalList(Frame& parent,
-			const P& position,
-			const S& spread,
-			unsigned spacing = 4);
-		VerticalList(const P& position, const S& spread, unsigned spacing = 4);
+		VerticalList(Frame& parent, const R& rect, unsigned spacing = 4);
+		VerticalList(const S&, unsigned spacing = 4);
 
 		template <class T> struct Item : T {
 			template <typename... ARGS>
 			Item(VerticalList& parent, float height, ARGS... args) :
 				T(parent, parent.Assign(height), args...),
-				height(height) {}
+				height(height) {
+				const float h(parent.rect.Spread(2) * 0.5f);
+				(*this).ReDepth(h, h);
+			};
 
 		private:
-			const float height; // 指定された高さを保存
+			const float height; // 再配置のために指定された高さ情報を保存
 		};
 
 	private:
@@ -191,7 +211,6 @@ namespace widget {
 		float head;
 		float tail;
 
-		RR Assign(float height);
+		R3 Assign(float height);
 	};
-
 }

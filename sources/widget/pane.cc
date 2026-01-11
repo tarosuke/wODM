@@ -25,16 +25,17 @@
 
 namespace widget {
 
-	Pane::Pane(Frame& parent, tb::Color c, const P& position, const S& spread) :
-		Frame(parent, position, spread),
+	Pane::Pane(Frame& parent, tb::Color c, const R& rect) :
+		Frame(parent, rect),
 		color(c),
 		draw(c.IsTranslucent() ? &Pane::DummyDraw : &Pane::DrawHandler),
 		traw(c.IsTranslucent() ? &Pane::TrawHandler : &Pane::DummyTraw) {}
 	Pane::Pane(tb::Color c, const S& spread) :
-		Frame(P{0.0f, 0.0f}, spread),
+		Frame(spread),
 		color(c),
 		draw(c.IsTranslucent() ? &Pane::DummyDraw : &Pane::DrawHandler),
 		traw(c.IsTranslucent() ? &Pane::TrawHandler : &Pane::DummyTraw) {}
+
 	void Pane::DrawHandler(const R& r) {
 		const auto& m(GetMask());
 		glColor4fv(color);
@@ -58,14 +59,11 @@ namespace widget {
 
 
 	TexturePane::TexturePane(
-		Frame& parent, const P& position, const tb::Image& image) :
-		Pane(parent,
-			tb::Color(0xffffff),
-			position,
-			S{image.Spread()[0], image.Spread()[1], 0U}),
+		Frame& parent, const R3& rect, const tb::Image& image) :
+		Pane(parent, tb::Color(0xffffff), ToR(rect)),
 		Texture(image),
-		hpc(1.0f / spread[0]),
-		vpc(1.0f / spread[1]) {
+		hpc(1.0f / rect.Spread(0)),
+		vpc(1.0f / rect.Spread(1)) {
 		Binder b(*this);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.Spread()[0],
 			image.Spread()[1], 0, GL_RGBA, GL_BYTE, image.Data());
@@ -81,10 +79,10 @@ namespace widget {
 
 
 
-	void CanvasPane::OnCanvasUpdated(const tb::Rect<2, double>& r) {
+	void CanvasPane::OnCanvasUpdated(const tb::geometry::Rect<2, double>& r) {
 		// TODO:rが大きすぎるとヒッチングの原因になるし、タイミングが悪いと更新されないので直接には更新せず変更を分解してキューイングしたいところ
-		const unsigned w(r.GetSpread()[0]);
-		const unsigned h(r.GetSpread()[1]);
+		const unsigned w(r.Spread(0));
+		const unsigned h(r.Spread(1));
 		tb::BufferedImage image(
 			tb::Canvas::Image(*this), r.Left()[0], r.Left()[1], w, h);
 		Binder b(*this);
@@ -94,12 +92,9 @@ namespace widget {
 
 
 
-	LineInputPane::LineInputPane(Frame& parent,
-		const P& position,
-		const S& spread,
-		unsigned fontSize,
-		const char* prompt) :
-		CanvasPane(parent, position, spread),
+	LineInputPane::LineInputPane(
+		Frame& parent, const R3& rect, unsigned fontSize, const char* prompt) :
+		CanvasPane(parent, rect),
 		fontSize(fontSize),
 		prompt(prompt),
 		carret(0) {

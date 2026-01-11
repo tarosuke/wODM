@@ -18,8 +18,8 @@
  */
 #pragma once
 
+#include <tb/geometry/vector.h>
 #include <tb/time.h>
-#include <tb/vector.h>
 
 
 
@@ -39,9 +39,9 @@ namespace widget {
 		static const unsigned caps = 0x40;
 	};
 	struct PtEvent {
-		using P = tb::Vector<3, float>;
+		using P = tb::geometry::Vector<3, float>;
 		using T = tb::Timestamp;
-		using P2 = tb::Vector<2, float>;
+		using P2 = tb::geometry::Vector<2, float>;
 
 		/***** インスタンス生成
 		 * ①イベント発生時のインスタンス生成
@@ -56,7 +56,7 @@ namespace widget {
 			return (origin[d] - v) / dir[d];
 		};
 		P2 ZCrossPoint(float t) {
-			return P2{origin[0] + dir[0] * t, origin[1] + dir[1] * t};
+			return P2{{origin[0] + dir[0] * t, origin[1] + dir[1] * t}};
 		};
 
 

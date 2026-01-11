@@ -31,8 +31,8 @@ namespace widget {
 
 	// 平面
 	struct Pane : Frame {
-		Pane(Frame& parent, tb::Color c, const P& position, const S& spread);
-		Pane(tb::Color c, const S& spread);
+		Pane(Frame& parent, tb::Color c, const R&);
+		Pane(tb::Color c, const S&);
 
 	protected:
 		tb::Color color;
@@ -51,7 +51,18 @@ namespace widget {
 	 * Imageの参照を与えてテクスチャを作ってそれを表示
 	 */
 	struct TexturePane : Pane, GL::Texture {
-		TexturePane(Frame& parent, const P& position, const tb::Image& image);
+		/***** Imageからテクスチャへ転送して生成
+		 * 1. Pane自体の位置や大きさはrectによる
+		 * 2. テクスチャサイズはimageのサイズと同じ
+		 * ※imageは保持されないのでUpdateするときは都度与える
+		 */
+		TexturePane(Frame& parent, const R3& rect, const tb::Image& image);
+		template <typename U>
+		TexturePane(Frame& parent,
+			const tb::geometry::Rect<3, U>& rect,
+			const tb::Image& image) :
+			TexturePane(parent, P({rect.Origin(1), rect.Origin(1)}), image){};
+
 
 	protected:
 		// サイズの逆数
@@ -71,14 +82,12 @@ namespace widget {
 	 * tb::CanvasとしてGCを作って描画できる
 	 */
 	struct CanvasPane : tb::Canvas, TexturePane {
-		CanvasPane(Frame& parent, const P& position, const S& spread) :
-			Canvas(spread[0], spread[1]),
-			TexturePane(parent, position, Canvas::Image(*this)) {};
-		CanvasPane(Frame& parent, const RR rect) :
-			CanvasPane(parent, rect.position, rect.spread) {};
+		CanvasPane(Frame& parent, const R3& rect) :
+			Canvas(rect.Spread()),
+			TexturePane(parent, rect, Canvas::Image(*this)) {};
 
 	private:
-		void OnCanvasUpdated(const tb::Rect<2, double>&) override;
+		void OnCanvasUpdated(const tb::geometry::Rect<2, double>&) override;
 	};
 
 
@@ -88,16 +97,9 @@ namespace widget {
 	struct LineInputPane : CanvasPane {
 		enum Style { normal, password, visibleLastPassword };
 		LineInputPane(Frame& parent,
-			const P& position,
-			const S& spread,
+			const R3& rect,
 			unsigned fontSize,
 			const char* prompt = "");
-		LineInputPane(Frame& parent,
-			const RR rect,
-			unsigned fontSize,
-			const char* prompt = "") :
-			LineInputPane(
-				parent, rect.position, rect.spread, fontSize, prompt) {};
 
 	protected:
 		void OnKeyDown(const KeyEvent&) override;

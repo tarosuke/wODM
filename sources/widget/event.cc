@@ -23,7 +23,7 @@
 namespace widget {
 
 	PtEvent::PtEvent(const P& position, unsigned button, unsigned modifiers) :
-		origin{0.0f, 0.0f},
+		origin{{0.0f, 0.0f}},
 		dir(position),
 		state(button),
 		down(0),

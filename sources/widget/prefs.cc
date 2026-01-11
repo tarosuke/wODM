@@ -42,6 +42,6 @@ namespace widget {
 	tb::Prefs<float> Prefs::navThick(
 		"widget/navigationAngle", 16.0f, "ナビゲーションリングの太さ[px]");
 	tb::Prefs<float> Prefs::windowThick("widget/windowThick",
-		10.0f,
-		"Windowの奥行き(この値だけ基準面から屋に配置される)");
+		0.0016f,
+		"Windowの奥行き(基準面から奥に向かって配置される)");
 }

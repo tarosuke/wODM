@@ -38,11 +38,11 @@ namespace widget {
 		static void Dot(const Frame::P& center);
 
 		static void Register(Window&);
+		static void ReDepthAll();
 
 	private:
-		tb::List<Frame> windows;
+		static tb::List<Frame> windows;
 		Model_C* navPanel;
-		static Root* instance;
 		static Frame::P lookingPoint;
 		static Frame::M viewMat;
 

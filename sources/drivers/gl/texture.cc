@@ -30,15 +30,13 @@ namespace GL {
 		transparent(IsTransparent(format)) {
 		Binder b(*this);
 
-		glTexImage2D(
-			GL_TEXTURE_2D, 0, ToGLFormat(format), width, height, 0,
+		glTexImage2D(GL_TEXTURE_2D, 0, ToGLFormat(format), width, height, 0,
 			ToGLFormat(format), GL_UNSIGNED_BYTE, 0);
 
 		SetupAttributes(style);
 	}
 
-	Texture::Texture(
-		const void* buffer,
+	Texture::Texture(const void* buffer,
 		unsigned width,
 		unsigned height,
 		Format format,
@@ -47,9 +45,8 @@ namespace GL {
 		transparent(IsTransparent(format)) {
 		Binder b(*this);
 
-		glTexImage2D(
-			GL_TEXTURE_2D, 0, IsTransparent(format) ? GL_RGBA : GL_RGB, width,
-			height, 0, GL_BGRA, GL_UNSIGNED_BYTE, buffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, IsTransparent(format) ? GL_RGBA : GL_RGB,
+			width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, buffer);
 
 		SetupAttributes(style);
 	}
@@ -57,8 +54,7 @@ namespace GL {
 	Texture::Texture(const tb::Image& image, const Style& style) :
 		tid(NewID()) {
 		Binder b(*this);
-		glTexImage2D(
-			GL_TEXTURE_2D, 0, image.Transparent() ? GL_RGBA : GL_RGB,
+		glTexImage2D(GL_TEXTURE_2D, 0, image.Transparent() ? GL_RGBA : GL_RGB,
 			image.Width(), image.Height(), 0, GL_BGRA, GL_UNSIGNED_BYTE,
 			image.Data());
 
@@ -83,24 +79,22 @@ namespace GL {
 	}
 
 
-	void Texture::Update(
-		const void* buffer,
+	void Texture::Update(const void* buffer,
 		int x,
 		int y,
 		unsigned width,
 		unsigned height,
 		Format format) {
 		Binder b(*this);
-		glTexSubImage2D(
-			GL_TEXTURE_2D, 0, x, y, width, height, ToGLFormat(format),
-			GL_UNSIGNED_BYTE, buffer);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height,
+			ToGLFormat(format), GL_UNSIGNED_BYTE, buffer);
 	}
 
-	void Texture::Update(const tb::Image& image, const tb::Vector<2, int>& to) {
+	void Texture::Update(
+		const tb::Image& image, const tb::geometry::Vector<2, int>& to) {
 		Binder b(*this);
-		glTexSubImage2D(
-			GL_TEXTURE_2D, 0, to[0], to[1], image.Width(), image.Height(),
-			ToGLFormat(RGBA), GL_UNSIGNED_BYTE, image.Data());
+		glTexSubImage2D(GL_TEXTURE_2D, 0, to[0], to[1], image.Width(),
+			image.Height(), ToGLFormat(RGBA), GL_UNSIGNED_BYTE, image.Data());
 	}
 
 

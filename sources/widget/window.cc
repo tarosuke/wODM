@@ -18,40 +18,37 @@
  */
 #include "widget/window.h"
 #include "gl/gl.h"
+#include "widget/prefs.h"
 #include "widget/root.h"
 
 
 
 namespace widget {
 
+	const Window::Params Window::defaultParams = {
+		.leftTopColor = tb::Color(Prefs::foreColor),
+		.rightBottomColor = tb::Color(Prefs::backColor),
+		.mergin{.left = 2.0f, .top = 2.0f, .right = 2.0f, .bottom = 2.0f}};
+
+
+
 	// childを子要素として生成
-	Window::Window(Frame& c,
-		const tb::Color& leftTopColor,
-		const tb::Color& rightBottomColor,
-		unsigned leftMergin,
-		unsigned topMergin,
-		unsigned rightMergin,
-		unsigned bottomMergin) :
-		Frame(
-			MakeSpread(c, leftMergin + rightMergin, topMergin + bottomMergin)),
-		mergin{.left = (float)leftMergin,
-			.top = (float)topMergin,
-			.right = (float)rightMergin,
-			.bottom = (float)bottomMergin},
-		leftTopColor(leftTopColor),
-		rightBottomColor(rightBottomColor) {
-		c.JumpTo(P((float)leftMergin, (float)topMergin));
+	Window::Window(Frame& c, const Params& params) :
+		Frame(MakeRect(c, params)),
+		mergin{params.mergin},
+		leftTopColor(params.leftTopColor),
+		rightBottomColor(params.rightBottomColor) {
+		c.JumpTo(P({(float)params.mergin.left, (float)params.mergin.top}));
 		children.Insert(c);
 		UpdateBorder();
 		Root::Register(*this);
+		Root::ReDepthAll();
 	}
 
-	Frame::P Window::MakeLeftTop(const Frame& c, unsigned l, unsigned t) {
-		return c.GetCenter() - c.GetSpread() - P((float)l, (float)t);
-	}
-
-	Frame::S Window::MakeSpread(const Frame& c, unsigned h, unsigned v) {
-		return c.GetSpread() + S(h, v);
+	Frame::R3 Window::MakeRect(const Frame& c, const Params& p) {
+		return ToR3(R(c.GetCenter() - c.Spread() * 0.5f -
+						  P({p.mergin.left, p.mergin.top}),
+			c.Spread() + S({p.mergin.right, p.mergin.bottom})));
 	}
 
 	Notify Window::Update() {
@@ -65,12 +62,12 @@ namespace widget {
 	void Window::UpdateBorder() {
 		in.left = mergin.left;
 		in.top = mergin.top;
-		in.right = (float)spread[0] - mergin.right;
-		in.bottom = (float)spread[1] - mergin.bottom;
+		in.right = Spread()[0] - mergin.right;
+		in.bottom = Spread()[1] - mergin.bottom;
 		out.left = 0;
 		out.top = 0;
-		out.right = (float)spread[0];
-		out.bottom = (float)spread[1];
+		out.right = Spread()[0];
+		out.bottom = Spread()[1];
 	}
 
 	void Window::Draw(const R& r) {

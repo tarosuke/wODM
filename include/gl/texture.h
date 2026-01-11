@@ -18,10 +18,10 @@
  */
 #pragma once
 
+#include <tb/geometry/rect.h>
+#include <tb/geometry/spread.h>
 #include <tb/image.h>
 #include <tb/list.h>
-#include <tb/rect.h>
-#include <tb/spread.h>
 
 
 
@@ -86,7 +86,7 @@ namespace GL {
 			unsigned height,
 			Format format);
 
-		void Update(const tb::Image&, const tb::Vector<2, int>&);
+		void Update(const tb::Image&, const tb::geometry::Vector<2, int>&);
 
 		void Update(); // upqから拾って順次更新
 
