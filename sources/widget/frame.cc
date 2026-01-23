@@ -51,10 +51,19 @@ namespace widget {
 	 * 平面サイズだけを与える
 	 * 平面サイズだけが設定され、残りはWindowの子になった時に設定される
 	 */
-	Frame::Frame(const S& spread) :
+	Frame::Frame(const S& spread, WindowType type) :
 		rect(R3(S3({spread[0], spread[1], 0.0f}))),
 		target(P3({0.0f, 0.0f, 0.0f})) {
-		new Window(*this);
+		switch (type) {
+		case WindowType::none:
+			new Window(*this);
+			break;
+		case WindowType::resizeable:
+			new ResizeableWindow(*this);
+			break;
+		default:
+			break;
+		}
 	}
 
 
@@ -69,12 +78,15 @@ namespace widget {
 		return n;
 	};
 	void Frame::DrawEntity(const R& r) {
-		mask = ToR(rect);
+		const R rr(ToR(rect));
+
+		mask = rr;
 		mask &= r;
 		shown = !!mask;
 		if (IsShown()) {
+			mask -= rr.Origin();
 			glPushMatrix();
-			glTranslatef(rect.Origin()[0], rect.Origin()[1], -rect.Origin()[2]);
+			glTranslatef(rect.Origin()[0], rect.Origin()[1], rect.Origin()[2]);
 			children.Foreach(&Frame::DrawEntity, GetMask());
 			Draw(GetMask());
 			glPopMatrix();
@@ -94,8 +106,14 @@ namespace widget {
 
 	// 移動、リサイズ
 	void Frame::Move(const P& p) { target += p; }
-	void Frame::MoveTo(const P& p) { target = ToP3(p); }
-	void Frame::JumpTo(const P& p) { rect.Origin(target = ToP3(p)); }
+	void Frame::MoveTo(const P& p) {
+		target[0] = p[0];
+		target[1] = p[1];
+	}
+	void Frame::JumpTo(const P& p) {
+		MoveTo(p);
+		rect.Origin(target);
+	}
 	void Frame::ReSize(const S& s) { rect.Spread(ToS3(s)); }
 	void Frame::SetDepth(float d) { target[2] = d; }
 	void Frame::ReDepth(float d, float t) {

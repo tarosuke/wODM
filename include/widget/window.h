@@ -19,8 +19,8 @@
 #pragma once
 
 #include "eye.h"
-#include "frame.h"
 #include "model.h"
+#include "pane.h"
 #include <tb/color.h>
 #include <tb/list.h>
 
@@ -29,7 +29,9 @@
 namespace widget {
 
 	// ルート直下(NavRingに表示される)
-	struct Window : Frame {
+	struct Window : Pane {
+
+		// TODO:Paramsは廃止、Prefsから値を直接取得
 		struct Mergin {
 			float left;
 			float top;
@@ -45,9 +47,12 @@ namespace widget {
 
 		/***** 構築
 		 */
-		Window(const R&, const Params& params = defaultParams); // Rの諸元で生成
-		Window(Frame&,
-			const Params& params = defaultParams); // Frameを子要素として生成
+
+		/* Frame&を子要素としてその大きさに合わせて作る
+		 * 合わせるのは大きさだけで、位置はは無視される
+		 * また子要素の位置は0,0に変更される
+		 */
+		Window(Frame&, const Params& params = defaultParams);
 
 
 		static void PrepareNavPanel();
@@ -63,6 +68,8 @@ namespace widget {
 		Mergin mergin, in, out;
 		tb::Color leftTopColor;
 		tb::Color rightBottomColor;
+
+		void Sort() override;
 
 	private:
 		void UpdateBorder();

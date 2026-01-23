@@ -83,7 +83,10 @@ namespace widget {
 		}
 	}
 
-	void Root::Register(Window& w) { windows.Add(static_cast<Frame&>(w)); }
+	void Root::Register(Window& w) {
+		windows.Add(static_cast<Frame&>(w));
+		ReDepthAll();
+	}
 
 	void Root::Update() {
 		// 必要なら順序を変更して奥行き再計算
@@ -138,22 +141,21 @@ namespace widget {
 
 	void Root::TrawAll(const Eye& eye) {
 		glDisable(GL_CULL_FACE);
-
 		glColor4f(1, 1, 1, 1);
-		eye.Short11();
-		glTranslatef(0, 0, -Prefs::nDistance);
-		glScalef(nScale, nScale, 1);
-		navPanel->Draw();
-
 
 		eye.GUI();
 		glTranslatef(-lookingPoint[0], -lookingPoint[1], -Prefs::pDistance);
 		windows.Foreach(&Frame::TrawEntity);
+
+		eye.Short11();
+		glTranslatef(0, 0, -Prefs::nDistance);
+		glScalef(nScale, nScale, 1);
+		navPanel->Draw();
 	}
 
 	void Root::ReDepthAll() {
 		const float dd(Prefs::windowThick);
-		float d(Prefs::pDistance);
+		float d(0);
 		for (tb::List<Frame>::I i(windows); ++i; d += dd) {
 			(*i).ReDepth(d, dd);
 		}

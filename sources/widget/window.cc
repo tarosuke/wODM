@@ -34,7 +34,7 @@ namespace widget {
 
 	// childを子要素として生成
 	Window::Window(Frame& c, const Params& params) :
-		Frame(MakeRect(c, params)),
+		Pane(tb::Color(Prefs::backColor), MakeRect(c, params)),
 		mergin{params.mergin},
 		leftTopColor(params.leftTopColor),
 		rightBottomColor(params.rightBottomColor) {
@@ -42,12 +42,12 @@ namespace widget {
 		children.Insert(c);
 		UpdateBorder();
 		Root::Register(*this);
-		Root::ReDepthAll();
+		Sort();
 	}
 
 	Frame::R3 Window::MakeRect(const Frame& c, const Params& p) {
-		return ToR3(R(c.GetCenter() - c.Spread() * 0.5f -
-						  P({p.mergin.left, p.mergin.top}),
+		return ToR3(R(P({(-0.5f * c.Spread()[0]) - p.mergin.left,
+						  (-0.5f * c.Spread()[1]) - p.mergin.top}),
 			c.Spread() + S({p.mergin.right, p.mergin.bottom})));
 	}
 
@@ -101,10 +101,21 @@ namespace widget {
 		glVertex2f(out.right, out.top);
 		glVertex2f(out.right, out.bottom);
 		glEnd();
+
+		Pane::Draw(r);
 	}
 
 	void Window::Dot() { Root::Dot(GetCenter()); }
 
 	const tb::Color ResizeableWindow::defaultLeftTopColor(0);
 	const tb::Color ResizeableWindow::defaultRightBottomColor(0xffffff);
+
+
+	void Window::Sort() {
+		float d(rect.Spread(2));
+		float dd(d * 0.5f);
+		for (tb::List<Frame>::I i(children); ++i; d = dd, dd *= 0.5f) {
+			(*i).ReDepth(d, dd);
+		}
+	}
 }

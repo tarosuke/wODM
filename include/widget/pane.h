@@ -31,8 +31,8 @@ namespace widget {
 
 	// 平面
 	struct Pane : Frame {
-		Pane(Frame& parent, tb::Color c, const R&);
-		Pane(tb::Color c, const S&);
+		Pane(Frame& parent, tb::Color c, const R3&);
+		Pane(tb::Color c, const R3&);
 
 	protected:
 		tb::Color color;
@@ -63,7 +63,6 @@ namespace widget {
 			const tb::Image& image) :
 			TexturePane(parent, P({rect.Origin(1), rect.Origin(1)}), image){};
 
-
 	protected:
 		// サイズの逆数
 		const float hpc;
@@ -82,11 +81,19 @@ namespace widget {
 	 * tb::CanvasとしてGCを作って描画できる
 	 */
 	struct CanvasPane : tb::Canvas, TexturePane {
+		// 更新範囲(OnCanvasUpdateで受けたRectを細分化して保存しUpdateで更新)
+		// 分割は転送単位を最大化するために行単位
+		struct UpdateRect : tb::geometry::Rect<2, unsigned>,
+							tb::List<UpdateRect> {};
+
 		CanvasPane(Frame& parent, const R3& rect) :
 			Canvas(rect.Spread()),
 			TexturePane(parent, rect, Canvas::Image(*this)) {};
 
 	private:
+		static constexpr unsigned nUpdatePixel = 64 * 64;
+
+		tb::List<UpdateRect> updates;
 		void OnCanvasUpdated(const tb::geometry::Rect<2, double>&) override;
 	};
 

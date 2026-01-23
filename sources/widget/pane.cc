@@ -25,13 +25,13 @@
 
 namespace widget {
 
-	Pane::Pane(Frame& parent, tb::Color c, const R& rect) :
+	Pane::Pane(Frame& parent, tb::Color c, const R3& rect) :
 		Frame(parent, rect),
 		color(c),
 		draw(c.IsTranslucent() ? &Pane::DummyDraw : &Pane::DrawHandler),
 		traw(c.IsTranslucent() ? &Pane::TrawHandler : &Pane::DummyTraw) {}
-	Pane::Pane(tb::Color c, const S& spread) :
-		Frame(spread),
+	Pane::Pane(tb::Color c, const R3& r) :
+		Frame(r),
 		color(c),
 		draw(c.IsTranslucent() ? &Pane::DummyDraw : &Pane::DrawHandler),
 		traw(c.IsTranslucent() ? &Pane::TrawHandler : &Pane::DummyTraw) {}
@@ -60,7 +60,7 @@ namespace widget {
 
 	TexturePane::TexturePane(
 		Frame& parent, const R3& rect, const tb::Image& image) :
-		Pane(parent, tb::Color(0xffffff), ToR(rect)),
+		Pane(parent, tb::Color(0xffffffff), rect),
 		Texture(image),
 		hpc(1.0f / rect.Spread(0)),
 		vpc(1.0f / rect.Spread(1)) {

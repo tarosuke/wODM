@@ -36,7 +36,7 @@ bool Core::keep(false);
 template <> tb::Factory<Core>* tb::Factory<Core>::start(0);
 
 
-struct Login : widget::Pane {
+struct Login : widget::VerticalList {
 	/*****
 	 * ログインを待ち、ログインされたら名前突きパイプを用意してChildをnew
 	 * 名前突きパイプに接続されたらaskpass的動作
@@ -44,18 +44,14 @@ struct Login : widget::Pane {
 	 * askpassの接続が逆で「画面へ繋ぐ」ことができないのでちょっと考える
 	 */
 	Login() :
-		Pane(tb::Color(widget::Prefs::backColor), spread),
-		list(spread),
-		user(list, 14, 12, "username"),
-		password(list, 14, 12, "password") {
-		children.Add(list);
-	};
+		VerticalList(spread),
+		user(*this, 14, 12, "username"),
+		password(*this, 14, 12, "password") {};
 
 
 
 	static const S spread;
 
-	widget::VerticalList list;
 	widget::VerticalList::Item<widget::LineInputPane> user;
 	widget::VerticalList::Item<widget::LineInputPane> password;
 };

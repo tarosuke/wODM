@@ -81,3 +81,46 @@ bool OnEvent(const PtEvent&,const tb::Vector<3,float>& origin);
 ### スクロールバー
 
 ボタンとスライダーを持つ。
+
+
+
+
+
+# ConvasPaneにおけるテクスチャ更新
+
+## priorityUpdateingとupdateCompleted
+
+priorityUpdatingは可視部分を優先更新、updateCompletedはUpdateAllがその完了を知るためのフラグである。以下のように運用する。
+
+1. priorityUpdateingであるときはshownでないPaneはテクスチャを更新しない。
+2. shownなPaneにUpdateRegionを登録する時にpriorityUpdateingを立てる。
+3. shownなPaneが更新を中断した場合updateCompletedを落とす。
+4. UpdateAll時にupdateCompletedを立て、終了時に立ったままであったらpriorityUpdateingを落とす。
+
+# updateRegion
+
+更新範囲はupdateRegionにて管理される。
+
+* 更新登録時
+   * 更新updateRegionに更新対象を論理和
+   * shwnならpriorityUpdateingを立てる
+* 更新時
+  * 更新可能サイズに従い更新ライン数を決定
+  * updateRegionの幅、更新ライン数の領域を更新
+  * 更新した分だけupdateRegionを削る
+  * updateRegionが残っていたらupdateCompletedを落とす
+
+
+# Window
+
+枠のないWindowと枠付きWindowとResizeableWindowに分類し直す。枠なしは並び替えなどは無視する。奥行きは手前側グループ(手前に伸びる)でソート。
+
+
+
+
+# FrameとPane
+
+Paneは「中身入り」ではあるが、Paneとして独立させる代わりにContentを分離してFrameならばどこにでもDI可能あるいは多重継承可能にする方が便利かも知れない。
+
+FrameをPaneの子要素とするのとFrame自身がContentを持つのはどちらが軽いか、どちらが簡単に使えるかという問題。
+

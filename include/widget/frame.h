@@ -42,6 +42,12 @@ namespace widget {
 		using R3 = tb::geometry::Rect<3, float>;
 		using M = tb::Matrix<4, 4, float>;
 
+		enum class WindowType {
+			none,
+			movable,
+			resizeable,
+		};
+
 		/***** 周期処理、奥行き再計算のインターフェイス
 		 */
 		virtual Notify Update();
@@ -115,9 +121,10 @@ namespace widget {
 
 		/***** 構築、破壊
 		 */
-		Frame(Frame& parent, const R3&); // 親ありフル指定
-		Frame(const R3&);				 // フル指定Window用
-		Frame(const S&);				 // Windowの中身用
+		Frame(Frame& parent, const R3&); // 親あり
+		Frame(const R3&);				 // Window用
+		Frame(
+			const S&, WindowType = WindowType::none); // Windowを作ってその中へ
 
 
 		Frame(Frame& parent, const R& rect) : Frame(parent, ToR3(rect)) {};
@@ -159,7 +166,7 @@ namespace widget {
 
 	private:
 		// 下の二つは都度生成されるので初期化不要
-		R mask;		// 親要素との論理積
+		R mask;		// 親要素との論理積(計算中を除いてローカル座標)
 		bool shown; // UpdateにてmaskがEmptyでないなら真に設定される
 	};
 
