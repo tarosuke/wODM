@@ -23,6 +23,7 @@
 #include "gl/texture.h"
 #include <tb/canvas.h>
 #include <tb/color.h>
+#include <tb/string.h>
 
 
 
@@ -57,6 +58,9 @@ namespace widget {
 		const float hpc;
 		const float vpc;
 
+		void Draw(const R& r) override;
+		void Traw() override;
+
 		void Vertex(float x, float y) override {
 			glTexCoord2f(x * hpc, y * vpc);
 			glVertex2f(x, y);
@@ -83,9 +87,26 @@ namespace widget {
 	 */
 	struct LineInputPane : CanvasPane {
 		enum Style { normal, password, visibleLastPassword };
-		LineInputPane(Frame& parent, const P& position, const S& spread) :
-			CanvasPane(parent, position, spread) {};
-		LineInputPane(Frame& parent, const RR rect) :
-			LineInputPane(parent, rect.position, rect.spread) {};
+		LineInputPane(Frame& parent,
+			const P& position,
+			const S& spread,
+			unsigned fontSize,
+			const char* prompt = "");
+		LineInputPane(Frame& parent,
+			const RR rect,
+			unsigned fontSize,
+			const char* prompt = "") :
+			LineInputPane(
+				parent, rect.position, rect.spread, fontSize, prompt) {};
+
+	protected:
+		void OnKeyDown(const KeyEvent&) override;
+		void OnClick(const PtEvent&) override;
+
+	private:
+		const unsigned fontSize;
+		const tb::String prompt;
+		unsigned carret; // キャレット位置
+		tb::String text; // 編集中の文字列
 	};
 }

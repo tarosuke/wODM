@@ -205,6 +205,24 @@ namespace widget {
 		spacing(spacing),
 		head(0.0f),
 		tail((float)spread[0]) {}
+	Frame::RR HorizontalList::Assign(float width) {
+		RR r{.position = {0.0f, (float)spacing, 0.0f},
+			.spread = {0U, spread[1] - spacing * 2U, 0U}};
+		if (0.0 <= width) {
+			// 左寄せ
+			const float w(1.0 < width ? width : (tail - head) * width);
+			r.position[0] = head + spacing;
+			r.spread[0] = w;
+			head += spacing + w;
+		} else {
+			// 右寄せ
+			const float w(width < -1.0 ? width : (tail - head) * width);
+			r.position[0] = tail + w - spacing;
+			r.spread[0] = -w;
+			tail += w - spacing;
+		}
+		return r;
+	};
 
 	VerticalList::VerticalList(
 		Frame& parent, const P& position, const S& spread, unsigned spacing) :
@@ -218,4 +236,24 @@ namespace widget {
 		spacing(spacing),
 		head(0.0f),
 		tail((float)spread[1]) {}
+	Frame::RR VerticalList::Assign(float height) {
+		RR r{.position = {(float)spacing, 0.0f, 0.0f},
+			.spread = {spread[1] - spacing * 2U, 0U, 0U}};
+		if (0.0 <= height) {
+			// 上寄せ
+			const float h(1.0 < height ? height : (tail - head) * height);
+			r.position[1] = head + spacing;
+			r.spread[1] = h;
+			head += spacing + h;
+		} else {
+			// 下寄せ
+			const float h(height < -1.0 ? height : (tail - head) * height);
+			r.position[1] = tail + h - spacing;
+			r.spread[1] = -h;
+			tail += h - spacing;
+		}
+		return r;
+	};
+
+
 }

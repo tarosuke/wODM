@@ -59,3 +59,9 @@ bool OnEvent(const PtEvent&,const tb::Vector<3,float>& origin);
 3. Up(1-2の間にLeaveがないこと)<p>OnPushed後に初期状態に戻る</p>
 
 3の前にLeaveがあった場合は初期状態に戻る。
+
+### スライダー
+
+### スクロールバー
+
+ボタンとスライダーを持つ。

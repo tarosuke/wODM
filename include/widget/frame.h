@@ -165,24 +165,7 @@ namespace widget {
 		float head;
 		float tail;
 
-		RR Assign(float width) { // 配置
-			RR r{.position = {(float)spacing, 0.0f, 0.0f},
-				.spread = {spread[1] - spacing * 2U, 0U, 0U}};
-			if (0.0 <= width) {
-				// 左寄せ
-				const float w(1.0 < width ? width : (tail - head) * width);
-				r.position[1] = head + spacing;
-				r.spread[1] = w;
-				head += spacing + w;
-			} else {
-				// 右寄せ
-				const float w(width < -1.0 ? width : (tail - head) * width);
-				r.position[1] = tail + w - spacing;
-				r.spread[1] = -w;
-				tail += spacing + w;
-			}
-			return r;
-		};
+		RR Assign(float width);
 	};
 
 	// 縦方向リスト
@@ -208,24 +191,7 @@ namespace widget {
 		float head;
 		float tail;
 
-		RR Assign(float height) { // 配置
-			RR r{.position = {(float)spacing, 0.0f, 0.0f},
-				.spread = {spread[1] - spacing * 2U, 0U, 0U}};
-			if (0.0 <= height) {
-				// 上寄せ
-				const float h(1.0 < height ? height : (tail - head) * height);
-				r.position[1] = head + spacing;
-				r.spread[1] = h;
-				head += spacing + h;
-			} else {
-				// 下寄せ
-				const float h(height < -1.0 ? height : (tail - head) * height);
-				r.position[1] = tail + h - spacing;
-				r.spread[1] = -h;
-				tail += spacing + h;
-			}
-			return r;
-		};
+		RR Assign(float height);
 	};
 
 }

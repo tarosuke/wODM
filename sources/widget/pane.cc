@@ -18,6 +18,7 @@
  */
 #include "widget/pane.h"
 #include "gl/gl.h"
+#include "widget/prefs.h"
 #include "widget/window.h"
 
 
@@ -69,6 +70,14 @@ namespace widget {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.Spread()[0],
 			image.Spread()[1], 0, GL_RGBA, GL_BYTE, image.Data());
 	};
+	void TexturePane::Draw(const R& r) {
+		Texture::Binder b(*this);
+		(this->*draw)(r);
+	};
+	void TexturePane::Traw() {
+		Texture::Binder b(*this);
+		(this->*traw)();
+	};
 
 
 
@@ -82,4 +91,23 @@ namespace widget {
 		glTexSubImage2D(GL_TEXTURE_2D, 0, r.Left()[0], r.Left()[1], w, h,
 			GL_RGBA, GL_BYTE, image.Data());
 	}
+
+
+
+	LineInputPane::LineInputPane(Frame& parent,
+		const P& position,
+		const S& spread,
+		unsigned fontSize,
+		const char* prompt) :
+		CanvasPane(parent, position, spread),
+		fontSize(fontSize),
+		prompt(prompt),
+		carret(0) {
+		// 初期敵内容の描画
+		Canvas::GC gc(*this);
+		gc.Clear(tb::Color(Prefs::backColor));
+		// TODO:下線などの装飾、promptを描画＆カーソルの設定
+	}
+	void LineInputPane::OnKeyDown(const KeyEvent& e) {}
+	void LineInputPane::OnClick(const PtEvent& e) {}
 }

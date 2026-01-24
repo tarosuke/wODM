@@ -45,8 +45,8 @@ struct Login : widget::Pane {
 	Login() :
 		Pane(tb::Color(widget::Prefs::backColor), spread),
 		list(P{0.0f, 0.0f, 0.0f}, spread),
-		user(list, 12),
-		password(list, 12) {
+		user(list, 14, 12, "username"),
+		password(list, 14, 12, "password") {
 		children.Add(list);
 	};
 
