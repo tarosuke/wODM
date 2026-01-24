@@ -19,6 +19,7 @@
 #pragma once
 
 #include "eye.h"
+#include "widget/login.h"
 #include <gl/framebuffer.h>
 #include <tb/factory.h>
 #include <tb/geometry/spread.h>
@@ -32,7 +33,7 @@ struct Core {
 	static Core* New() { return tb::Factory<Core>::Create(); };
 	virtual ~Core() {};
 
-	void Run();
+	void Run(void (*loginMethod)() = DefaultLogin);
 
 	// 周回処理へ引数として渡すオーバーヘッド避けのアクセサ
 	static const tb::Timestamp& Timestamp() { return timestamp; };
@@ -67,4 +68,5 @@ private:
 	tb::List<Eye> eyes;
 
 	Core(const Core&) = delete;
+	static void DefaultLogin() { new widget::Login; };
 };

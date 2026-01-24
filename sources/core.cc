@@ -36,34 +36,11 @@ bool Core::keep(false);
 template <> tb::Factory<Core>* tb::Factory<Core>::start(0);
 
 
-struct Login : widget::VerticalList {
-	/*****
-	 * ログインを待ち、ログインされたら名前突きパイプを用意してChildをnew
-	 * 名前突きパイプに接続されたらaskpass的動作
-	 * forkしなかったプロセスでは有名パイプを待つ()
-	 * askpassの接続が逆で「画面へ繋ぐ」ことができないのでちょっと考える
-	 */
-	Login() :
-		VerticalList(spread),
-		user(*this, 14, 12, "username"),
-		password(*this, 14, 12, "password") {};
 
-
-
-	static const S spread;
-
-	widget::VerticalList::Item<widget::LineInputPane> user;
-	widget::VerticalList::Item<widget::LineInputPane> password;
-};
-
-const widget::Frame::S Login::spread({256.0f, 256.0f});
-
-
-
-void Core::Run() {
+void Core::Run(void (*loginMethod)()) {
 	pose.Identity();
 	widget::Root root(eyes);
-	new Login;
+	loginMethod();
 	for (keep = true; keep;) {
 		timestamp.Update();
 
