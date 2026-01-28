@@ -1,5 +1,5 @@
 ﻿/*****************************************************************************
- * Copyright (C) 2024 tarosuke<webmaster@tarosuke.net>
+ * Copyright (C) 2024,2026 tarosuke<webmaster@tarosuke.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,111 +21,100 @@
 #include <syslog.h>
 
 #undef Complex
-#include <tb/complex.h>
-#include <tb/factory.h>
-#include <tb/input.h>
-#include <tb/linux/input.h>
-#include <tb/prefs.h>
-
-#include "gl/eye.h"
-#include "gl/glx.h"
+#include "dummy.h"
 
 
 
-/***** 動作確認のためのダミー画面
- * 単眼、小さめの窓を作ってそこへ出力
- * 開発が進むと使わなくなるんだろうが、VRHMDの脱着を繰り返す面倒を回避する。
- */
-class DummyHMD : GLX, tb::linux::Input {
-	static const tb::geometry::Spread<2, unsigned> size;
-	const int screen;
-	::Window window;
-	unsigned eIndex;
-	Atom wmDeleteNotify;
+DummyHMD::DummyHMD() :
+	screen(DefaultScreen(display)),
+	window(XCreateSimpleWindow(display,
+		RootWindow(display, screen),
+		0,
+		0,
+		size[0],
+		size[1],
+		1,
+		BlackPixel(display, screen),
+		BlackPixel(display, screen))),
+	eIndex(0),
+	wmDeleteNotify(XInternAtom(display, "WM_DELETE_WINDOW", False)),
+	target({0, 0}),
+	position({0, 0}) {
+	Setup(window);
 
-	DummyHMD() :
-		screen(DefaultScreen(display)),
-		window(XCreateSimpleWindow(display,
-			RootWindow(display, screen),
-			0,
-			0,
-			size[0],
-			size[1],
-			1,
-			BlackPixel(display, screen),
-			BlackPixel(display, screen))),
-		eIndex(0),
-		wmDeleteNotify(XInternAtom(display, "WM_DELETE_WINDOW", False)) {
-		Setup(window);
+	XSelectInput(display, window, StructureNotifyMask | SubstructureNotifyMask);
+	XSetStandardProperties(display, window, "Sample", "Sample", None, 0, 0, 0);
+	// WondowManagerが勝手に窓を閉じる前に通知させる
+	XSetWMProtocols(display, window, &wmDeleteNotify, 1);
 
-		XSelectInput(
-			display, window, StructureNotifyMask | SubstructureNotifyMask);
-		XSetStandardProperties(
-			display, window, "Sample", "Sample", None, 0, 0, 0);
-		// WondowManagerが勝手に窓を閉じる前に通知させる
-		XSetWMProtocols(display, window, &wmDeleteNotify, 1);
+	XMapWindow(display, window);
 
-		XMapWindow(display, window);
+	static constexpr double near = 0.05;
+	static constexpr double far = 10000.0;
+	static constexpr double width = 1.0;
+	static constexpr double w = width * near;
+	static const double h = w * size[1] / size[0];
 
-		static constexpr double near = 0.05;
-		static constexpr double far = 10000.0;
-		static constexpr double width = 1.0;
-		static constexpr double w = width * near;
-		static const double h = w * size[1] / size[0];
+	Eye* eye(new GL::Eye(size[0], size[1]));
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glFrustum(-w, w, -h, h, near, far);
+	glGetFloatv(GL_PROJECTION_MATRIX, eye->projection);
 
-		Eye* eye(new GL::Eye(size[0], size[1]));
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glFrustum(-w, w, -h, h, near, far);
-		glGetFloatv(GL_PROJECTION_MATRIX, eye->projection);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
+	eye->eye2Head.Identity();
+	Register(*eye);
+};
 
-		eye->eye2Head.Identity();
-		Register(*eye);
-	};
+void DummyHMD::UpdatePose() { /** Core::poseに姿勢を行列で格納 */ };
+void DummyHMD::Finish(const Eye&) {
+	eIndex = 0;
 
-	void UpdatePose() final { GetInput(); };
-	void Finish(const Eye&) final {
-		eIndex = 0;
-
-		// Xのイベントを処理
-		while (XPending(display)) {
-			XEvent e;
-			XNextEvent(display, &e);
-			switch (e.type) {
-			case DestroyNotify:
-				// 窓が閉じられたので終了
+	// Xのイベントを処理
+	while (XPending(display)) {
+		XEvent e;
+		XNextEvent(display, &e);
+		switch (e.type) {
+		case DestroyNotify:
+			// 窓が閉じられたので終了
+			Quit();
+			break;
+		case ClientMessage:
+			// WMが窓を閉じようとしている
+			if ((Atom)e.xclient.data.l[0] == wmDeleteNotify) {
 				Quit();
-				break;
-			case ClientMessage:
-				// WMが窓を閉じようとしている
-				if ((Atom)e.xclient.data.l[0] == wmDeleteNotify) {
-					Quit();
-				}
-				break;
-			default:
-				break;
 			}
+			break;
+		default:
+			break;
 		}
-	};
-	void Finish() final { glFinish(); };
+	}
+};
+void DummyHMD::Finish() {
+	// カーソルの移動など
+	for (unsigned n(0); n < 1; ++n) {
+		const int d(target[n] - position[n]);
+		if (-cursorMoveRatio <= d && d <= cursorMoveRatio) {
+			position[n] = target[n];
+		} else {
+			position[n] += d / cursorMoveRatio;
+		}
+	}
 
-	static tb::Prefs<bool> useDummyHMD;
-	static class Factory : tb::Factory<Core> {
-		uint Score() {
-			return DummyHMD::useDummyHMD ? Certitude::uniqueMatch : 0;
-		};
-		Core* New() { return new DummyHMD; };
-	} factory;
 
-	void OnAbsMoved(const tb::Timestamp&, const AxisReport& a) final {
-		if (a.moved & 0x18) {
-			// 右スティックが動かされた
-			const float angle[3] = {(float)a.value[4], (float)a.value[3], 0};
-			tb::Complex<4, float> qon(angle, M_PI / 32800);
-			pose = qon;
+	glFinish();
+};
+
+
+#if 0
+void OnAbsMoved(const tb::Timestamp&, const AxisReport& a) final {
+	if (a.moved & 0x18) {
+		// 右スティックが動かされた
+		const float angle[3] = {(float)a.value[4], (float)a.value[3], 0};
+		tb::Complex<4, float> qon(angle, M_PI / 32800);
+		pose = qon;
 
 #if 0
 			printf("%+6d %+6d\n", a.value[3], a.value[4]);
@@ -141,12 +130,8 @@ class DummyHMD : GLX, tb::linux::Input {
 			}
 			puts("");
 #endif
-		}
-	};
+	}
 };
+#endif
 
-
-tb::Prefs<bool> DummyHMD::useDummyHMD(
-	"--GLDummyHMD", false, "ダミーのHMDを使う", tb::CommonPrefs::nosave);
-DummyHMD::Factory DummyHMD::factory;
 const tb::geometry::Spread<2, unsigned> DummyHMD::size({1280u, 720u});
