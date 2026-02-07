@@ -95,6 +95,11 @@ namespace widget {
 			bool widthUpdated : 1;
 			bool heightUpdated : 1;
 			bool thickUpdated : 1;
+
+			/***** cursorDrawn
+			 * カーソルが描画済み(なのでrootでの描画は不要)
+			 */
+			bool cursorDrawn : 1;
 		};
 		Notify() : raw(0) {};
 		Notify(unsigned r) : raw(r) {};
