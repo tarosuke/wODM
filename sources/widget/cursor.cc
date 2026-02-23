@@ -17,135 +17,133 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include "widget/cursor.h"
+#include "gl/gl.h"
+#include "widget/prefs.h"
 #include <algorithm>
+#include <cmath>
+#include <numbers>
 #include <string.h>
 
 
 
 namespace widget {
 
+	tb::List<Cursor::Set> Cursor::sets;
+	Frame* Cursor::on;
+	tb::geometry::Vector<2, float> Cursor::bp;
 
-
-	/***** 進捗リング補間
-	 *
-	 */
-	Cursor::Progress Cursor::progress;
-	int Cursor::Progress::target(0);
-	int Cursor::Progress::value(0);
-	void Cursor::Progress::Update() {
-		if (::Progress::IsActive()) {
-			target = ::Progress::Get();
-			// あるいはCursor::Progressもその後を追ってactiveかどうかを判定する
-		}
-
-		const int d(target - value);
-		if (0 < d ? d < dump : -dump < d) {
-			value = target;
-		} else {
-			value += d / dump;
+	void Cursor::Draw(const tb::geometry::Vector<2, float>& p, State s) {
+		if (Set* const set = sets.Top()) {
+			glPushMatrix();
+			glTranslatef(-p[0], -p[1], 0.0f);
+			set->Draw(s);
+			glPopMatrix();
 		}
 	}
 
-	const char Cursor::Progress::gryph[][5] = {
-		{7, 5, 5, 5, 7}, // '0'
-		{2, 2, 2, 2, 2}, // '1'
-		{7, 1, 7, 4, 7}, // '2'
-		{7, 1, 7, 1, 7}, // '3'
-		{5, 5, 7, 1, 1}, // '4'
-		{7, 4, 7, 1, 7}, // '5'
-		{6, 4, 7, 5, 7}, // '6'
-		{7, 1, 1, 1, 1}, // '7'
-		{7, 5, 7, 5, 7}, // '8'
-		{7, 5, 7, 1, 3}, // '9'
-		{0, 0, 0, 0, 0}, // ' '
-		{5, 1, 2, 4, 5}, // '%'
-		{0, 0, 0, 0, 2}, // '.'
-	};
 
-
-
-	/***** デフォルトカーソル
-	 * 最小限の画像データが埋め込まれているカーソル
-	 * 他に何も設定されなかった場合に使われる
+	/***** カーソル画像セット
+	 *
 	 */
-	struct DefaultCursor : Cursor {
-		DefaultCursor() : Cursor(MakeCursorImage()) { CleanCursorImage(); };
+	unsigned Cursor::Set::State::frame;
+	Cursor::Set::Progress* Cursor::Set::progress(0);
+
+	Cursor::Set::Animation::Animation(const tb::Image& image) :
+		texture(image),
+		nFrame(image.Width() / image.Height()),
+		uWidth(1.0f / nFrame),
+		hSize(image.Height() * 0.5f) {}
+
+	void Cursor::Set::Animation::Draw(unsigned frame) {
+		frame %= nFrame;
+
+		const float uL(uWidth * frame);
+		const float uR(uWidth * (frame + 1));
+		GL::Texture::Binder b(texture);
+		glBegin(GL_TRIANGLE_STRIP);
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex2f(-hSize, -hSize);
+		glTexCoord2f(-uL, 1.0f);
+		glVertex2f(-hSize, hSize);
+		glTexCoord2f(uR, 0.0f);
+		glVertex2f(hSize, -hSize);
+		glTexCoord2f(uR, 1.0f);
+		glVertex2f(hSize, hSize);
+		glEnd();
+	}
 
 
-	private:
-		static const struct Def {
-			unsigned x;
-			unsigned y;
-			unsigned image[16];
-		} cursorDefs[Cursor::nState];
 
-		static void Shadow(
-			tb::Image& image, unsigned x, unsigned y, unsigned c) {
-			const unsigned oc(image.Get(x, y).ARGB32());
-			image.Set(x, y, tb::Color(std::max(oc, c)));
+	Cursor::Set* Cursor::Set::New() {
+		const tb::Color::Format& format(
+			tb::Color::Format::Select(tb::Color::Format::ARGB8888));
+		tb::BufferedImage images[nState]{
+			{format, 32, 32},
+			{format, 32, 32},
+			{format, 32, 32},
 		};
-		static const tb::Image** MakeCursorImage() {
-			for (unsigned n(0); n < nState; ++n) {
-				images[n] = new tb::BufferedImage(
-					tb::Color::Format::Select(tb::Color::Format::ARGB8888), 32,
-					32);
-				tb::Image& image(*images[n]);
-				const DefaultCursor::Def& def(cursorDefs[n]);
+		const tb::Color white(0x7fffffff);
+		const tb::Color transparentWhite(0x59ffffff);
+		const tb::Color black(0xff000000);
 
-				// 画像のクリア
-				memset(image.Data(), 0, image.Width() * image.Height());
+		for (unsigned n(0); n < nState; ++n) {
+			tb::Image& image(images[n]);
+			const Set::Def& def(cursorDefs[n]);
 
-				// 影の描画
-				for (unsigned y(0); y < 16; ++y) {
-					unsigned b(def.image[y]);
-					for (unsigned x(0); x < 16; ++x, b <<= 1) {
-						if (b & 0x8000) {
-							const unsigned xx(x + 16 - def.x);
-							const unsigned yy(y + 16 - def.y);
-							// imageのx,yの上下左右を不透過度0.5で白に塗る
-							Shadow(image, xx - 1, yy + y, 0x7fffffff);
-							Shadow(image, xx + 1, yy + y, 0x7fffffff);
-							Shadow(image, xx, yy + y - 1, 0x7fffffff);
-							Shadow(image, xx, yy + y + 1, 0x7fffffff);
-							// imageのx,yの斜めを不透過度0.35で白に塗る
-							Shadow(image, xx + x - 1, yy + y - 1, 0x59ffffff);
-							Shadow(image, xx + x + 1, yy + y - 1, 0x59ffffff);
-							Shadow(image, xx + x - 1, yy + y + 1, 0x59ffffff);
-							Shadow(image, xx + x + 1, yy + y + 1, 0x59ffffff);
-						}
-					}
-				}
-				// 本体の描画
-				const tb::Color black(0xff000000);
-				for (unsigned y(0); y < 16; ++y) {
-					unsigned b(def.image[y]);
-					for (unsigned x(0); x < 16; ++x, b <<= 1) {
-						if (b & 0x8000) {
-							// 該当画素を黒に塗る
-							image.Set(x + 16 - def.x, y + 16 - def.y, black);
-						}
+			// 画像のクリア
+			memset(image.Data(), 0, image.Width() * image.Height());
+
+			// 影の描画
+			for (unsigned y(0); y < 16; ++y) {
+				unsigned b(def.image[y]);
+				for (unsigned x(0); x < 16; ++x, b <<= 1) {
+					if (b & 0x8000) {
+						const unsigned xx(x + 16 - def.x);
+						const unsigned yy(y + 16 - def.y);
+						// imageのx,yの上下左右を不透過度0.5で白に塗る
+						image.Set(xx - 1, yy, white);
+						image.Set(xx + 1, yy, white);
+						image.Set(xx, yy - 1, white);
+						image.Set(xx, yy + 1, white);
+						// imageのx,yの斜めを不透過度0.35で白に塗る
+						Shadow(image, xx - 1, yy - 1, transparentWhite);
+						Shadow(image, xx + 1, yy - 1, transparentWhite);
+						Shadow(image, xx - 1, yy + 1, transparentWhite);
+						Shadow(image, xx + 1, yy + 1, transparentWhite);
 					}
 				}
 			}
+			// 本体の描画
+			for (unsigned y(0); y < 16; ++y) {
+				unsigned b(def.image[y]);
+				for (unsigned x(0); x < 16; ++x, b <<= 1) {
+					if (b & 0x8000) {
+						// 該当画素を黒に塗る
+						image.Set(x + 16 - def.x, y + 16 - def.y, black);
+					}
+				}
+			}
+		}
 
-			return const_cast<const tb::Image**>(images);
-		};
-		static void CleanCursorImage() {
-			for (unsigned n(0); n < nState; ++n) { delete images[n]; }
-		};
+		// 確保して登録
+		auto* const s(new Set(images));
+		sets.Insert(*s);
+		return s;
+	}
 
-
-		static tb::Image* images[nState]; // 画像置き場
-	};
-
-
-	tb::Image* DefaultCursor::images[nState];
-
+	/***** imageの画素を不当門の高い方の色にする
+	 *
+	 */
+	void Cursor::Set::Shadow(
+		tb::Image& image, unsigned x, unsigned y, const tb::Color& color) {
+		const tb::Color oc(image.Get(x, y));
+		image.Set(x, y, color.A() < oc.A() ? oc : color);
+	}
 
 	/***** 埋め込みカーソルセットの元データ
 	 * 構築子にてカーソル画像を生成してCursorに渡す
 	 */
-	const DefaultCursor::Def DefaultCursor::cursorDefs[Cursor::nState] = {
+	const Cursor::Set::Def Cursor::Set::cursorDefs[Cursor::nState] = {
 		{.x = 1,
 			.y = 1,
 			.image = {0x0000, 0x4000, 0x4000, 0x3000, 0x3000, 0x3800, 0x3800,
@@ -161,4 +159,118 @@ namespace widget {
 			.image = {0x0000, 0xe000, 0x4000, 0x4000, 0x4000, 0x4000, 0x4000,
 				0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0x4000, 0xe000,
 				0x0000}}};
+
+
+	/***** 進捗リング
+	 *
+	 */
+	tb::Prefs<unsigned> Cursor::Set::Progress::size(
+		"widget/progress/size", 32, "進捗リングの外径");
+	tb::Prefs<unsigned> Cursor::Set::Progress::color(
+		"widget/progress/color", 0xff0000ff, "進捗リングの色");
+	tb::Prefs<unsigned> Cursor::Set::Progress::guideColor(
+		"widget/progress/guideColor", 0xffffffff, "進捗ガイドリングの色");
+	tb::Prefs<unsigned> Cursor::Set::Progress::numColor(
+		"widget/progress/numColor", 0xffffffff, "数値の色");
+	tb::Prefs<unsigned> Cursor::Set::Progress::dump(
+		"widget/progress/dump", 5, "進捗率の緩衝度合い");
+
+
+	// x,yがin,outの間にあったらc色の点を打つ
+	void Cursor::Set::Progress::Circle(tb::Image& image,
+		unsigned x,
+		unsigned y,
+		float in,
+		float out,
+		const tb::Color& c) {
+		const float xx(x - 15.5f);
+		const float yy(y - 15.5f);
+		const float r(xx * xx + yy * yy);
+		if (in * in <= r && r <= out * out) {
+			image.Set(x, y, c);
+		}
+	}
+	// x,yから文字を描く
+	void Cursor::Set::Progress::Char(tb::Image& image,
+		unsigned frame,
+		unsigned x,
+		unsigned y,
+		const unsigned char (&gryph)[5]) {
+		const tb::Color c(numColor);
+		const unsigned o(image.Height() * frame);
+		for (unsigned yy(0); yy < 5; ++yy) {
+			// bit 3,2,1,0を描画
+			unsigned mask(4);
+			for (unsigned xx(0); xx < 3; ++x, mask >>= 1) {
+				if (gryph[yy] & mask) {
+					image.Set(o + x + xx, y + yy, c);
+				}
+			}
+		}
+	}
+	Cursor::Set::Progress* Cursor::Set::Progress::New() {
+		// 百コマ分の画像
+		tb::BufferedImage image(
+			tb::Color::Format::Select(tb::Color::Format::ARGB8888), 3200, 32);
+
+		for (unsigned n(0); n < 100; ++n) {
+			for (unsigned y(0); y < 32; ++y) {
+				const float yy(-15.5f + y);
+				for (unsigned x(0); x < 32; ++x) {
+					const float xx(-15.5f + x);
+					tb::Color c(0);
+
+					// 進捗(中心15.5、半径12-15)
+					if ((50.0f + 100.0f * std::atan2(xx, -yy) /
+									 std::numbers::pi) <= progress) {
+						// 点が進捗の上なら点を打つ
+						Circle(image, xx, yy, 12, 15, tb::Color(color));
+					}
+
+					// ゲージの円(中心15.5、半径15)
+					Circle(image, xx, yy, 15, 15, tb::Color(guideColor));
+				}
+			}
+			// 数値
+			unsigned nn(n);
+			Char(image, n, 20, 18, gryph[nn % 10]);
+			nn /= 10;
+			Char(image, n, 16, 18, gryph[nn % 10]);
+			nn /= 10;
+			Char(image, n, 12, 18, gryph[12]);
+			Char(image, n, 8, 18, gryph[nn % 10]);
+		}
+
+
+		return new Cursor::Set::Progress(image);
+	}
+
+
+	void Cursor::Set::Progress::Draw() {
+		if (::Progress::IsActive()) {
+			// あるいはCursor::Progressもその後を追ってactiveかどうかを判定する
+			target = ::Progress::Get();
+			Animation::Draw(progress);
+		}
+
+		progress += (target - progress) / dump;
+	}
+	const unsigned char Cursor::Set::Progress::gryph[][5] = {
+		{2, 5, 5, 5, 2}, // '0'
+		{2, 2, 2, 2, 2}, // '1'
+		{6, 1, 2, 4, 7}, // '2'
+		{6, 1, 6, 1, 6}, // '3'
+		{5, 5, 7, 1, 1}, // '4'
+		{7, 4, 6, 1, 6}, // '5'
+		{4, 4, 7, 5, 2}, // '6'
+		{7, 1, 1, 1, 1}, // '7'
+		{2, 5, 2, 5, 2}, // '8'
+		{2, 5, 3, 1, 1}, // '9'
+		{0, 0, 0, 0, 0}, // ' '
+		{5, 1, 2, 4, 5}, // '%'
+		{0, 0, 0, 0, 2}, // '.'
+	};
+
+
+
 }

@@ -40,6 +40,9 @@ namespace widget {
 		static void Register(Window&);
 		static void ReDepthAll();
 
+		// イベントの元
+		static void PointerNotify(const PtEvent&);
+
 	private:
 		static tb::List<Frame> windows;
 		Model_C* navPanel;

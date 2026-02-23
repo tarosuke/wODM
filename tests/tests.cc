@@ -10,7 +10,7 @@
 
 
 
-static void MkLogin() { new widget::Login; }
+static void MkLogin() { /*new widget::Login*/ ; }
 
 static struct Test : tb::App {
 	int Main(uint, const char**) {

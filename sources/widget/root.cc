@@ -19,6 +19,7 @@
 #include "widget/root.h"
 #include "core.h"
 #include "gl/gl.h"
+#include "widget/cursor.h"
 #include "widget/prefs.h"
 #include <functional>
 
@@ -76,7 +77,9 @@ namespace widget {
 
 
 
-	Root::Root(const tb::List<Eye>& eyes) : navPanel(PrepareNavPanel(eyes)) {};
+	Root::Root(const tb::List<Eye>& eyes) : navPanel(PrepareNavPanel(eyes)) {
+		Cursor::Set::New();
+	};
 	Root::~Root() {
 		if (navPanel) {
 			delete navPanel;
@@ -146,7 +149,15 @@ namespace widget {
 		eye.GUI();
 		glTranslatef(-lookingPoint[0], -lookingPoint[1], -Prefs::pDistance);
 		windows.Foreach(&Frame::TrawEntity);
+		Cursor::Draw(Cursor::State::outOfService);
 
+		/***** ナビゲーションリング描画
+		 * ナビゲーションリングは透過率で描画される
+		 */
+		glEnable(GL_BLEND);
+		glEnable(GL_DEPTH_TEST);
+		glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+		glDepthMask(GL_FALSE);
 		eye.Short11();
 		glTranslatef(0, 0, -Prefs::nDistance);
 		glScalef(nScale, nScale, 1);

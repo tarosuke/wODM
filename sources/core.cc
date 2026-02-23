@@ -68,14 +68,12 @@ void Core::Run(void (*loginMethod)()) {
 			GL::Scenery::DrawAll();
 
 			/***** 透過物
-			 * wODMにおいて透過は透過率による乗算が基本なので順不同ではあるが、
-			 * 一応およそ手前から描画される。なお、アルファブレンドを使う場合は
-			 * ブレンドモードを元の乗算に戻しておく必要がある。
+			 * 初期値はアルファブレンド
 			 */
 			glEnable(GL_BLEND);
 			glEnable(GL_DEPTH_TEST);
-			glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-			glDepthMask(GL_FALSE);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glDepthMask(GL_TRUE);
 
 			// 通常の物体
 			e->Pose(Pose());
