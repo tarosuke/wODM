@@ -78,7 +78,7 @@ namespace widget {
 
 
 	Root::Root(const tb::List<Eye>& eyes) : navPanel(PrepareNavPanel(eyes)) {
-		Cursor::Set::New();
+		Cursor::Init();
 	};
 	Root::~Root() {
 		if (navPanel) {

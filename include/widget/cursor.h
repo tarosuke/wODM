@@ -57,7 +57,6 @@ namespace widget {
 			}
 			void Draw(Cursor::State s) { states[(unsigned)s].Draw(); };
 
-		private:
 			template <class I>
 			Set(const I (&images)[nState]) :
 				states{images[0], images[1], images[2]} {}
@@ -83,8 +82,8 @@ namespace widget {
 				unsigned y;
 				unsigned image[16];
 			} cursorDefs[nState];
-			static struct Progress : Animation {
-				Progress* New();
+			struct Progress : Animation {
+				static Progress* New();
 				void Draw();
 
 			private:
@@ -99,26 +98,31 @@ namespace widget {
 				};
 				static const unsigned char gryph[][5];
 				float target;	// 真値
-				float progress; // 表示地
+				float progress; // 表示値
 				Progress(const tb::Image& image) : Animation(image) {};
-				void Circle(tb::Image&,
+				static void Circle(tb::Image&,
 					unsigned x,
 					unsigned y,
 					float in,
 					float out,
 					const tb::Color&);
-				void Char(tb::Image&,
+				static void Char(tb::Image&,
 					unsigned frame,
 					unsigned x,
 					unsigned y,
 					const unsigned char (&gryph)[5]);
-			}* progress;
+			};
 
 			// Imageの画素を透明度の低い方の色にする
 			static void Shadow(
 				tb::Image&, unsigned x, unsigned y, const tb::Color&);
 		};
 
+
+		/***** 初期化
+		 *
+		 */
+		static void Init();
 
 		/***** カーソル描画
 		 * カーソルが上にあるFrame::Trawから呼ばれる(なければRoot::TrawAll)
@@ -131,6 +135,7 @@ namespace widget {
 
 	private:
 		static tb::List<Set> sets;				  // カーソルセットのスタック
+		static Set::Progress* progress;			  // 進捗リング
 		static Frame* on;						  // カーソルが乗っているFrame
 		static tb::geometry::Vector<2, float> bp; // 基準面上のカーソル位置
 	};

@@ -29,16 +29,29 @@
 namespace widget {
 
 	tb::List<Cursor::Set> Cursor::sets;
+	Cursor::Set::Progress* Cursor::progress(0);
 	Frame* Cursor::on;
 	tb::geometry::Vector<2, float> Cursor::bp;
 
+	void Cursor::Init() {
+		Set::New();
+		progress = Set::Progress::New();
+	}
+
 	void Cursor::Draw(const tb::geometry::Vector<2, float>& p, State s) {
+		glPushMatrix();
+		glTranslatef(-p[0], -p[1], 0.0f);
+
+		// カーソル
 		if (Set* const set = sets.Top()) {
-			glPushMatrix();
-			glTranslatef(-p[0], -p[1], 0.0f);
 			set->Draw(s);
-			glPopMatrix();
 		}
+
+		// 進捗リング
+		if (progress) {
+			progress->Draw();
+		}
+		glPopMatrix();
 	}
 
 
@@ -46,7 +59,6 @@ namespace widget {
 	 *
 	 */
 	unsigned Cursor::Set::State::frame;
-	Cursor::Set::Progress* Cursor::Set::progress(0);
 
 	Cursor::Set::Animation::Animation(const tb::Image& image) :
 		texture(image),
@@ -201,7 +213,7 @@ namespace widget {
 		for (unsigned yy(0); yy < 5; ++yy) {
 			// bit 3,2,1,0を描画
 			unsigned mask(4);
-			for (unsigned xx(0); xx < 3; ++x, mask >>= 1) {
+			for (unsigned xx(0); xx < 3; ++xx, mask >>= 1) {
 				if (gryph[yy] & mask) {
 					image.Set(o + x + xx, y + yy, c);
 				}
@@ -222,8 +234,8 @@ namespace widget {
 
 					// 進捗(中心15.5、半径12-15)
 					if ((50.0f + 100.0f * std::atan2(xx, -yy) /
-									 std::numbers::pi) <= progress) {
-						// 点が進捗の上なら点を打つ
+									 std::numbers::pi) <= n) {
+						// 点が進捗以下の部分なら点を打つ
 						Circle(image, xx, yy, 12, 15, tb::Color(color));
 					}
 
